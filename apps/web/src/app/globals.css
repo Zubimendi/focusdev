@@ -24,4 +24,16 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .dot-grid {
+    background-image: radial-gradient(circle, #2f3445 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .glass-panel {
+    background: rgba(47, 52, 69, 0.7);
+    backdrop-filter: blur(20px);
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
