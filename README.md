@@ -1,4 +1,4 @@
-# Focus
+# FocusDev
 
 Focus is a high-level, production-grade application featuring a robust Next.js 14 web client and an Expo React Native mobile client. Both applications consume the identical Next.js API routes and share a unified MongoDB backend.
 
