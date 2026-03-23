@@ -1,5 +1,5 @@
 {
-  "name": "@focus/db",
+  "name": "@focus/ui",
   "version": "1.0.0",
   "private": true,
   "main": "./index.ts",
@@ -9,10 +9,15 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "mongoose": "latest",
+    "react": "^18",
+    "react-dom": "^18",
+    "lucide-react": "latest",
     "@focus/shared": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "latest"
+    "typescript": "latest",
+    "tailwindcss": "^3",
+    "autoprefixer": "^10",
+    "postcss": "^8"
   }
 }

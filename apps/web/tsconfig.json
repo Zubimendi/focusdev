@@ -18,7 +18,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@focus/shared": ["../../packages/shared"],
+      "@focus/db": ["../../packages/db"],
+      "@focus/ui": ["../../packages/ui"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

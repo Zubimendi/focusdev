@@ -1,14 +1,20 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { User } from '@focus/shared';
 
-export interface IUserDocument extends Omit<User, 'id'>, Document {}
+export interface IUserDocument extends Document {
+  email: string;
+  password?: string;
+  name?: string;
+  role: string;
+  image?: string;
+}
 
 const UserSchema = new Schema<IUserDocument>(
   {
     email: { type: String, required: true, unique: true },
     name: { type: String },
     image: { type: String },
-    // Password will be added during auth implementation
+    password: { type: String, select: false },
   },
   { timestamps: true }
 );
