@@ -3,9 +3,9 @@ import AuthHero from "@/components/auth/auth-hero";
 
 export default function RegisterPage() {
   return (
-    <main className="flex h-screen w-full">
+    <main className="flex min-h-screen w-full bg-[#f8f9fc] dark:bg-surface">
       <AuthHero />
-      <section className="w-full lg:w-5/12 bg-[#f8f9fc] dark:bg-surface flex items-center justify-center p-8 lg:p-16">
+      <section className="w-full lg:w-5/12 flex items-center justify-center p-8 lg:p-16 py-12 md:py-20">
         <RegisterForm />
       </section>
       

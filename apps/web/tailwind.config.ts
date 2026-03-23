@@ -59,10 +59,10 @@ const config: Config = {
         "surface-variant": "#2f3445"
       },
       fontFamily: {
-        "headline": ["Inter", "sans-serif"],
-        "body": ["Inter", "sans-serif"],
-        "label": ["Inter", "sans-serif"],
-        "mono": ["JetBrains Mono", "monospace"]
+        "headline": ["var(--font-inter)", "sans-serif"],
+        "body": ["var(--font-inter)", "sans-serif"],
+        "label": ["var(--font-inter)", "sans-serif"],
+        "mono": ["var(--font-jetbrains-mono)", "monospace"]
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
