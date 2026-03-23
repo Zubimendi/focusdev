@@ -11,7 +11,7 @@ export default function SideNavBar() {
     { name: "Dashboard", href: "/dashboard", icon: "history", active: pathname === "/dashboard" },
     { name: "Checklists", href: "/checklists", icon: "fact_check", active: pathname === "/checklists" },
     { name: "Focus Timer", href: "/timer", icon: "timer", active: pathname === "/timer", fill: true },
-    { name: "Documentation", href: "/docs", icon: "menu_book", active: pathname === "/docs" },
+    { name: "Projects", href: "/projects", icon: "folder_open", active: pathname === "/projects" },
   ];
 
   return (
