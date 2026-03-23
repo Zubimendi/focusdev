@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function FocusTimer() {
   const [isActive, setIsActive] = useState(false);
@@ -21,6 +22,10 @@ export default function FocusTimer() {
 
   const toggleTimer = async () => {
     if (!isActive) {
+      if (seconds === 0) {
+        setSeconds(1500);
+        return;
+      }
       try {
         const res = await fetch("/api/focus/start", {
           method: "POST",
@@ -31,10 +36,12 @@ export default function FocusTimer() {
         if (res.ok) {
           setSessionId(data.session._id);
           setIsActive(true);
+          toast.success("Focus session started! Deep work begins now.");
         }
       } catch (error) {
         console.error("Failed to start session", error);
-        setIsActive(true); // Fallback for UI testing
+        toast.error("Cloud sync failed, but starting local timer.");
+        setIsActive(true); 
       }
     } else {
       try {
@@ -47,9 +54,11 @@ export default function FocusTimer() {
           setIsActive(false);
           setSeconds(1500);
           setSessionId(null);
+          toast.success("Focus session ended. Great work!");
         }
       } catch (error) {
         console.error("Failed to end session", error);
+        toast.error("Couldn't sync session end, local timer reset.");
         setIsActive(false);
         setSeconds(1500);
       }

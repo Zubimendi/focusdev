@@ -4,21 +4,23 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const validate = () => {
     if (!email.includes("@")) {
-      setError("Please enter a valid email address");
+      toast.error("Invalid email address");
       return false;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      toast.error("Password must be at least 8 characters");
       return false;
     }
     return true;
@@ -39,12 +41,15 @@ export default function LoginForm() {
 
       if (result?.error) {
         setError("Invalid email or password");
+        toast.error("Authentication failed. Please check your credentials.");
       } else {
+        toast.success("Welcome back! Redirecting to dashboard...");
         router.push("/dashboard");
         router.refresh();
       }
     } catch (err) {
       setError("An unexpected error occurred");
+      toast.error("System error during sign in. Please try again later.");
     } finally {
       setLoading(false);
     }

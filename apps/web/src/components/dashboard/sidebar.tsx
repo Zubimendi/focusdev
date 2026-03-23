@@ -46,16 +46,26 @@ export default function SideNavBar() {
       </nav>
 
       <div className="mt-auto flex flex-col gap-2">
-        <button className="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+        <Link 
+          href="/new-session"
+          className="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
           Start Deep Work
-        </button>
+        </Link>
         <div className="h-px bg-white/5 my-4"></div>
-        <Link className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-300 transition-colors" href="/support">
-          <span className="material-symbols-outlined">help</span>
+        <Link 
+          className={`flex items-center gap-3 px-4 py-2 transition-all rounded-lg ${pathname === "/support" ? "text-primary bg-primary/5" : "text-slate-500 hover:text-slate-300"}`} 
+          href="/support"
+        >
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: pathname === "/support" ? "'FILL' 1" : "'FILL' 0" }}>help</span>
           <span>Support</span>
         </Link>
-        <Link className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-300 transition-colors" href="/settings">
-          <span className="material-symbols-outlined">settings</span>
+        <Link 
+          className={`flex items-center gap-3 px-4 py-2 transition-all rounded-lg ${pathname === "/settings" ? "text-primary bg-primary/5" : "text-slate-500 hover:text-slate-300"}`} 
+          href="/settings"
+        >
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: pathname === "/settings" ? "'FILL' 1" : "'FILL' 0" }}>settings</span>
           <span>Settings</span>
         </Link>
       </div>

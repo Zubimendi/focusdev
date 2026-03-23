@@ -22,7 +22,8 @@
       "@focus/shared": ["../../packages/shared"],
       "@focus/db": ["../../packages/db"],
       "@focus/ui": ["../../packages/ui"]
-    }
+    },
+    "types": ["react", "react-dom"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

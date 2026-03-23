@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "Boost your productivity with monolithic clarity",
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,6 +26,19 @@ export default function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-body bg-surface text-on-surface antialiased`}>
         <NextAuthSessionProvider>
           {children}
+          <Toaster 
+            position="bottom-right" 
+            richColors 
+            theme="dark" 
+            toastOptions={{
+              style: {
+                background: '#1a1f2f',
+                borderColor: 'rgba(70, 69, 84, 0.2)',
+                color: '#dee1f7',
+                fontFamily: 'Inter, sans-serif'
+              }
+            }}
+          />
         </NextAuthSessionProvider>
       </body>
     </html>
