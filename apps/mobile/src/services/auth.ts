@@ -2,8 +2,8 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { LoginSchema, RegisterSchema, type ApiResponse, type AuthResponse } from '@focus/shared';
 
-// Replace with your local IP for physical device testing
-const API_URL = 'http://localhost:3000/api';
+// Standard Expo Public Environment Variables (use your local IP for physical devices)
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export const authService = {
   async register(data: any): Promise<ApiResponse<any>> {

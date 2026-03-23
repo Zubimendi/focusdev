@@ -1,32 +1,67 @@
-import Link from "next/link";
-import LogoutButton from "@/components/auth/logout-button";
-import { getServerSession } from "next-auth";
+"use client";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+import { useSession, signOut } from "next-auth/react";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import SideNavBar from "@/components/dashboard/sidebar";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { data: session, status } = useSession();
+
+  if (status === "unauthenticated") {
+    redirect("/login");
+  }
+
+  if (status === "loading") {
+    return <div className="flex h-screen items-center justify-center bg-[#0e1322] text-white">Loading...</div>;
+  }
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      <aside className="w-64 bg-white border-r shadow-sm">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-blue-600">Focus</h1>
-        </div>
-        <nav className="mt-6">
-          <Link href="/dashboard" className="block px-6 py-2 text-gray-700 hover:bg-gray-100">
-            Dashboard
-          </Link>
-          <Link href="/tasks" className="block px-6 py-2 text-gray-700 hover:bg-gray-100">
-            Tasks
-          </Link>
-          <Link href="/profile" className="block px-6 py-2 text-gray-700 hover:bg-gray-100">
-            Profile
-          </Link>
-          <div className="mt-auto pt-4 border-t">
-            <LogoutButton />
+    <div className="min-h-screen bg-[#0e1322] font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+      <SideNavBar />
+
+      <div className="ml-64 flex flex-col min-h-screen">
+        {/* TopNavBar Implementation (Optional/Secondary now) */}
+        <header className="bg-[#0e1322]/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="flex justify-between items-center w-full px-8 h-16 max-w-[1920px] mx-auto">
+            <div className="flex items-center gap-6">
+              {/* Secondary Page Title or Breadcrumb could go here */}
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="p-2 text-on-surface-variant hover:bg-slate-800/50 transition-all rounded-lg active:scale-95">
+                <span className="material-symbols-outlined">notifications</span>
+              </button>
+              <button className="p-2 text-on-surface-variant hover:bg-slate-800/50 transition-all rounded-lg active:scale-95">
+                <span className="material-symbols-outlined">settings</span>
+              </button>
+              <div className="flex items-center gap-3 ml-2">
+                <div className="ring-2 ring-primary/20 rounded-full p-0.5">
+                  <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+                    {(session?.user as any)?.image ? (
+                      <img src={(session?.user as any).image} alt="User Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-primary">{(session?.user as any)?.name?.[0] || 'U'}</span>
+                    )}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => signOut()}
+                  className="text-xs font-bold text-on-surface-variant hover:text-error transition-colors uppercase tracking-widest"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
           </div>
-        </nav>
-      </aside>
-      <main className="flex-1 overflow-y-auto p-10">
+          <div className="h-px w-full bg-[#161b2c]"></div>
+        </header>
+
         {children}
-      </main>
+      </div>
     </div>
   );
 }
