@@ -10,9 +10,12 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "seed": "MONGODB_URI=$(grep MONGODB_URI apps/web/.env.local | cut -d= -f2-) npx tsx scripts/seed.ts"
   },
   "devDependencies": {
+    "@types/node": "^20.19.37",
+    "tsx": "^4.21.0",
     "turbo": "latest"
   }
 }

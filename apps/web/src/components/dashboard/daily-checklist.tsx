@@ -1,30 +1,57 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
-const initialChecklist = [
-  { id: 1, text: "LeetCode done today", completed: true },
-  { id: 2, text: "Flashcards reviewed", completed: false },
-  { id: 3, text: "Deployed something", completed: false },
-  { id: 4, text: "Tweeted progress", completed: true, strike: true },
-];
+interface Task {
+  _id: string;
+  title: string;
+  status: string;
+  priority: string;
+}
 
 export default function DailyChecklist() {
-  const [items, setItems] = useState(initialChecklist);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggleItem = (id: number) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const newState = !item.completed;
-        if (newState) toast.success(`Task completed: ${item.text}`);
-        return { ...item, completed: newState };
+  const fetchTasks = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tasks");
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data.tasks?.slice(0, 5) || []);
       }
-      return item;
-    }));
+    } catch (err) {
+      console.error("Failed to fetch tasks", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  const toggleTask = async (task: Task) => {
+    const newStatus = task.status === "done" ? "todo" : "done";
+    try {
+      const res = await fetch(`/api/tasks/${task._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setTasks(prev =>
+          prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t)
+        );
+        if (newStatus === "done") toast.success(`Completed: ${task.title}`);
+      }
+    } catch (err) {
+      toast.error("Failed to update task");
+    }
   };
 
-  const completedCount = items.filter(i => i.completed).length;
-  const progressPercent = (completedCount / items.length) * 100;
+  const completedCount = tasks.filter(t => t.status === "done").length;
+  const progressPercent = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
   return (
     <aside className="w-full md:w-80 flex flex-col gap-6 order-3">
@@ -35,26 +62,43 @@ export default function DailyChecklist() {
         </div>
 
         <div className="flex flex-col gap-1">
-          {items.map((item) => (
-            <label 
-              key={item.id} 
-              onClick={() => toggleItem(item.id)}
-              className={`flex items-center gap-4 p-3 rounded-lg hover:bg-surface-container-high transition-all cursor-pointer group ${item.completed && item.strike ? 'bg-surface-container-high/50' : ''}`}
-            >
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                item.completed ? 'border-primary/40 bg-primary/20' : 'border-outline-variant/30 group-hover:border-outline-variant'
-              }`}>
-                {item.completed && (
-                  <span className="material-symbols-outlined text-[16px] text-primary" style={{ fontVariationSettings: "'FILL' 0, 'wght' 700" }}>check</span>
-                )}
-              </div>
-              <span className={`text-sm font-medium transition-all ${
-                item.completed && item.strike ? 'text-on-surface line-through opacity-50' : item.completed ? 'text-on-surface' : 'text-on-surface-variant'
-              }`}>
-                {item.text}
-              </span>
-            </label>
-          ))}
+          {loading ? (
+            <div className="flex flex-col gap-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-12 bg-surface-container-high rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : tasks.length > 0 ? (
+            tasks.map((task) => (
+              <label 
+                key={task._id} 
+                onClick={() => toggleTask(task)}
+                className={`flex items-center gap-4 p-3 rounded-lg hover:bg-surface-container-high transition-all cursor-pointer group ${task.status === "done" ? 'bg-surface-container-high/50' : ''}`}
+              >
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                  task.status === "done" ? 'border-primary/40 bg-primary/20' : 'border-outline-variant/30 group-hover:border-outline-variant'
+                }`}>
+                  {task.status === "done" && (
+                    <span className="material-symbols-outlined text-[16px] text-primary" style={{ fontVariationSettings: "'FILL' 0, 'wght' 700" }}>check</span>
+                  )}
+                </div>
+                <div className="flex flex-col flex-1">
+                  <span className={`text-sm font-medium transition-all ${
+                    task.status === "done" ? 'text-on-surface line-through opacity-50' : 'text-on-surface'
+                  }`}>
+                    {task.title}
+                  </span>
+                  <span className={`text-[10px] uppercase font-bold tracking-wider ${
+                    task.priority === 'high' ? 'text-error' : task.priority === 'medium' ? 'text-tertiary' : 'text-outline'
+                  }`}>
+                    {task.priority}
+                  </span>
+                </div>
+              </label>
+            ))
+          ) : (
+            <p className="text-sm text-on-surface-variant text-center py-4">No tasks yet. Create one to get started!</p>
+          )}
         </div>
 
         <div className="mt-4 pt-6 border-t border-outline-variant/10">
@@ -66,7 +110,7 @@ export default function DailyChecklist() {
             ></div>
           </div>
           <p className="mt-2 text-[10px] text-on-surface-variant text-right italic">
-            {progressPercent === 100 ? "Ascended state reached! 🚀" : "Flow state detected in last 2 sessions"}
+            {progressPercent === 100 ? "Ascended state reached! 🚀" : `${completedCount}/${tasks.length} tasks completed`}
           </p>
         </div>
       </section>

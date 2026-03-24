@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { FocusSessionSchema, type ApiResponse } from '@focus/shared';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const getAuthHeaders = async () => {
   const token = await SecureStore.getItemAsync('auth_token');

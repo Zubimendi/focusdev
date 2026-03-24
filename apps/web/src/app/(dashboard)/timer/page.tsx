@@ -1,10 +1,43 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+
+interface Task {
+  _id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+}
 
 export default function TimerPage() {
   const [seconds, setSeconds] = useState(1500);
   const [isActive, setIsActive] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const res = await fetch("/api/tasks");
+        if (res.ok) {
+          const data = await res.json();
+          // Show in_progress and todo tasks
+          const activeTasks = (data.tasks || []).filter(
+            (t: Task) => t.status !== "done"
+          );
+          setTasks(activeTasks.slice(0, 5));
+        }
+      } catch (err) {
+        console.error("Failed to fetch tasks", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTasks();
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -14,9 +47,76 @@ export default function TimerPage() {
       }, 1000);
     } else if (seconds === 0) {
       setIsActive(false);
+      if (sessionId) endSession();
+      toast.success("Pomodoro complete! Time for a break.");
     }
     return () => clearInterval(interval);
   }, [isActive, seconds]);
+
+  const startSession = async () => {
+    try {
+      const res = await fetch("/api/focus/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startTime: new Date().toISOString() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSessionId(data.session._id);
+        setIsActive(true);
+        toast.success("Focus session started!");
+      }
+    } catch {
+      toast.error("Failed to sync session, starting local timer.");
+      setIsActive(true);
+    }
+  };
+
+  const endSession = async () => {
+    try {
+      if (sessionId) {
+        await fetch(`/api/focus/end/${sessionId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes: "Pomodoro session completed" }),
+        });
+      }
+    } catch {
+      console.error("Failed to end session");
+    }
+    setIsActive(false);
+    setSeconds(1500);
+    setSessionId(null);
+  };
+
+  const toggleTimer = async () => {
+    if (!isActive) {
+      if (seconds === 0) {
+        setSeconds(1500);
+        return;
+      }
+      await startSession();
+    } else {
+      await endSession();
+      toast.success("Session ended. Great work!");
+    }
+  };
+
+  const completeTask = async (task: Task) => {
+    try {
+      const res = await fetch(`/api/tasks/${task._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "done" }),
+      });
+      if (res.ok) {
+        setTasks(prev => prev.filter(t => t._id !== task._id));
+        toast.success(`Completed: ${task.title}`);
+      }
+    } catch {
+      toast.error("Failed to update task");
+    }
+  };
 
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
@@ -25,14 +125,16 @@ export default function TimerPage() {
   };
 
   const progress = ((1500 - seconds) / 1500) * 880;
+  const currentTask = tasks[0];
+  const remainingTasks = tasks.slice(1);
 
   return (
     <main className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center p-12 relative overflow-hidden">
       {/* Top Controls / Settings */}
       <div className="absolute top-8 right-8 flex items-center gap-4">
         <div className="flex items-center bg-surface-container-low rounded-full px-4 py-2 text-on-surface-variant text-sm font-medium">
-          <span className="w-2 h-2 rounded-full bg-secondary mr-2"></span>
-          Deep Focus Active
+          <span className={`w-2 h-2 rounded-full mr-2 ${isActive ? 'bg-secondary animate-pulse' : 'bg-outline-variant'}`}></span>
+          {isActive ? "Deep Focus Active" : "Ready to Focus"}
         </div>
         <button className="p-3 bg-surface-container-high rounded-full text-on-surface hover:bg-surface-bright transition-colors">
           <span className="material-symbols-outlined">settings</span>
@@ -52,7 +154,7 @@ export default function TimerPage() {
               strokeLinecap="round" 
               strokeWidth="12"
               strokeDasharray="880"
-              strokeDashoffset={880 - (isActive ? progress : 220)}
+              strokeDashoffset={880 - progress}
               style={{ transform: 'rotate(-90deg)', transformOrigin: '192px 192px', transition: 'stroke-dashoffset 1s linear' }}
             ></circle>
             <defs>
@@ -72,12 +174,12 @@ export default function TimerPage() {
           </div>
           
           {/* Ambient Glow Behind Timer */}
-          <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full -z-10"></div>
+          <div className={`absolute inset-0 rounded-full -z-10 transition-all duration-1000 ${isActive ? 'bg-primary/10 blur-[100px]' : 'bg-primary/5 blur-[100px]'}`}></div>
         </div>
 
         {/* Timer Actions */}
         <div className="flex items-center gap-8 mb-24">
-          <button onClick={() => setSeconds(1500)} className="group flex flex-col items-center gap-2">
+          <button onClick={() => { setSeconds(1500); setIsActive(false); setSessionId(null); }} className="group flex flex-col items-center gap-2">
             <div className="w-14 h-14 rounded-full bg-surface-container-low border border-outline-variant/10 flex items-center justify-center group-hover:bg-surface-container-high transition-colors">
               <span className="material-symbols-outlined text-on-surface-variant">refresh</span>
             </div>
@@ -85,11 +187,15 @@ export default function TimerPage() {
           </button>
           
           <button 
-            onClick={() => setIsActive(!isActive)}
-            className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-on-primary shadow-[0_0_40px_rgba(128,131,255,0.3)] hover:scale-105 active:scale-95 transition-all"
+            onClick={toggleTimer}
+            className={`w-24 h-24 rounded-full flex items-center justify-center text-on-primary shadow-[0_0_40px_rgba(128,131,255,0.3)] hover:scale-105 active:scale-95 transition-all ${
+              isActive 
+                ? 'bg-gradient-to-br from-error to-error-container' 
+                : 'bg-gradient-to-br from-primary to-primary-container'
+            }`}
           >
             <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {isActive ? "pause" : "play_arrow"}
+              {isActive ? "stop" : "play_arrow"}
             </span>
           </button>
           
@@ -101,45 +207,67 @@ export default function TimerPage() {
           </button>
         </div>
 
-        {/* "Next Up" Bento-style Checklist */}
+        {/* "Next Up" Section - Now with real API data */}
         <div className="w-full grid grid-cols-12 gap-6">
           <div className="col-span-12 flex items-center justify-between mb-2">
             <h2 className="text-xl font-black tracking-tight text-on-surface">Next Up</h2>
-            <span className="text-xs font-mono text-primary">3 Tasks Remaining</span>
+            <span className="text-xs font-mono text-primary">{tasks.length} Tasks Remaining</span>
           </div>
           
-          {/* Active Task Card */}
-          <div className="col-span-12 md:col-span-7 bg-surface-container-low p-6 rounded-2xl flex items-center gap-6 group hover:bg-surface-container transition-all">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-              <span className="material-symbols-outlined text-primary">terminal</span>
-            </div>
-            <div className="text-left flex-1">
-              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Current Focus</p>
-              <h3 className="text-lg font-bold text-on-surface">Refactor API Middleware Hooks</h3>
-              <p className="text-sm text-on-surface-variant">Clean up redundant logic in auth providers</p>
-            </div>
-            <button className="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all">
-              <span className="material-symbols-outlined text-transparent group-hover:text-on-primary text-sm" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
-            </button>
-          </div>
+          {loading ? (
+            <>
+              <div className="col-span-12 md:col-span-7 h-24 bg-surface-container-low rounded-2xl animate-pulse" />
+              <div className="col-span-12 md:col-span-5 h-24 bg-surface-container-lowest rounded-2xl animate-pulse" />
+            </>
+          ) : currentTask ? (
+            <>
+              {/* Active Task Card */}
+              <div className="col-span-12 md:col-span-7 bg-surface-container-low p-6 rounded-2xl flex items-center gap-6 group hover:bg-surface-container transition-all">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <span className="material-symbols-outlined text-primary">terminal</span>
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Current Focus</p>
+                  <h3 className="text-lg font-bold text-on-surface">{currentTask.title}</h3>
+                  {currentTask.description && (
+                    <p className="text-sm text-on-surface-variant">{currentTask.description}</p>
+                  )}
+                </div>
+                <button 
+                  onClick={() => completeTask(currentTask)}
+                  className="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all"
+                >
+                  <span className="material-symbols-outlined text-transparent group-hover:text-on-primary text-sm" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
+                </button>
+              </div>
 
-          {/* Secondary Task */}
-          <div className="col-span-12 md:col-span-5 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/5 flex items-center justify-between group hover:bg-surface-container-low transition-all">
-            <div className="text-left">
-              <h4 className="font-bold text-on-surface">Update README.md</h4>
-              <p className="text-xs text-on-surface-variant">Add setup instructions for v2.4</p>
+              {/* Secondary Task */}
+              {remainingTasks[0] && (
+                <div className="col-span-12 md:col-span-5 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/5 flex items-center justify-between group hover:bg-surface-container-low transition-all">
+                  <div className="text-left">
+                    <h4 className="font-bold text-on-surface">{remainingTasks[0].title}</h4>
+                    {remainingTasks[0].description && (
+                      <p className="text-xs text-on-surface-variant">{remainingTasks[0].description}</p>
+                    )}
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant/40">drag_indicator</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="col-span-12 bg-surface-container-low p-8 rounded-2xl text-center">
+              <p className="text-on-surface-variant">All tasks completed! Create more from the dashboard.</p>
             </div>
-            <span className="material-symbols-outlined text-on-surface-variant/40">drag_indicator</span>
-          </div>
+          )}
 
-          {/* Small Task Meta Card */}
+          {/* Small Task Meta Cards */}
           <div className="col-span-6 md:col-span-3 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 flex flex-col items-center justify-center text-center">
             <span className="text-2xl font-mono font-bold text-secondary mb-1">12</span>
             <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-widest">Day Streak</span>
           </div>
           <div className="col-span-6 md:col-span-3 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 flex flex-col items-center justify-center text-center">
-            <span className="text-2xl font-mono font-bold text-tertiary mb-1">04</span>
-            <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-widest">Sessions Goal</span>
+            <span className="text-2xl font-mono font-bold text-tertiary mb-1">{String(tasks.length).padStart(2, "0")}</span>
+            <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-widest">Tasks Left</span>
           </div>
 
           {/* Quick Action Card */}
