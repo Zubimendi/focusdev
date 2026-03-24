@@ -5,6 +5,8 @@
     "baseUrl": ".",
     "paths": {
       "@focus/shared": ["../../packages/shared"]
-    }
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }
