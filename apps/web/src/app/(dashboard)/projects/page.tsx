@@ -70,7 +70,7 @@ export default function ProjectsPage() {
         </div>
         <div className="flex-1 flex flex-col gap-2 text-center lg:text-left">
           <h2 className="text-2xl font-bold text-on-surface tracking-tight">Engineering Analysis</h2>
-          <p className="text-slate-400 max-w-xl">You've spent <span className="text-indigo-400 font-bold">82%</span> of your focus time this week on the <span className="text-on-surface font-semibold underline decoration-indigo-500/50 underline-offset-4">focusdev</span> project. Consider checking your backlog on secondary projects.</p>
+          <p className="text-slate-400 max-w-xl">You&apos;ve spent <span className="text-indigo-400 font-bold">82%</span> of your focus time this week on the <span className="text-on-surface font-semibold underline decoration-indigo-500/50 underline-offset-4">focusdev</span> project. Consider checking your backlog on secondary projects.</p>
         </div>
         <button className="px-6 py-2 bg-on-secondary-container-fixed text-primary font-bold rounded-lg border border-primary/20 hover:bg-primary/5 transition-all text-sm uppercase tracking-wider">
           View Detail

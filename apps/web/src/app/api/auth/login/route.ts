@@ -34,7 +34,10 @@ export async function POST(req: Request) {
     }
 
     // Verify password
+    console.log("Attempting login for:", email);
     const isCorrectPassword = await bcrypt.compare(password, user.password);
+    console.log("Password match:", isCorrectPassword);
+    
     if (!isCorrectPassword) {
       return NextResponse.json(
         { error: "Invalid credentials" },
@@ -60,8 +63,10 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("Login error:", error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Login error:", error.message);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

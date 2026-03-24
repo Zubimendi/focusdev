@@ -66,7 +66,7 @@ export default function NewSessionPage() {
 
           <div className="bg-surface-container-low p-6 rounded-2xl border-l-4 border-primary shadow-xl">
             <p className="text-on-surface-variant text-sm leading-relaxed italic font-medium">
-              "The secret to deep work is not just focus, but the clarity of what you are focusing on."
+              &quot;The secret to deep work is not just focus, but the clarity of what you are focusing on.&quot;
             </p>
           </div>
         </div>

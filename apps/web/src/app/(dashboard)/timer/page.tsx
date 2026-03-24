@@ -7,7 +7,7 @@ export default function TimerPage() {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (isActive && seconds > 0) {
       interval = setInterval(() => {
         setSeconds((prev) => prev - 1);

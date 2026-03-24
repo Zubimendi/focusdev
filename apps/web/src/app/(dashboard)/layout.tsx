@@ -3,7 +3,15 @@
 import { useSession, signOut } from "next-auth/react";
 import { redirect, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import SideNavBar from "@/components/dashboard/sidebar";
+
+interface SessionUser {
+  id: string;
+  email: string;
+  name?: string;
+  image?: string;
+}
 
 export default function DashboardLayout({
   children,
@@ -11,6 +19,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
+  const user = session?.user as SessionUser | undefined;
 
   const pathname = usePathname();
   const isFocusedTask = pathname === "/new-session";
@@ -44,11 +53,11 @@ export default function DashboardLayout({
                 </Link>
                 <div className="flex items-center gap-3 ml-2">
                   <div className="ring-2 ring-primary/20 rounded-full p-0.5">
-                    <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
-                      {(session?.user as any)?.image ? (
-                        <img src={(session?.user as any).image} alt="User Avatar" className="w-full h-full object-cover" />
+                    <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden relative">
+                      {user?.image ? (
+                        <Image src={user.image} alt="User Avatar" fill className="object-cover" />
                       ) : (
-                        <span className="text-xs font-bold text-primary">{(session?.user as any)?.name?.[0] || 'U'}</span>
+                        <span className="text-xs font-bold text-primary">{user?.name?.[0] || 'U'}</span>
                       )}
                     </div>
                   </div>

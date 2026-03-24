@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 
 export default function SessionList() {
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<{ _id: string; notes?: string; startTime: string; endTime: string }[]>([]);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -11,8 +11,8 @@ export default function SessionList() {
         const res = await fetch("/api/focus");
         const data = await res.json();
         setSessions(data.sessions || []);
-      } catch (error) {
-        console.error("Failed to fetch sessions", error);
+      } catch (_error) {
+        console.error("Failed to fetch sessions", _error);
       }
     };
     fetchSessions();
@@ -22,7 +22,7 @@ export default function SessionList() {
     <aside className="w-full md:w-80 flex flex-col gap-6 shrink-0 order-2 md:order-1">
       <section className="bg-surface-container-low rounded-xl p-6 shadow-none flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold tracking-wider text-on-surface-variant uppercase">Today's Sessions</h2>
+          <h2 className="text-sm font-bold tracking-wider text-on-surface-variant uppercase">Today&apos;s Sessions</h2>
           <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">
             {sessions.length}/8
           </span>

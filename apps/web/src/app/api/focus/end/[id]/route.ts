@@ -32,7 +32,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     await session.save();
 
     return NextResponse.json({ session }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

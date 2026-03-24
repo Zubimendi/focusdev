@@ -90,7 +90,7 @@ export default function SupportPage() {
           <div className="bg-surface-container-low/60 backdrop-blur-2xl p-10 rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.3)] relative overflow-hidden border border-outline-variant/10">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 blur-[120px] rounded-full -z-10"></div>
             <h2 className="text-3xl font-black tracking-tighter mb-4">Still need help?</h2>
-            <p className="text-on-surface-variant font-medium mb-10 opacity-80">Send us a message and we'll get back to you within 24 hours.</p>
+            <p className="text-on-surface-variant font-medium mb-10 opacity-80">Send us a message and we&apos;ll get back to you within 24 hours.</p>
             <form onSubmit={handleSubmitTicket} className="space-y-6">
               <div className="space-y-2">
                 <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-outline-variant opacity-60">Subject</label>

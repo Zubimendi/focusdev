@@ -15,7 +15,7 @@ declare module "next-auth" {
 export type Role = "user" | "admin" | "moderator";
 
 export function authorize(roles: Role[]) {
-  return async (req: Request) => {
+  return async () => {
     const user = await getCurrentUser();
     
     if (!user) {

@@ -4,7 +4,7 @@ import { TaskModel } from "@focus/db/models";
 import { TaskSchema } from "@focus/shared";
 import { getCurrentUser } from "@/lib/auth-utils";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     await connectToDatabase();
     const tasks = await TaskModel.find({ userId: user.id }).sort({ createdAt: -1 });
     return NextResponse.json({ tasks }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ task }, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

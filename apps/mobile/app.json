@@ -1,5 +1,7 @@
 {
   "expo": {
+    "sdkVersion": "52.0.0",
+    "reactNativeDevTools": false,
     "name": "mobile",
     "slug": "mobile",
     "version": "1.0.0",
@@ -25,6 +27,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }

@@ -1,10 +1,7 @@
-import { getSession } from "@/lib/auth-utils";
 import FocusTimer from "@/components/dashboard/focus-timer";
-import SessionList from "@/components/dashboard/session-list";
 import DailyChecklist from "@/components/dashboard/daily-checklist";
 
 export default async function DashboardPage() {
-  const session = await getSession();
 
   return (
     <main className="max-w-[1920px] mx-auto px-8 py-12 flex flex-col lg:flex-row gap-8">

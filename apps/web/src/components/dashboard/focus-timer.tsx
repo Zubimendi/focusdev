@@ -9,7 +9,7 @@ export default function FocusTimer() {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
-    let interval: any;
+    let interval: NodeJS.Timeout;
     if (isActive && seconds > 0) {
       interval = setInterval(() => {
         setSeconds((prev) => prev - 1);

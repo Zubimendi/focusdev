@@ -19,20 +19,22 @@ export async function GET(req: Request) {
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.substring(7);
       try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
         await connectToDatabase();
         const user = await UserModel.findById(decoded.id).select("-password");
         if (user) {
           return NextResponse.json({ user }, { status: 200 });
         }
       } catch (err) {
-        // Invalid token
+        console.error("JWT verify failed:", err);
       }
     }
 
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  } catch (error: any) {
-    console.error("Me API error:", error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Me API error:", error.message);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

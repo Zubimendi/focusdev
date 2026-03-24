@@ -1,158 +1,171 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Switch } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Terminal, Download, Share2, Timer, Code, Calendar } from 'lucide-react-native';
+import { Terminal, Download, Share2, Timer, Code, Calendar, BarChart4, TrendingUp, Award, Star } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
+const heatmapData = [
+  [0,40,100,0,60,80,100],
+  [20,0,40,100,80,40,0],
+  [100,100,80,40,100,60,20],
+  [40,0,40,100,20,80,60],
+  [20,60,100,0,80,40,100],
+];
+
+const stats = [
+  { icon: ClockIcon, label: "Focus Hours", value: "38.5h", color: "#818cf8" },
+  { icon: TimerIcon, label: "Sessions", value: "24", color: "#818cf8" },
+  { icon: CodeIcon, label: "LeetCode Solved", value: "14", color: "#818cf8" },
+  { icon: FlameIcon, label: "Streak Days", value: "12", color: "#ffb95f", valueColor: "#ffb95f" },
+];
+
+const barData = [
+  { day: "M", height: "60%", color: "rgba(129, 140, 248, 0.4)" },
+  { day: "T", height: "80%", color: "#4edea3" },
+  { day: "W", height: "40%", color: "#818cf8" },
+  { day: "T", height: "70%", color: "#ffb4ab" },
+  { day: "F", height: "30%", color: "rgba(78, 222, 163, 0.6)" },
+  { day: "S", height: "20%", color: "rgba(129, 140, 248, 0.8)" },
+  { day: "S", height: "50%", color: "rgba(129, 140, 248, 0.3)" },
+];
+
+const allocation = [
+  { label: "Coding", pct: "70%", color: "#818cf8" },
+  { label: "Learning", pct: "20%", color: "#4edea3" },
+  { label: "Building", pct: "10%", color: "#ffb4ab" },
+];
+
+// Re-using icons with custom names for the stats mapping
+function ClockIcon(props: any) { return <Timer {...props} />; }
+function TimerIcon(props: any) { return <BarChart4 {...props} />; }
+function CodeIcon(props: any) { return <Code {...props} />; }
+function FlameIcon(props: any) { return <TrendingUp {...props} />; }
+
 export default function StatsScreen() {
-  const [showSessions, setShowSessions] = React.useState(true);
-  const [showCode, setShowCode] = React.useState(true);
-  const [showTime, setShowTime] = React.useState(false);
+  const [range, setRange] = useState<'week' | 'month'>('week');
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.header}>
-        <View style={styles.logoRow}>
-          <Terminal color="#818cf8" size={24} />
-          <Text style={styles.logoText}>MONOLITH</Text>
-        </View>
-        <View style={styles.avatarPlaceholder} />
-      </View>
-
+    <SafeAreaView style={styles.container}>
       <ScrollView 
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>Share Your Streak 🔥</Text>
-          <Text style={styles.subtitle}>Customize and share your progress with the community.</Text>
+        {/* Header & Toggle */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.label}>PERFORMANCE HUB</Text>
+            <Text style={styles.title}>Your Progress</Text>
+          </View>
+          <View style={styles.rangeToggle}>
+            <TouchableOpacity 
+              onPress={() => setRange('week')}
+              style={[styles.toggleBtn, range === 'week' && styles.toggleBtnActive]}
+            >
+              <Text style={[styles.toggleText, range === 'week' && styles.toggleTextActive]}>THIS WEEK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setRange('month')}
+              style={[styles.toggleBtn, range === 'month' && styles.toggleBtnActive]}
+            >
+              <Text style={[styles.toggleText, range === 'month' && styles.toggleTextActive]}>THIS MONTH</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Share Card Preview */}
-        <View style={styles.cardContainer}>
-          <LinearGradient
-            colors={['#1e1b4b', '#2f3445', '#0e1322']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.shareCard}
-          >
-            {/* Background Glows */}
-            <View style={styles.cardGlowTop} />
-            <View style={styles.cardGlowBottom} />
-
-            <View style={styles.cardTop}>
+        {/* Stat Bento Grid */}
+        <View style={styles.statGrid}>
+          {stats.map((s, i) => (
+            <View key={i} style={styles.statCard}>
+              <s.icon size={20} color={s.color} />
               <View>
-                <Text style={styles.cardInfoLabel}>ACTIVITY REPORT</Text>
-                <Text style={styles.cardMainTitle}>Day 12 <Text style={{color: '#ffb95f'}}>🔥</Text></Text>
-              </View>
-              <View style={styles.cardIcon}>
-                <Terminal color="white" size={20} fill="white" />
+                <Text style={styles.statLabel}>{s.label.toUpperCase()}</Text>
+                <Text style={[styles.statValue, s.valueColor ? { color: s.valueColor } : {}]}>{s.value}</Text>
               </View>
             </View>
-
-            <View style={styles.statsGrid}>
-              <View style={styles.statBox}>
-                <Text style={styles.statBoxLabel}>SESSIONS</Text>
-                <Text style={styles.statBoxValue}>42</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statBoxLabel}>FOCUS TIME</Text>
-                <Text style={styles.statBoxValue}>18h</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statBoxLabel}>LEETCODE</Text>
-                <Text style={[styles.statBoxValue, { color: '#4edea3' }]}>156</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statBoxLabel}>GOALS</Text>
-                <Text style={[styles.statBoxValue, { color: '#ffb95f' }]}>100%</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardFooter}>
-              <View style={styles.userInfo}>
-                <View style={styles.userAvatarContainer}>
-                  <View style={styles.userAvatar} />
-                </View>
-                <View>
-                  <Text style={styles.userName}>@tobe_dev</Text>
-                  <Text style={styles.userRole}>FocusDev Community</Text>
-                </View>
-              </View>
-              <Text style={styles.footerBrand}>MONOLITH</Text>
-            </View>
-          </LinearGradient>
+          ))}
         </View>
 
-        {/* Customization Controls */}
-        <View style={styles.controlsSection}>
-          <Text style={styles.sectionLabel}>COLOR THEME</Text>
-          <View style={styles.themeRow}>
-            <TouchableOpacity style={[styles.themeCircle, { backgroundColor: '#c0c1ff', borderWidth: 2, borderColor: '#fff' }]} />
-            <TouchableOpacity style={[styles.themeCircle, { backgroundColor: '#4edea3', opacity: 0.6 }]} />
-            <TouchableOpacity style={[styles.themeCircle, { backgroundColor: '#ffb4ab', opacity: 0.6 }]} />
-            <TouchableOpacity style={[styles.themeCircle, { backgroundColor: '#ffb95f', opacity: 0.6 }]} />
-            <TouchableOpacity style={[styles.themeCircle, { backgroundColor: '#64748b', opacity: 0.6 }]} />
-          </View>
-
-          <View style={styles.togglesContainer}>
-            <View style={styles.toggleItem}>
-              <View style={styles.toggleLeft}>
-                <Timer size={18} color="#c7c4d7" />
-                <Text style={styles.toggleText}>Show Sessions</Text>
-              </View>
-              <Switch 
-                value={showSessions} 
-                onValueChange={setShowSessions}
-                trackColor={{ false: '#2f3445', true: '#8083ff' }}
-                thumbColor="#fff"
-              />
-            </View>
-            <View style={styles.toggleItem}>
-              <View style={styles.toggleLeft}>
-                <Code size={18} color="#c7c4d7" />
-                <Text style={styles.toggleText}>Show LeetCode</Text>
-              </View>
-              <Switch 
-                value={showCode} 
-                onValueChange={setShowCode}
-                trackColor={{ false: '#2f3445', true: '#8083ff' }}
-                thumbColor="#fff"
-              />
-            </View>
-            <View style={styles.toggleItem}>
-              <View style={styles.toggleLeft}>
-                <Calendar size={18} color="rgba(199, 196, 215, 0.4)" />
-                <Text style={[styles.toggleText, { opacity: 0.6 }]}>Show Focus Time</Text>
-              </View>
-              <Switch 
-                value={showTime} 
-                onValueChange={setShowTime}
-                trackColor={{ false: '#2f3445', true: '#8083ff' }}
-                thumbColor="#fff"
-              />
+        {/* Activity Heatmap */}
+        <View style={styles.heatmapSection}>
+          <View style={styles.sectionTitleRow}>
+            <Text style={styles.sectionTitle}>Activity Density</Text>
+            <View style={styles.periodBadge}>
+              <Text style={styles.periodText}>LAST 30 DAYS</Text>
             </View>
           </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.heatmapContainer}>
+            <View style={styles.heatmap}>
+              {heatmapData.map((col, ci) => (
+                <View key={ci} style={styles.heatmapColumn}>
+                  {col.map((val, ri) => (
+                    <View 
+                      key={ri} 
+                      style={[
+                        styles.heatmapSquare, 
+                        { backgroundColor: val === 0 ? 'rgba(47, 52, 69, 0.6)' : `rgba(78, 222, 163, ${val/100})` }
+                      ]} 
+                    />
+                  ))}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
 
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity>
-              <LinearGradient
-                colors={['#c0c1ff', '#8083ff']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={styles.primaryAction}
-              >
-                <Download size={20} color="#1000a9" />
-                <Text style={styles.primaryActionText}>Save to Photos</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+        {/* Daily Intensity Bar Chart */}
+        <View style={styles.intensitySection}>
+          <Text style={styles.sectionTitle}>Daily Intensity</Text>
+          <View style={styles.chartContainer}>
+            {barData.map((b, i) => (
+              <View key={i} style={styles.barItem}>
+                <View style={[styles.bar, { height: b.height as any, backgroundColor: b.color }]} />
+                <Text style={styles.barLabel}>{b.day}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
 
-            <TouchableOpacity style={styles.secondaryAction}>
-              <Share2 size={20} color="#dee1f7" />
-              <Text style={styles.secondaryActionText}>Share to Twitter</Text>
-            </TouchableOpacity>
+        {/* Focus Allocation */}
+        <View style={styles.allocationSection}>
+          <Text style={styles.sectionTitle}>Focus Allocation</Text>
+          <View style={styles.allocationBar}>
+            {allocation.map((a, i) =>                <View key={i} style={[styles.allocationSegment, { width: a.pct as any, backgroundColor: a.color }]} />
+            )}
+          </View>
+          <View style={styles.allocationList}>
+            {allocation.map((a, i) => (
+              <View key={i} style={styles.allocationItem}>
+                <View style={styles.allocationLeft}>
+                  <View style={[styles.dot, { backgroundColor: a.color }]} />
+                  <Text style={styles.allocationText}>{a.label}</Text>
+                </View>
+                <Text style={styles.allocationPct}>{a.pct}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Highlights */}
+        <View style={styles.highlightsGrid}>
+          <View style={[styles.highlightCard, { backgroundColor: 'rgba(78, 222, 163, 0.1)' }]}>
+            <View style={styles.highlightIcon}>
+              <Award size={24} color="#4edea3" fill="rgba(78, 222, 163, 0.4)" />
+            </View>
+            <View>
+              <Text style={styles.highlightLabel}>BEST DAY</Text>
+              <Text style={styles.highlightValue}>Tuesday</Text>
+            </View>
+          </View>
+          <View style={[styles.highlightCard, { backgroundColor: 'rgba(129, 140, 248, 0.1)' }]}>
+            <View style={styles.highlightIcon}>
+              <Star size={24} color="#818cf8" fill="rgba(129, 140, 248, 0.4)" />
+            </View>
+            <View>
+              <Text style={styles.highlightLabel}>BEST WEEK</Text>
+              <Text style={styles.highlightValue}>Week 12</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -161,262 +174,69 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#0e1322',
-  },
-  header: {
-    height: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoText: {
-    fontSize: 20,
-    fontFamily: 'Inter_900Black',
-    color: '#818cf8',
-    letterSpacing: -1,
-  },
-  avatarPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#2f3445',
-    borderWidth: 1,
-    borderColor: 'rgba(70, 69, 84, 0.2)',
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 120,
-  },
-  titleSection: {
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontFamily: 'Inter_800ExtraBold',
-    color: '#dee1f7',
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: '#c7c4d7',
-    marginTop: 8,
-  },
-  cardContainer: {
-    marginBottom: 40,
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
-    elevation: 20,
-  },
-  shareCard: {
-    aspectRatio: 0.8,
-    padding: 32,
-    justifyContent: 'space-between',
-    position: 'relative',
-    borderWidth: 1,
-    borderColor: 'rgba(70, 69, 84, 0.4)',
-  },
-  cardGlowTop: {
-    position: 'absolute',
-    top: -100,
-    right: -100,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(192, 193, 255, 0.15)',
-  },
-  cardGlowBottom: {
-    position: 'absolute',
-    bottom: -100,
-    left: -100,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(78, 222, 163, 0.08)',
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  cardInfoLabel: {
-    fontSize: 10,
-    fontFamily: 'JetBrainsMono_700Bold',
-    color: '#c0c1ff',
-    letterSpacing: 2.5,
-  },
-  cardMainTitle: {
-    fontSize: 48,
-    fontFamily: 'Inter_900Black',
-    color: '#fff',
-    marginTop: 4,
-    letterSpacing: -1,
-  },
-  cardIcon: {
-    padding: 12,
-    backgroundColor: 'rgba(47, 52, 69, 0.7)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+  container: { flex: 1, backgroundColor: '#0e1322' },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 120 },
+  header: { 
     marginTop: 20,
     marginBottom: 40,
+    gap: 20
   },
-  statBox: {
-    width: (width - 48 - 64 - 12) / 2, // Accounting for padding and gap
-    padding: 20,
-    backgroundColor: 'rgba(47, 52, 69, 0.7)',
+  label: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 2 },
+  title: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#dee1f7', marginTop: 4 },
+  rangeToggle: { 
+    flexDirection: 'row', 
+    backgroundColor: '#161b2b', 
+    padding: 6, 
     borderRadius: 16,
+    alignSelf: 'flex-start'
+  },
+  toggleBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+  toggleBtnActive: { backgroundColor: '#232a3d' },
+  toggleText: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#64748b' },
+  toggleTextActive: { color: '#dee1f7' },
+
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  statCard: { 
+    width: (width - 48 - 12) / 2, 
+    backgroundColor: '#161b2b', 
+    padding: 24, 
+    borderRadius: 24, 
+    gap: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    gap: 4,
+    borderColor: 'rgba(70, 69, 84, 0.1)'
   },
-  statBoxLabel: {
-    fontSize: 9,
-    fontFamily: 'JetBrainsMono_700Bold',
-    color: '#c7c4d7',
-    letterSpacing: 0,
-  },
-  statBoxValue: {
-    fontSize: 22,
-    fontFamily: 'JetBrainsMono_700Bold',
-    color: '#fff',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  userAvatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    padding: 1,
-    backgroundColor: '#c0c1ff',
-  },
-  userAvatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-    backgroundColor: '#2f3445',
-  },
-  userName: {
-    fontSize: 14,
-    fontFamily: 'Inter_700Bold',
-    color: '#fff',
-  },
-  userRole: {
-    fontSize: 10,
-    fontFamily: 'JetBrainsMono_400Regular',
-    color: '#c7c4d7',
-    opacity: 0.7,
-  },
-  footerBrand: {
-    fontSize: 12,
-    fontFamily: 'Inter_900Black',
-    color: '#fff',
-    opacity: 0.4,
-    letterSpacing: -0.5,
-  },
-  controlsSection: {
-    gap: 16,
-  },
-  sectionLabel: {
-    fontSize: 10,
-    fontFamily: 'JetBrainsMono_700Bold',
-    color: '#c7c4d7',
-    letterSpacing: 2,
-  },
-  themeRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
-  },
-  themeCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  togglesContainer: {
-    backgroundColor: '#161b2b',
-    borderRadius: 20,
-    padding: 4,
-    gap: 0,
-  },
-  toggleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-  },
-  toggleLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  toggleText: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#dee1f7',
-  },
-  actionsContainer: {
-    marginTop: 32,
-    gap: 16,
-  },
-  primaryAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 18,
-    borderRadius: 16,
-  },
-  primaryActionText: {
-    fontSize: 16,
-    fontFamily: 'Inter_700Bold',
-    color: '#1000a9',
-  },
-  secondaryAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 18,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(70, 69, 84, 0.5)',
-  },
-  secondaryActionText: {
-    fontSize: 16,
-    fontFamily: 'Inter_700Bold',
-    color: '#dee1f7',
-  },
+  statLabel: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 1 },
+  statValue: { fontSize: 24, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7' },
+
+  heatmapSection: { marginTop: 40, backgroundColor: '#161b2b', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
+  sectionTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  sectionTitle: { fontSize: 18, fontFamily: 'Inter_900Black', color: '#dee1f7' },
+  periodBadge: { backgroundColor: '#232a3d', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  periodText: { fontSize: 9, fontFamily: 'JetBrainsMono_700Bold', color: '#64748b' },
+  heatmapContainer: { marginHorizontal: -4 },
+  heatmap: { flexDirection: 'row', gap: 6 },
+  heatmapColumn: { gap: 6 },
+  heatmapSquare: { width: 14, height: 14, borderRadius: 3 },
+
+  intensitySection: { marginTop: 24, backgroundColor: '#161b2b', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
+  chartContainer: { flexDirection: 'row', height: 160, alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 20 },
+  barItem: { flex: 1, alignItems: 'center', gap: 12 },
+  bar: { width: 12, borderRadius: 6 },
+  barLabel: { fontSize: 10, fontFamily: 'JetBrainsMono_700Bold', color: '#64748b' },
+
+  allocationSection: { marginTop: 24, backgroundColor: '#161b2b', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
+  allocationBar: { height: 12, borderRadius: 6, overflow: 'hidden', flexDirection: 'row', marginTop: 20, marginBottom: 24 },
+  allocationSegment: { height: '100%' },
+  allocationList: { gap: 16 },
+  allocationItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  allocationLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  allocationText: { fontSize: 14, fontFamily: 'Inter_600SemiBold', color: '#c7c4d7' },
+  allocationPct: { fontSize: 14, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7' },
+
+  highlightsGrid: { flexDirection: 'row', gap: 12, marginTop: 24 },
+  highlightCard: { flex: 1, padding: 20, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 16 },
+  highlightIcon: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255, 255, 255, 0.05)', alignItems: 'center', justifyContent: 'center' },
+  highlightLabel: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 1 },
+  highlightValue: { fontSize: 18, fontFamily: 'Inter_800ExtraBold', color: '#dee1f7', marginTop: 2 }
 });

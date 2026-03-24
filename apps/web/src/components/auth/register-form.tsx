@@ -53,6 +53,7 @@ export default function RegisterForm() {
         router.push("/login?registered=true");
       }
     } catch (err) {
+      console.error("Registration failed:", err);
       setError("An unexpected error occurred");
       toast.error("System error during registration. Please check your connection.");
     } finally {

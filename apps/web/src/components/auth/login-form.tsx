@@ -48,6 +48,7 @@ export default function LoginForm() {
         router.refresh();
       }
     } catch (err) {
+      console.error("Login failed:", err);
       setError("An unexpected error occurred");
       toast.error("System error during sign in. Please try again later.");
     } finally {
@@ -142,7 +143,7 @@ export default function LoginForm() {
 
         <div className="pt-8 text-center">
           <p className="text-sm text-slate-500 dark:text-on-surface-variant font-medium">
-            Don't have an account? 
+            Don&apos;t have an account? 
             <Link className="text-primary font-bold hover:underline ml-1" href="/register">Create an account</Link>
           </p>
         </div>
