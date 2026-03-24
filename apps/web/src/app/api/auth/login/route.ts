@@ -5,7 +5,10 @@ import { UserModel } from "@focus/db/models";
 import { LoginSchema } from "@focus/shared";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
 
 export async function POST(req: Request) {
   try {
@@ -21,11 +24,12 @@ export async function POST(req: Request) {
     }
 
     const { email, password } = validation.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
     await connectToDatabase();
 
     // Find user and include password
-    const user = await UserModel.findOne({ email }).select("+password");
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+password");
     if (!user || !user.password) {
       return NextResponse.json(
         { error: "Invalid credentials" },
@@ -34,9 +38,7 @@ export async function POST(req: Request) {
     }
 
     // Verify password
-    console.log("Attempting login for:", email);
     const isCorrectPassword = await bcrypt.compare(password, user.password);
-    console.log("Password match:", isCorrectPassword);
     
     if (!isCorrectPassword) {
       return NextResponse.json(
@@ -73,3 +75,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

@@ -18,32 +18,44 @@ export async function POST(req: Request) {
     }
 
     const { email, password, name } = validation.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
     await connectToDatabase();
 
     // Check if user already exists
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await UserModel.findOne({ email: normalizedEmail });
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
+        { error: "An account with this email already exists" },
+        { status: 409 }
       );
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = await UserModel.create({
-      email,
-      name,
-      password: hashedPassword,
-    });
+    // Create user — wrapped in try/catch for E11000 race condition failsafe
+    try {
+      const user = await UserModel.create({
+        email: normalizedEmail,
+        name,
+        password: hashedPassword,
+      });
 
-    return NextResponse.json(
-      { message: "User registered successfully", userId: user._id },
-      { status: 201 }
-    );
+      return NextResponse.json(
+        { message: "User registered successfully", userId: user._id },
+        { status: 201 }
+      );
+    } catch (createError: any) {
+      // MongoDB duplicate key error (race condition failsafe)
+      if (createError.code === 11000) {
+        return NextResponse.json(
+          { error: "An account with this email already exists" },
+          { status: 409 }
+        );
+      }
+      throw createError;
+    }
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Registration error:", error.message);

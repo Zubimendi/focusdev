@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/auth-store';
 import { taskService } from '../services/task';
@@ -59,6 +59,7 @@ export default function HomeScreen() {
         });
         setSessionId(res.session?._id || 'temp-id');
         setIsActive(true);
+        Keyboard.dismiss();
       } catch (error) {
         Alert.alert('Error', 'Failed to start focus session. Check your connection.');
         console.error('Failed to start session', error);
@@ -89,138 +90,153 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.logoRow}>
-          <Terminal color="#818cf8" size={24} />
-          <Text style={styles.headerTitle}>MONOLITH</Text>
-        </View>
-        <TouchableOpacity style={styles.iconBtn}>
-          <Bell color="#c7c4d7" size={20} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.welcomeSection}>
-          <View>
-            <Text style={styles.welcomeLabel}>GOOD MORNING, DEVELOPER</Text>
-            <Text style={styles.welcomeTitle}>{user?.name?.split(' ')[0] || 'Tobe'}</Text>
-          </View>
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakText}>12 DAY STREAK 🔥</Text>
-          </View>
-        </View>
-
-        {/* Timer Section */}
-        <View style={styles.timerContainer}>
-          <View style={styles.ringContainer}>
-            <Svg width={size} height={size} style={styles.svg}>
-              <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="rgba(129, 140, 248, 0.1)"
-                strokeWidth={strokeWidth}
-                fill="none"
-              />
-              <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="#818cf8"
-                strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                fill="none"
-                transform={`rotate(-90, ${size / 2}, ${size / 2})`}
-              />
-            </Svg>
-            <View style={styles.timeDisplay}>
-              <Text style={styles.timeText}>{formatTime(timerSeconds)}</Text>
-              <Text style={styles.sessionType}>{isActive ? 'FOCUSED ON...' : 'DEEP WORK'}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Task Input Section */}
-        <View style={styles.actionCard}>
-          <Text style={styles.inputLabel}>ACTIVE MISSION</Text>
-          <TextInput 
-            style={styles.input}
-            placeholder="What are you working on?"
-            placeholderTextColor="rgba(199, 196, 215, 0.4)"
-            value={taskTitle}
-            onChangeText={setTaskTitle}
-            editable={!isActive}
-          />
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagStrip}>
-            {tags.map((tag) => (
-              <TouchableOpacity key={tag} style={styles.tag} onPress={() => !isActive && setTaskTitle(tag)}>
-                <Text style={styles.tagText}>{tag.toUpperCase()}</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <View style={styles.header}>
+              <View style={styles.logoRow}>
+                <Terminal color="#818cf8" size={24} />
+                <Text style={styles.headerTitle}>MONOLITH</Text>
+              </View>
+              <TouchableOpacity style={styles.iconBtn}>
+                <Bell color="#c7c4d7" size={20} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
 
-          <View style={styles.buttonRow}>
-            <TouchableOpacity 
-              style={styles.startBtn}
-              onPress={handleToggleTimer}
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
             >
-              <LinearGradient
-                colors={isActive ? ['#ef4444', '#b91c1c'] : ['#818cf8', '#6366f1']}
-                style={styles.gradientBtn}
-              >
-                {isActive ? <Square size={20} color="#fff" fill="#fff" /> : <Play size={20} color="#fff" fill="#fff" />}
-                <Text style={styles.startBtnText}>{isActive ? 'STOP SESSION' : 'START SESSION'}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.skipBtn} onPress={() => setTimerSeconds(25 * 60)}>
-              <FastForward size={20} color="#c7c4d7" />
-              <Text style={styles.skipBtnText}>RESET</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              <View style={styles.welcomeSection}>
+                <View>
+                  <Text style={styles.welcomeLabel}>GOOD MORNING, DEVELOPER</Text>
+                  <Text style={styles.welcomeTitle}>{user?.name?.split(' ')[0] || 'Tobe'}</Text>
+                </View>
+                <View style={styles.streakBadge}>
+                  <Text style={styles.streakText}>12 DAY STREAK 🔥</Text>
+                </View>
+              </View>
 
-        {/* Recent Sessions */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Sessions</Text>
-          <TouchableOpacity onPress={fetchRecentData}>
-            <Text style={styles.viewAll}>Refresh</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.sessionsList}>
-          {recentTasks.length > 0 ? recentTasks.map((task) => (
-            <TouchableOpacity key={task.id} style={styles.sessionCard}>
-              <View style={styles.sessionInfo}>
-                <Text style={styles.sessionTitle}>{task.title}</Text>
-                <View style={styles.sessionMeta}>
-                  <View style={styles.tagSmall}>
-                    <Text style={styles.tagTextSmall}>{task.status.toUpperCase()}</Text>
-                  </View>
-                  <View style={styles.timeMeta}>
-                    <Clock size={12} color="#64748b" />
-                    <Text style={styles.metaText}>
-                      {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
+              {/* Timer Section */}
+              <View style={styles.timerContainer}>
+                <View style={styles.ringContainer}>
+                  <Svg width={size} height={size} style={styles.svg}>
+                    <Circle
+                      cx={size / 2}
+                      cy={size / 2}
+                      r={radius}
+                      stroke="rgba(129, 140, 248, 0.1)"
+                      strokeWidth={strokeWidth}
+                      fill="none"
+                    />
+                    <Circle
+                      cx={size / 2}
+                      cy={size / 2}
+                      r={radius}
+                      stroke="#818cf8"
+                      strokeWidth={strokeWidth}
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      fill="none"
+                      transform={`rotate(-90, ${size / 2}, ${size / 2})`}
+                    />
+                  </Svg>
+                  <View style={styles.timeDisplay}>
+                    <Text style={styles.timeText}>{formatTime(timerSeconds)}</Text>
+                    <Text style={styles.sessionType}>{isActive ? 'FOCUSED ON...' : 'DEEP WORK'}</Text>
                   </View>
                 </View>
               </View>
-              <TouchableOpacity style={styles.editBtn}>
-                <Text style={styles.editText}>EDIT</Text>
-              </TouchableOpacity>
-            </TouchableOpacity>
-          )) : (
-            <View style={styles.emptySessions}>
-              <Text style={styles.emptyText}>No recent sessions. Start focus!</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
+
+              {/* Task Input Section */}
+              <View style={styles.actionCard}>
+                <Text style={styles.inputLabel}>ACTIVE MISSION</Text>
+                <TextInput 
+                  style={styles.input}
+                  placeholder="What are you working on?"
+                  placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                  value={taskTitle}
+                  onChangeText={setTaskTitle}
+                  editable={!isActive}
+                />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagStrip}>
+                  {tags.map((tag) => (
+                    <TouchableOpacity key={tag} style={styles.tag} onPress={() => !isActive && setTaskTitle(tag)}>
+                      <Text style={styles.tagText}>{tag.toUpperCase()}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity 
+                    style={styles.startBtn}
+                    onPress={handleToggleTimer}
+                  >
+                    <LinearGradient
+                      colors={isActive ? ['#ef4444', '#b91c1c'] : ['#818cf8', '#6366f1']}
+                      style={styles.gradientBtn}
+                    >
+                      {isActive ? <Square size={20} color="#fff" fill="#fff" /> : <Play size={20} color="#fff" fill="#fff" />}
+                      <Text style={styles.startBtnText}>{isActive ? 'STOP SESSION' : 'START SESSION'}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity style={styles.skipBtn} onPress={() => {
+                    setTimerSeconds(25 * 60);
+                    setIsActive(false);
+                    setSessionId(null);
+                  }}>
+                    <FastForward size={20} color="#c7c4d7" />
+                    <Text style={styles.skipBtnText}>RESET</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Recent Sessions */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Recent Sessions</Text>
+                <TouchableOpacity onPress={fetchRecentData}>
+                  <Text style={styles.viewAll}>Refresh</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.sessionsList}>
+                {recentTasks.length > 0 ? recentTasks.map((task) => (
+                  <TouchableOpacity key={task.id} style={styles.sessionCard}>
+                    <View style={styles.sessionInfo}>
+                      <Text style={styles.sessionTitle}>{task.title}</Text>
+                      <View style={styles.sessionMeta}>
+                        <View style={styles.tagSmall}>
+                          <Text style={styles.tagTextSmall}>{task.status.toUpperCase()}</Text>
+                        </View>
+                        <View style={styles.timeMeta}>
+                          <Clock size={12} color="#64748b" />
+                          <Text style={styles.metaText}>
+                            {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                    <TouchableOpacity style={styles.editBtn}>
+                      <Text style={styles.editText}>EDIT</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                )) : (
+                  <View style={styles.emptySessions}>
+                    <Text style={styles.emptyText}>No recent sessions. Start focus!</Text>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -4,7 +4,10 @@ import { connectToDatabase } from "@focus/db";
 import { UserModel } from "@focus/db/models";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
 
 export async function GET(req: Request) {
   try {

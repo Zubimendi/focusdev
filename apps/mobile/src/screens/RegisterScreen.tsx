@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, StatusBar, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Mail, Lock, Terminal, ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
@@ -58,105 +58,108 @@ export default function RegisterScreen({ navigation }: any) {
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <ArrowLeft color="#c7c4d7" size={24} />
-            </TouchableOpacity>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <ArrowLeft color="#c7c4d7" size={24} />
+              </TouchableOpacity>
 
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Terminal color="#c0c1ff" size={32} strokeWidth={2.5} />
-              </View>
-              <Text style={styles.title}>Join the focus</Text>
-              <Text style={styles.subtitle}>Enter the monolith, master your engineering time.</Text>
-            </View>
-
-            <View style={styles.form}>
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>FULL NAME</Text>
-                <View style={styles.inputContainer}>
-                  <User color="#8083ff" size={18} style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Linus Torvalds"
-                    placeholderTextColor="rgba(199, 196, 215, 0.4)"
-                    value={name}
-                    onChangeText={setName}
-                  />
+              <View style={styles.header}>
+                <View style={styles.logoContainer}>
+                  <Terminal color="#c0c1ff" size={32} strokeWidth={2.5} />
                 </View>
+                <Text style={styles.title}>Join the focus</Text>
+                <Text style={styles.subtitle}>Enter the monolith, master your engineering time.</Text>
               </View>
 
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
-                <View style={styles.inputContainer}>
-                  <Mail color="#8083ff" size={18} style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="linus@linux.org"
-                    placeholderTextColor="rgba(199, 196, 215, 0.4)"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
+              <View style={styles.form}>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>FULL NAME</Text>
+                  <View style={styles.inputContainer}>
+                    <User color="#8083ff" size={18} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Linus Torvalds"
+                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      value={name}
+                      onChangeText={setName}
+                    />
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>PASSWORD</Text>
-                <View style={styles.inputContainer}>
-                  <Lock color="#8083ff" size={18} style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="••••••••"
-                    placeholderTextColor="rgba(199, 196, 215, 0.4)"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                  />
-                  <TouchableOpacity 
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeIcon}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+                  <View style={styles.inputContainer}>
+                    <Mail color="#8083ff" size={18} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="linus@linux.org"
+                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      value={email}
+                      onChangeText={setEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>PASSWORD</Text>
+                  <View style={styles.inputContainer}>
+                    <Lock color="#8083ff" size={18} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="••••••••"
+                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity 
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeIcon}
+                    >
+                      {showPassword ? (
+                        <EyeOff color="#c7c4d7" size={20} />
+                      ) : (
+                        <Eye color="#c7c4d7" size={20} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity 
+                  activeOpacity={0.85} 
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                  style={styles.buttonWrapper}
+                >
+                  <LinearGradient
+                    colors={['#c0c1ff', '#8083ff']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.button}
                   >
-                    {showPassword ? (
-                      <EyeOff color="#c7c4d7" size={20} />
-                    ) : (
-                      <Eye color="#c7c4d7" size={20} />
-                    )}
+                    <Text style={styles.buttonText}>
+                      {isLoading ? 'Creating Module...' : 'Initialize Account'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <View style={styles.footer}>
+                  <Text style={styles.footerText}>Already a member? </Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                    <Text style={styles.footerLink}>Login</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-
-              <TouchableOpacity 
-                activeOpacity={0.85} 
-                onPress={handleRegister}
-                disabled={isLoading}
-                style={styles.buttonWrapper}
-              >
-                <LinearGradient
-                  colors={['#c0c1ff', '#8083ff']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.button}
-                >
-                  <Text style={styles.buttonText}>
-                    {isLoading ? 'Creating Module...' : 'Initialize Account'}
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>Already a member? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                  <Text style={styles.footerLink}>Login</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>

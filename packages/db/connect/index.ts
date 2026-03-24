@@ -28,7 +28,9 @@ export async function connectToDatabase() {
       serverSelectionTimeoutMS: 5000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then(async (mongoose) => {
+      // Sync indexes to enforce unique constraints at DB level
+      await mongoose.connection.syncIndexes();
       return mongoose;
     });
   }
