@@ -16,7 +16,13 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // If it's a mobile request with a Bearer token, we handle it in the route handlers
+        const bearer = req.headers.get("authorization");
+        if (bearer?.startsWith("Bearer ")) return true;
+        // Otherwise use NextAuth session
+        return !!token;
+      },
     },
   }
 );

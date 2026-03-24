@@ -10,22 +10,27 @@ const getAuthHeaders = async () => {
 };
 
 export const focusService = {
-  async startSession(data: any): Promise<ApiResponse<any>> {
-    const validated = FocusSessionSchema.parse(data);
+  async startSession(data: any): Promise<{ session: any }> {
     const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_URL}/focus/start`, validated, { headers });
-    return response.data;
+    const response = await axios.post(`${API_URL}/focus/start`, data, { headers });
+    const session = { ...response.data.session, id: response.data.session._id };
+    return { session };
   },
 
-  async endSession(id: string, notes?: string): Promise<ApiResponse<any>> {
+  async endSession(id: string, notes: string): Promise<{ session: any }> {
     const headers = await getAuthHeaders();
     const response = await axios.post(`${API_URL}/focus/end/${id}`, { notes }, { headers });
-    return response.data;
+    const session = { ...response.data.session, id: response.data.session._id };
+    return { session };
   },
 
-  async getSessions(): Promise<ApiResponse<any[]>> {
+  async getSessions(): Promise<{ sessions: any[] }> {
     const headers = await getAuthHeaders();
     const response = await axios.get(`${API_URL}/focus/sessions`, { headers });
-    return response.data;
+    const sessions = (response.data.sessions || []).map((s: any) => ({
+      ...s,
+      id: s._id || s.id
+    }));
+    return { sessions };
   }
 };

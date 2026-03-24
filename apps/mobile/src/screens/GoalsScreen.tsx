@@ -54,8 +54,8 @@ export default function GoalsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.label}>CURRENT SPRINT</Text>
-            <Text style={styles.title}>Today's Goals 🔥</Text>
+            <Text style={styles.label}>DEVELOPER EXECUTION</Text>
+            <Text style={styles.title}>Checklists 🔥</Text>
           </View>
           <View style={styles.percentageContainer}>
             <Text style={styles.pctText}>{pct}%</Text>

@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
-import { Home, Timer, Target, BarChart4, User } from 'lucide-react-native';
+import { LayoutDashboard, Timer, ClipboardList, BarChart3, Folder } from 'lucide-react-native';
 import { useAuthStore } from '../store/auth-store';
 
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -14,6 +14,7 @@ import HomeScreen from '../screens/HomeScreen';
 import SessionsScreen from '../screens/SessionsScreen';
 import GoalsScreen from '../screens/GoalsScreen';
 import StatsScreen from '../screens/StatsScreen';
+import ProjectsScreen from '../screens/ProjectsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createStackNavigator();
@@ -51,19 +52,19 @@ function MainTabs() {
         },
         tabBarIcon: ({ color, size, focused }) => {
           const iconSize = focused ? size * 1.1 : size;
-          if (route.name === 'Home') return <Home size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Sessions') return <Timer size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Goals') return <Target size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Stats') return <BarChart4 size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Profile') return <User size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Home') return <LayoutDashboard size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Checklists') return <ClipboardList size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Timer') return <Timer size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Stats') return <BarChart3 size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Projects') return <Folder size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Sessions" component={SessionsScreen} />
-      <Tab.Screen name="Goals" component={GoalsScreen} />
+      <Tab.Screen name="Checklists" component={GoalsScreen} />
+      <Tab.Screen name="Timer" component={SessionsScreen} />
       <Tab.Screen name="Stats" component={StatsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Projects" component={ProjectsScreen} />
     </Tab.Navigator>
   );
 }

@@ -8,9 +8,10 @@ export default function SideNavBar() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: "history", active: pathname === "/dashboard" },
+    { name: "Dashboard", href: "/dashboard", icon: "dashboard", active: pathname === "/dashboard" },
     { name: "Checklists", href: "/checklists", icon: "fact_check", active: pathname === "/checklists" },
-    { name: "Focus Timer", href: "/timer", icon: "timer", active: pathname === "/timer", fill: true },
+    { name: "Timer", href: "/timer", icon: "timer", active: pathname === "/timer", fill: true },
+    { name: "Stats", href: "/stats", icon: "bar_chart", active: pathname === "/stats" },
     { name: "Projects", href: "/projects", icon: "folder_open", active: pathname === "/projects" },
   ];
 

@@ -17,8 +17,14 @@ const TaskSchema = new Schema<ITaskDocument>(
     priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },
     dueDate: { type: Date },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    projectId: { type: Schema.Types.ObjectId, ref: "Project" },
+    goalId: { type: Schema.Types.ObjectId, ref: "Goal" },
   },
   { timestamps: true }
 );
+
+TaskSchema.index({ userId: 1 });
+TaskSchema.index({ projectId: 1 });
+TaskSchema.index({ goalId: 1 });
 
 export const TaskModel = models.Task || model<ITaskDocument>("Task", TaskSchema);

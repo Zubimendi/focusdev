@@ -5,11 +5,13 @@ import { useAuthStore } from '../store/auth-store';
 import { taskService } from '../services/task';
 import { focusService } from '../services/focus';
 import { type Task } from '@focus/shared';
-import { Terminal, Bell, Play, Square, FastForward, Clock } from 'lucide-react-native';
+import { Terminal, Bell, Play, Square, FastForward, Clock, User as UserIcon } from 'lucide-react-native';
 import { Svg, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
+  const navigation = useNavigation<any>();
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [timerSeconds, setTimerSeconds] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
@@ -102,9 +104,17 @@ export default function HomeScreen() {
                 <Terminal color="#818cf8" size={24} />
                 <Text style={styles.headerTitle}>MONOLITH</Text>
               </View>
-              <TouchableOpacity style={styles.iconBtn}>
-                <Bell color="#c7c4d7" size={20} />
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity style={styles.iconBtn}>
+                  <Bell color="#c7c4d7" size={20} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.iconBtn}
+                  onPress={() => navigation.navigate('Profile')}
+                >
+                  <UserIcon color="#c7c4d7" size={20} />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <ScrollView 

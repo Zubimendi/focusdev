@@ -10,26 +10,32 @@ const getAuthHeaders = async () => {
 };
 
 export const taskService = {
-  async getTasks(): Promise<ApiResponse<any[]>> {
+  async getTasks(): Promise<{ tasks: any[] }> {
     const headers = await getAuthHeaders();
     const response = await axios.get(`${API_URL}/tasks`, { headers });
-    return response.data;
+    const tasks = (response.data.tasks || []).map((t: any) => ({
+      ...t,
+      id: t._id || t.id
+    }));
+    return { tasks };
   },
 
-  async createTask(data: any): Promise<ApiResponse<any>> {
+  async createTask(data: any): Promise<{ task: any }> {
     const validated = TaskSchema.parse(data);
     const headers = await getAuthHeaders();
     const response = await axios.post(`${API_URL}/tasks`, validated, { headers });
-    return response.data;
+    const task = { ...response.data.task, id: response.data.task._id };
+    return { task };
   },
 
-  async updateTask(id: string, data: any): Promise<ApiResponse<any>> {
+  async updateTask(id: string, data: any): Promise<{ task: any }> {
     const headers = await getAuthHeaders();
     const response = await axios.patch(`${API_URL}/tasks/${id}`, data, { headers });
-    return response.data;
+    const task = { ...response.data.task, id: response.data.task._id };
+    return { task };
   },
 
-  async deleteTask(id: string): Promise<ApiResponse<any>> {
+  async deleteTask(id: string): Promise<any> {
     const headers = await getAuthHeaders();
     const response = await axios.delete(`${API_URL}/tasks/${id}`, { headers });
     return response.data;
