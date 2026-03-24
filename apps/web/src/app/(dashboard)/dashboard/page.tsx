@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import FocusTimer from "@/components/dashboard/focus-timer";
 import DailyChecklist from "@/components/dashboard/daily-checklist";
 import { toast } from "sonner";
+import { calculateStreak } from "@/lib/streak";
 
 interface DashboardStats {
   sessionsToday: number;
@@ -17,6 +18,7 @@ export default function DashboardPage() {
     focusMinutesToday: 0,
     taskTitle: "",
   });
+  const [allSessions, setAllSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,22 +29,23 @@ export default function DashboardPage() {
           fetch("/api/tasks"),
         ]);
 
-        if (sessionsRes.ok) {
-          const sessionsData = await sessionsRes.json();
-          const sessions = sessionsData.sessions || [];
-          const today = new Date().toDateString();
-          const todaySessions = sessions.filter((s: any) => 
-            new Date(s.startTime).toDateString() === today
-          );
-          const todayMinutes = todaySessions.reduce(
-            (sum: number, s: any) => sum + (s.duration || 0), 0
-          );
-          setStats(prev => ({
-            ...prev,
-            sessionsToday: todaySessions.length,
-            focusMinutesToday: todayMinutes,
-          }));
-        }
+          if (sessionsRes.ok) {
+            const sessionsData = await sessionsRes.json();
+            const sessions = sessionsData.sessions || [];
+            setAllSessions(sessions);
+            const today = new Date().toDateString();
+            const todaySessions = sessions.filter((s: any) => 
+              new Date(s.startTime).toDateString() === today
+            );
+            const todayMinutes = todaySessions.reduce(
+              (sum: number, s: any) => sum + (s.duration || 0), 0
+            );
+            setStats(prev => ({
+              ...prev,
+              sessionsToday: todaySessions.length,
+              focusMinutesToday: todayMinutes,
+            }));
+          }
       } catch (err) {
         console.error("Failed to fetch dashboard stats", err);
       } finally {
@@ -156,8 +159,14 @@ export default function DashboardPage() {
           <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
             <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Current Streak</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-mono font-bold text-primary">12 days</span>
-              <span className="text-lg">🔥</span>
+              {loading ? (
+                <div className="h-9 w-16 bg-surface-container-high rounded animate-pulse" />
+              ) : (
+                <>
+                  <span className="text-3xl font-mono font-bold text-primary">{calculateStreak(allSessions)} days</span>
+                  <span className="text-lg">🔥</span>
+                </>
+              )}
             </div>
           </div>
         </section>

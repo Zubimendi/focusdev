@@ -7,33 +7,70 @@ interface Task {
   _id: string;
   title: string;
   description?: string;
-  status: string;
-  priority: string;
+  status: "todo" | "in_progress" | "done";
+  priority: "low" | "medium" | "high";
+  projectId?: string;
+  goalId?: string;
   createdAt: string;
+}
+
+interface Project {
+  _id: string;
+  name: string;
+  color: string;
+}
+
+interface Goal {
+  _id: string;
+  title: string;
+  status: string;
 }
 
 export default function ChecklistsPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
+  
+  // Creation state
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    priority: "medium" as const,
+    projectId: "",
+    goalId: ""
+  });
 
-  const fetchTasks = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const res = await fetch("/api/tasks");
-      if (res.ok) {
-        const data = await res.json();
+      const [tRes, pRes, gRes] = await Promise.all([
+        fetch("/api/tasks"),
+        fetch("/api/projects"),
+        fetch("/api/goals")
+      ]);
+
+      if (tRes.ok) {
+        const data = await tRes.json();
         setTasks(data.tasks || []);
       }
+      if (pRes.ok) {
+        const data = await pRes.json();
+        setProjects(data.projects || []);
+      }
+      if (gRes.ok) {
+        const data = await gRes.json();
+        setGoals(data.goals || []);
+      }
     } catch (err) {
-      console.error("Failed to fetch tasks", err);
+      console.error("Failed to fetch data", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    fetchData();
+  }, [fetchData]);
 
   const toggleTask = async (task: Task) => {
     const newStatus = task.status === "done" ? "todo" : "done";
@@ -55,18 +92,18 @@ export default function ChecklistsPage() {
   };
 
   const createTask = async () => {
-    if (!newTaskTitle.trim()) return;
+    if (!newTask.title.trim()) return;
     try {
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTaskTitle }),
+        body: JSON.stringify(newTask),
       });
       if (res.ok) {
         const data = await res.json();
         setTasks(prev => [data.task, ...prev]);
-        setNewTaskTitle("");
-        toast.success(`Task "${newTaskTitle}" added!`);
+        setNewTask({ title: "", description: "", priority: "medium", projectId: "", goalId: "" });
+        toast.success(`Objective "${newTask.title}" initiated!`);
       }
     } catch {
       toast.error("Failed to create task");
@@ -134,14 +171,102 @@ export default function ChecklistsPage() {
 
       {/* Bento Grid Layout for Checklist Sections */}
       <div className="grid grid-cols-12 gap-8">
+        {/* Weekly Goals Sidebar (Matching Mobile) */}
+        <section className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <div className="bg-surface-container-low p-8 rounded-xl shadow-xl border-l-4 border-primary">
+            <div className="flex items-center gap-4 mb-6">
+              <span className="material-symbols-outlined text-primary">target</span>
+              <h3 className="text-xl font-bold text-on-surface">Weekly Focus</h3>
+            </div>
+            
+            <div className="space-y-4">
+              {goals.length === 0 ? (
+                <p className="text-sm text-outline italic">No active goals. Set direction in the Projects hub.</p>
+              ) : (
+                goals.map(goal => (
+                  <div key={goal._id} className="p-4 bg-surface-container rounded-lg border border-outline-variant/20">
+                    <p className="text-sm font-bold text-on-surface mb-2">{goal.title}</p>
+                    <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                      <div className="h-full bg-primary w-[30%]"></div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Quick Add Form */}
+          <div className="bg-surface-container-low p-8 rounded-xl shadow-xl">
+             <h3 className="text-xl font-bold text-on-surface mb-6">Initiate Task</h3>
+             <div className="space-y-4">
+                <input
+                  className="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface placeholder:text-outline focus:border-primary/50 focus:outline-none transition-all"
+                  placeholder="Task Title"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                />
+                
+                <textarea
+                  className="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface placeholder:text-outline focus:border-primary/50 focus:outline-none transition-all text-sm h-24 resize-none"
+                  placeholder="Details/Sub-tasks..."
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                />
+
+                <div>
+                  <label className="text-[10px] font-bold text-outline tracking-widest block mb-2">PRIORITY</label>
+                  <div className="flex gap-2">
+                    {(["low", "medium", "high"] as const).map(p => (
+                      <button
+                        key={p}
+                        onClick={() => setNewTask({ ...newTask, priority: p })}
+                        className={`flex-1 py-2 text-[10px] font-bold rounded-md border transition-all ${
+                          newTask.priority === p 
+                          ? "bg-primary/20 border-primary text-primary" 
+                          : "bg-surface-container border-outline-variant/30 text-outline hover:border-primary/30"
+                        }`}
+                      >
+                        {p.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {projects.length > 0 && (
+                  <div>
+                    <label className="text-[10px] font-bold text-outline tracking-widest block mb-2">PROJECT</label>
+                    <select
+                      className="w-full px-4 py-2 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface text-sm focus:border-primary/50 focus:outline-none appearance-none"
+                      value={newTask.projectId}
+                      onChange={(e) => setNewTask({ ...newTask, projectId: e.target.value })}
+                    >
+                      <option value="">No Project</option>
+                      {projects.map(p => (
+                        <option key={p._id} value={p._id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <button 
+                  onClick={createTask}
+                  disabled={!newTask.title.trim()}
+                  className="w-full py-4 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:shadow-none mt-4"
+                >
+                  DEPLOY OBJECTIVE
+                </button>
+             </div>
+          </div>
+        </section>
+
         {/* Active Tasks Section */}
-        <section className="col-span-12 lg:col-span-7 bg-surface-container-low p-8 rounded-xl shadow-xl relative overflow-hidden">
+        <section className="col-span-12 lg:col-span-8 bg-surface-container-low p-8 rounded-xl shadow-xl relative overflow-hidden">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <span className="material-symbols-outlined text-primary">wb_sunny</span>
               </div>
-              <h3 className="text-2xl font-bold tracking-tight text-on-surface">Active Tasks</h3>
+              <h3 className="text-2xl font-bold tracking-tight text-on-surface">Active Missions</h3>
               <span className="text-xs font-mono text-outline bg-surface-container-high px-2 py-1 rounded-full">{todoTasks.length + inProgressTasks.length} remaining</span>
             </div>
           </div>
@@ -151,49 +276,37 @@ export default function ChecklistsPage() {
               [1, 2, 3].map(i => (
                 <div key={i} className="h-16 bg-surface-container rounded-lg animate-pulse" />
               ))
-            ) : (
+            ) : [...inProgressTasks, ...todoTasks].length > 0 ? (
               [...inProgressTasks, ...todoTasks].map((task) => {
                 const style = getPriorityStyle(task.priority);
                 return (
-                  <div key={task._id} className={`group flex items-center gap-4 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-all border-l-4 translate-x-0 hover:translate-x-2 border-transparent`}>
-                    <div className="relative w-6 h-6 flex-shrink-0">
-                      <button 
-                        onClick={() => toggleTask(task)}
-                        className="w-6 h-6 border-2 border-outline rounded flex items-center justify-center hover:bg-secondary hover:border-secondary transition-colors"
-                      >
-                      </button>
+                  <div key={task._id} className={`group flex items-center gap-4 p-5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all border-l-4 translate-x-0 hover:translate-x-2 border-transparent shadow-sm hover:shadow-md`}>
+                    <button 
+                      onClick={() => toggleTask(task)}
+                      className="w-6 h-6 border-2 border-outline rounded-full flex items-center justify-center hover:bg-secondary hover:border-secondary transition-all"
+                    >
+                    </button>
+                    <div className="flex-grow">
+                      <p className="font-bold text-on-surface">{task.title}</p>
+                      {task.description && <p className="text-xs text-outline line-clamp-1 mt-0.5">{task.description}</p>}
                     </div>
-                    <span className="flex-grow font-medium text-on-surface">{task.title}</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${style.bg} ${style.color}`}>
                       {task.priority}
                     </span>
                     <button 
                       onClick={() => deleteTask(task)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-error hover:text-error/80"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-error hover:text-error/80 px-2"
                     >
-                      <span className="material-symbols-outlined text-sm">delete</span>
+                      <span className="material-symbols-outlined text-xl">delete</span>
                     </button>
                   </div>
                 );
               })
+            ) : (
+              <div className="py-20 text-center border-2 border-dashed border-outline-variant/30 rounded-xl">
+                <p className="text-outline font-medium">All systems clear. Initiate a new mission.</p>
+              </div>
             )}
-            
-            {/* Add Task Input */}
-            <div className="flex gap-3 mt-4">
-              <input
-                className="flex-1 px-4 py-3 rounded-lg bg-surface-container border-2 border-dashed border-outline-variant/30 text-on-surface placeholder:text-outline focus:border-primary/50 focus:outline-none transition-all"
-                placeholder="Add a new task..."
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && createTask()}
-              />
-              <button 
-                onClick={createTask}
-                className="px-4 py-3 rounded-lg bg-primary text-on-primary font-bold hover:bg-primary/90 transition-colors"
-              >
-                <span className="material-symbols-outlined">add</span>
-              </button>
-            </div>
           </div>
         </section>
 
@@ -292,7 +405,7 @@ export default function ChecklistsPage() {
       {/* Contextual FAB */}
       <button 
         onClick={() => {
-          const input = document.querySelector<HTMLInputElement>('input[placeholder="Add a new task..."]');
+          const input = document.querySelector<HTMLInputElement>('input[placeholder="Task Title"]');
           input?.focus();
         }}
         className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-primary-container text-on-primary-container shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-50"

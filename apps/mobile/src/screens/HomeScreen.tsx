@@ -9,14 +9,17 @@ import { Terminal, Bell, Play, Square, FastForward, Clock, User as UserIcon } fr
 import { Svg, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { calculateStreak } from '../utils/streak';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
+  const [allSessions, setAllSessions] = useState<any[]>([]);
   const [timerSeconds, setTimerSeconds] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
+  const [loading, setLoading] = useState(true);
   const user = useAuthStore((state: any) => state.user);
 
   // Constants for the SVG ring
@@ -27,18 +30,25 @@ export default function HomeScreen() {
   const progress = timerSeconds / (25 * 60);
   const strokeDashoffset = circumference - (1 - progress) * circumference;
 
-  const fetchRecentData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const res: any = await taskService.getTasks();
-      setRecentTasks(res.tasks?.slice(0, 3) || []);
+      setLoading(true);
+      const [tRes, sRes] = await Promise.all([
+        taskService.getTasks(),
+        focusService.getSessions()
+      ]);
+      setRecentTasks(tRes.tasks?.slice(0, 3) || []);
+      setAllSessions(sRes.sessions || []);
     } catch (error) {
-      console.error('Failed to fetch tasks', error);
+      console.error('Failed to fetch data', error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchRecentData();
-  }, [fetchRecentData]);
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     let interval: any;
@@ -47,7 +57,7 @@ export default function HomeScreen() {
         setTimerSeconds((prev) => prev - 1);
       }, 1000);
     } else if (timerSeconds === 0 && isActive) {
-      handleToggleTimer(); // Auto-stop when time is up
+      handleToggleTimer(); 
     }
     return () => clearInterval(interval);
   }, [isActive, timerSeconds]);
@@ -63,8 +73,7 @@ export default function HomeScreen() {
         setIsActive(true);
         Keyboard.dismiss();
       } catch (error) {
-        Alert.alert('Error', 'Failed to start focus session. Check your connection.');
-        console.error('Failed to start session', error);
+        Alert.alert('Error', 'Failed to start focus session.');
       }
     } else {
       try {
@@ -74,10 +83,9 @@ export default function HomeScreen() {
         setIsActive(false);
         setTimerSeconds(25 * 60);
         setSessionId(null);
-        fetchRecentData();
+        fetchData();
       } catch (error) {
         Alert.alert('Error', 'Failed to end session properly.');
-        console.error('Failed to end session', error);
       }
     }
   };
@@ -95,7 +103,6 @@ export default function HomeScreen() {
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
@@ -125,14 +132,13 @@ export default function HomeScreen() {
               <View style={styles.welcomeSection}>
                 <View>
                   <Text style={styles.welcomeLabel}>GOOD MORNING, DEVELOPER</Text>
-                  <Text style={styles.welcomeTitle}>{user?.name?.split(' ')[0] || 'Tobe'}</Text>
+                  <Text style={styles.welcomeTitle}>{user?.name?.split(' ')[0] || 'Member'}</Text>
                 </View>
                 <View style={styles.streakBadge}>
-                  <Text style={styles.streakText}>12 DAY STREAK 🔥</Text>
+                  <Text style={styles.streakText}>{calculateStreak(allSessions)} DAY STREAK 🔥</Text>
                 </View>
               </View>
 
-              {/* Timer Section */}
               <View style={styles.timerContainer}>
                 <View style={styles.ringContainer}>
                   <Svg width={size} height={size} style={styles.svg}>
@@ -164,7 +170,6 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* Task Input Section */}
               <View style={styles.actionCard}>
                 <Text style={styles.inputLabel}>ACTIVE MISSION</Text>
                 <TextInput 
@@ -208,10 +213,9 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* Recent Sessions */}
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Recent Sessions</Text>
-                <TouchableOpacity onPress={fetchRecentData}>
+                <TouchableOpacity onPress={fetchData}>
                   <Text style={styles.viewAll}>Refresh</Text>
                 </TouchableOpacity>
               </View>
@@ -282,102 +286,29 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 185, 95, 0.2)'
   },
   streakText: { fontSize: 10, fontFamily: 'Inter_700Bold', color: '#ffb95f' },
-  
-  timerContainer: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginVertical: 20 
-  },
-  ringContainer: { 
-    width: 260, 
-    height: 260, 
-    alignItems: 'center', 
-    justifyContent: 'center' 
-  },
+  timerContainer: { alignItems: 'center', justifyContent: 'center', marginVertical: 20 },
+  ringContainer: { width: 260, height: 260, alignItems: 'center', justifyContent: 'center' },
   svg: { position: 'absolute' },
   timeDisplay: { alignItems: 'center' },
-  timeText: { 
-    fontSize: 54, 
-    fontFamily: 'JetBrainsMono_700Bold', 
-    color: '#dee1f7',
-    letterSpacing: -2
-  },
-  sessionType: { 
-    fontSize: 10, 
-    fontFamily: 'Inter_800ExtraBold', 
-    color: '#818cf8', 
-    letterSpacing: 4,
-    marginTop: 4
-  },
-
-  actionCard: { 
-    backgroundColor: '#161b2b', 
-    borderRadius: 24, 
-    padding: 24, 
-    marginTop: 40,
-    borderWidth: 1,
-    borderColor: 'rgba(70, 69, 84, 0.2)'
-  },
+  timeText: { fontSize: 54, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7', letterSpacing: -2 },
+  sessionType: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#818cf8', letterSpacing: 4, marginTop: 4 },
+  actionCard: { backgroundColor: '#161b2b', borderRadius: 24, padding: 24, marginTop: 40, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.2)' },
   inputLabel: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 2, marginBottom: 16 },
-  input: { 
-    fontSize: 18, 
-    fontFamily: 'Inter_600SemiBold', 
-    color: '#dee1f7', 
-    marginBottom: 20 
-  },
+  input: { fontSize: 18, fontFamily: 'Inter_600SemiBold', color: '#dee1f7', marginBottom: 20 },
   tagStrip: { marginBottom: 24 },
-  tag: { 
-    backgroundColor: '#232a3d', 
-    paddingHorizontal: 12, 
-    paddingVertical: 6, 
-    borderRadius: 20, 
-    marginRight: 8 
-  },
+  tag: { backgroundColor: '#232a3d', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
   tagText: { fontSize: 10, fontFamily: 'Inter_700Bold', color: '#c7c4d7' },
-  
   buttonRow: { flexDirection: 'row', gap: 12 },
   startBtn: { flex: 2, height: 56, borderRadius: 16, overflow: 'hidden' },
-  gradientBtn: { 
-    flex: 1, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: 8 
-  },
+  gradientBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', gap: 8 },
   startBtnText: { color: '#fff', fontSize: 14, fontFamily: 'Inter_800ExtraBold' },
-  skipBtn: { 
-    flex: 1, 
-    height: 56, 
-    backgroundColor: '#232a3d', 
-    borderRadius: 16, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: 8 
-  },
+  skipBtn: { flex: 1, height: 56, backgroundColor: '#232a3d', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   skipBtnText: { color: '#c7c4d7', fontSize: 10, fontFamily: 'Inter_800ExtraBold' },
-
-  sectionHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'flex-end', 
-    marginTop: 48, 
-    marginBottom: 20 
-  },
+  sectionHeader: { flexDirection: 'row', justifySelf: 'space-between', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 48, marginBottom: 20 },
   sectionTitle: { fontSize: 20, fontFamily: 'Inter_800ExtraBold', color: '#dee1f7' },
   viewAll: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: '#818cf8' },
-  
   sessionsList: { gap: 12 },
-  sessionCard: { 
-    backgroundColor: '#161b2b', 
-    padding: 20, 
-    borderRadius: 20, 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(70, 69, 84, 0.1)'
-  },
+  sessionCard: { backgroundColor: '#161b2b', padding: 20, borderRadius: 20, flexDirection: 'row', justifySelf: 'space-between', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
   sessionInfo: { gap: 8 },
   sessionTitle: { fontSize: 16, fontFamily: 'Inter_700Bold', color: '#dee1f7' },
   sessionMeta: { flexDirection: 'row', alignItems: 'center', gap: 12 },
