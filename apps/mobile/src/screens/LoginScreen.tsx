@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Dimensions, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { Mail, Lock, Terminal, ArrowLeft } from 'lucide-react-native';
+import { Mail, Lock, Terminal, ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
+import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../store/auth-store';
 
 const { width } = Dimensions.get('window');
@@ -11,18 +11,37 @@ const { width } = Dimensions.get('window');
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const login = useAuthStore((state: any) => state.login);
   const isLoading = useAuthStore((state: any) => state.isLoading);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Toast.show({
+        type: 'error',
+        text1: 'Authentication Error',
+        text2: 'Please enter your credentials to proceed.'
+      });
       return;
     }
+
     try {
       await login({ email, password });
+      Toast.show({
+        type: 'success',
+        text1: 'Welcome Home',
+        text2: 'Session authenticated successfully.'
+      });
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
+      let message = 'Verification failed. Please check your credentials.';
+      if (error.message.includes('401')) message = 'Invalid email or password.';
+      if (error.message.includes('network')) message = 'Network anomaly detected. Check your connection.';
+      
+      Toast.show({
+        type: 'error',
+        text1: 'Auth Core Failure',
+        text2: message
+      });
     }
   };
 
@@ -30,7 +49,6 @@ export default function LoginScreen({ navigation }: any) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* Background Glows */}
       <View style={styles.glowTopRight} />
       <View style={styles.glowBottomLeft} />
 
@@ -40,7 +58,6 @@ export default function LoginScreen({ navigation }: any) {
           style={{ flex: 1 }}
         >
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* Back Button */}
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.goBack()}
@@ -48,7 +65,6 @@ export default function LoginScreen({ navigation }: any) {
               <ArrowLeft color="#c7c4d7" size={24} />
             </TouchableOpacity>
 
-            {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
                 <Terminal color="#c0c1ff" size={32} strokeWidth={2.5} />
@@ -57,7 +73,6 @@ export default function LoginScreen({ navigation }: any) {
               <Text style={styles.subtitle}>Resume your deep work sessions.</Text>
             </View>
 
-            {/* Form */}
             <View style={styles.form}>
               <View style={styles.inputWrapper}>
                 <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
@@ -85,8 +100,18 @@ export default function LoginScreen({ navigation }: any) {
                     placeholderTextColor="rgba(199, 196, 215, 0.4)"
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                   />
+                  <TouchableOpacity 
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeIcon}
+                  >
+                    {showPassword ? (
+                      <EyeOff color="#c7c4d7" size={20} />
+                    ) : (
+                      <Eye color="#c7c4d7" size={20} />
+                    )}
+                  </TouchableOpacity>
                 </View>
                 <TouchableOpacity style={styles.forgotPassword}>
                   <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -227,6 +252,10 @@ const styles = StyleSheet.create({
     color: '#dee1f7',
     fontSize: 16,
     fontFamily: 'Inter_500Medium',
+  },
+  eyeIcon: {
+    padding: 8,
+    marginRight: -4,
   },
   forgotPassword: {
     alignSelf: 'flex-end',

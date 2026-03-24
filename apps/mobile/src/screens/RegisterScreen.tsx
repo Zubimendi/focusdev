@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Dimensions, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { User, Mail, Lock, Terminal, ArrowLeft } from 'lucide-react-native';
+import { User, Mail, Lock, Terminal, ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
+import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../store/auth-store';
 
 const { width } = Dimensions.get('window');
@@ -11,21 +12,38 @@ export default function RegisterScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const register = useAuthStore((state: any) => state.register);
   const isLoading = useAuthStore((state: any) => state.isLoading);
 
   const handleRegister = async () => {
     if (!email || !password || !name) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Toast.show({
+        type: 'error',
+        text1: 'Initialization Error',
+        text2: 'Please populate all parameters for your profile.'
+      });
       return;
     }
+
     try {
       await register({ email, password, name });
-      Alert.alert('Success', 'Account created! Welcome to Monolith.', [
-        { text: 'Get Started', onPress: () => navigation.navigate('Login') }
-      ]);
+      Toast.show({
+        type: 'success',
+        text1: 'Module Created',
+        text2: 'Account initialized! Welcome to the monolith.'
+      });
+      navigation.navigate('Login');
     } catch (error: any) {
-      Alert.alert('Registration Failed', error.message);
+      let message = 'Registration failed. Try again in a moment.';
+      if (error.message.includes('400')) message = 'Account signature already exists.';
+      if (error.message.includes('network')) message = 'Network latency detected.';
+
+      Toast.show({
+        type: 'error',
+        text1: 'Provisioning Failure',
+        text2: message
+      });
     }
   };
 
@@ -33,7 +51,6 @@ export default function RegisterScreen({ navigation }: any) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* Background Glows */}
       <View style={styles.glowTopRight} />
       <View style={styles.glowBottomLeft} />
 
@@ -43,7 +60,6 @@ export default function RegisterScreen({ navigation }: any) {
           style={{ flex: 1 }}
         >
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* Back Button */}
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.goBack()}
@@ -51,7 +67,6 @@ export default function RegisterScreen({ navigation }: any) {
               <ArrowLeft color="#c7c4d7" size={24} />
             </TouchableOpacity>
 
-            {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
                 <Terminal color="#c0c1ff" size={32} strokeWidth={2.5} />
@@ -60,7 +75,6 @@ export default function RegisterScreen({ navigation }: any) {
               <Text style={styles.subtitle}>Enter the monolith, master your engineering time.</Text>
             </View>
 
-            {/* Form */}
             <View style={styles.form}>
               <View style={styles.inputWrapper}>
                 <Text style={styles.inputLabel}>FULL NAME</Text>
@@ -102,8 +116,18 @@ export default function RegisterScreen({ navigation }: any) {
                     placeholderTextColor="rgba(199, 196, 215, 0.4)"
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                   />
+                  <TouchableOpacity 
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeIcon}
+                  >
+                    {showPassword ? (
+                      <EyeOff color="#c7c4d7" size={20} />
+                    ) : (
+                      <Eye color="#c7c4d7" size={20} />
+                    )}
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -241,6 +265,10 @@ const styles = StyleSheet.create({
     color: '#dee1f7',
     fontSize: 16,
     fontFamily: 'Inter_500Medium',
+  },
+  eyeIcon: {
+    padding: 8,
+    marginRight: -4,
   },
   buttonWrapper: {
     marginTop: 12,
