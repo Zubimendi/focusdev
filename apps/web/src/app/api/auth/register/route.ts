@@ -46,9 +46,9 @@ export async function POST(req: Request) {
         { message: "User registered successfully", userId: user._id },
         { status: 201 }
       );
-    } catch (createError: any) {
+    } catch (createError: unknown) {
       // MongoDB duplicate key error (race condition failsafe)
-      if (createError.code === 11000) {
+      if (createError && typeof createError === 'object' && 'code' in createError && createError.code === 11000) {
         return NextResponse.json(
           { error: "An account with this email already exists" },
           { status: 409 }

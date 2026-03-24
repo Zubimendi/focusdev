@@ -25,12 +25,12 @@ export async function getAuthenticatedUser(req: Request): Promise<AuthenticatedU
     const session = await getServerSession(authOptions);
     if (session?.user) {
       return {
-        id: (session.user as any).id,
+        id: (session.user as { id: string }).id,
         email: session.user.email!,
         name: session.user.name || undefined,
       };
     }
-  } catch (err) {
+  } catch {
     // NextAuth session not available, continue to JWT
   }
 
@@ -49,7 +49,7 @@ export async function getAuthenticatedUser(req: Request): Promise<AuthenticatedU
           name: user.name || undefined,
         };
       }
-    } catch (err) {
+    } catch {
       // Invalid or expired token
     }
   }

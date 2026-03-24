@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.substring(7);
       try {
-        const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+        const decoded = jwt.verify(token, JWT_SECRET!) as { id: string };
         await connectToDatabase();
         const user = await UserModel.findById(decoded.id).select("-password");
         if (user) {

@@ -51,6 +51,7 @@ export default function TimerPage() {
       toast.success("Pomodoro complete! Time for a break.");
     }
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, seconds]);
 
   const startSession = async () => {
@@ -170,7 +171,12 @@ export default function TimerPage() {
             <span className="text-8xl font-mono font-bold tracking-tighter text-on-surface">
               {formatTime(seconds)}
             </span>
-            <span className="text-sm font-label uppercase tracking-[0.2em] text-on-surface-variant mt-2">Pomodoro Session</span>
+            <div className="flex flex-col items-center gap-1 mt-2">
+              <span className="text-xs font-bold text-primary uppercase tracking-[0.3em] font-mono">
+                {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </span>
+              <span className="text-[10px] font-label uppercase tracking-[0.2em] text-on-surface-variant/60">Pomodoro Session</span>
+            </div>
           </div>
           
           {/* Ambient Glow Behind Timer */}

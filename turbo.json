@@ -3,7 +3,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
+      "env": ["JWT_SECRET", "NEXTAUTH_URL", "MONGODB_URI", "NEXTAUTH_SECRET"]
     },
     "lint": {
       "dependsOn": ["^lint"]

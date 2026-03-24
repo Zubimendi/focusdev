@@ -1,17 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { toast } from "sonner";
+import React, { useState } from "react";
 
 export default function StatsPage() {
   const [range, setRange] = useState<"week" | "month">("week");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Artificial delay to show beautiful skeleton states
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
 
   const stats = [
     { label: "Focus Hours", value: "38.5h", change: "+12%", icon: "schedule", color: "text-primary" },

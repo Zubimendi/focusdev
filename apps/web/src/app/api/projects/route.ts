@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     }).sort({ updatedAt: -1 });
     
     return NextResponse.json({ projects }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ project }, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

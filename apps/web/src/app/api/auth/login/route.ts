@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     // Generate JWT for mobile/client use
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      JWT_SECRET,
+      JWT_SECRET!,
       { expiresIn: "7d" }
     );
 

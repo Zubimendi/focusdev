@@ -1,4 +1,4 @@
-export function calculateStreak(sessions: any[]): number {
+export function calculateStreak(sessions: { startTime: string | Date }[]): number {
   if (!sessions || sessions.length === 0) return 0;
 
   // Extract unique dates with sessions, sorted descending

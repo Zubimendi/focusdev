@@ -14,15 +14,28 @@ const sessions = [
   { id: '4', title: 'Unit Test Suite Execution', type: 'Coding', duration: '15 min', time: '05:00 PM', color: '#6366f1' },
 ];
 
-const days = [
-  { day: 'Mon', date: 14, active: false },
-  { day: 'Tue', date: 15, active: false },
-  { day: 'Wed', date: 16, active: false },
-  { day: 'Thu', date: 17, active: true },
-  { day: 'Fri', date: 18, active: false },
-  { day: 'Sat', date: 19, active: false },
-  { day: 'Sun', date: 20, active: false },
-];
+const getInitialDays = () => {
+  const now = new Date();
+  const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday...
+  const diff = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1); // Start from Monday
+  
+  const monday = new Date(now.setDate(diff));
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+  return weekDays.map((day, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return {
+      day,
+      date: d.getDate(),
+      fullDate: d.toDateString(),
+      active: d.toDateString() === new Date().toDateString()
+    };
+  });
+};
+
+const days = getInitialDays();
+const currentLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
 export default function SessionsScreen() {
   const progress = 0.75;
@@ -57,7 +70,7 @@ export default function SessionsScreen() {
           </View>
           <TouchableOpacity style={styles.filterBtn}>
             <Filter size={14} color="#dee1f7" />
-            <Text style={styles.filterText}>October</Text>
+            <Text style={styles.filterText}>{currentLabel}</Text>
           </TouchableOpacity>
         </View>
 

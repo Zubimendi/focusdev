@@ -36,7 +36,7 @@ export default function ChecklistsPage() {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    priority: "medium" as const,
+    priority: "medium" as "low" | "medium" | "high",
     projectId: "",
     goalId: ""
   });

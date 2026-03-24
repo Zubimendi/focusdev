@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     const goals = await GoalModel.find({ userId: user.id }).sort({ targetDate: 1 });
     
     return NextResponse.json({ goals }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ goal }, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

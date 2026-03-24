@@ -18,27 +18,24 @@ export default function DashboardPage() {
     focusMinutesToday: 0,
     taskTitle: "",
   });
-  const [allSessions, setAllSessions] = useState<any[]>([]);
+  const [allSessions, setAllSessions] = useState<{ startTime: string | Date; duration?: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [sessionsRes, tasksRes] = await Promise.all([
-          fetch("/api/focus/sessions"),
-          fetch("/api/tasks"),
-        ]);
+        const sessionsRes = await fetch("/api/focus/sessions");
 
           if (sessionsRes.ok) {
             const sessionsData = await sessionsRes.json();
             const sessions = sessionsData.sessions || [];
             setAllSessions(sessions);
             const today = new Date().toDateString();
-            const todaySessions = sessions.filter((s: any) => 
+            const todaySessions = sessions.filter((s: { startTime: string | Date }) => 
               new Date(s.startTime).toDateString() === today
             );
             const todayMinutes = todaySessions.reduce(
-              (sum: number, s: any) => sum + (s.duration || 0), 0
+              (sum: number, s: { duration?: number }) => sum + (s.duration || 0), 0
             );
             setStats(prev => ({
               ...prev,

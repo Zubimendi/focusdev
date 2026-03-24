@@ -45,7 +45,7 @@ export default function DailyChecklist() {
         );
         if (newStatus === "done") toast.success(`Completed: ${task.title}`);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to update task");
     }
   };

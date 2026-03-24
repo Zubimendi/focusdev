@@ -7,6 +7,8 @@ export interface ITaskDocument extends Document {
   priority: "low" | "medium" | "high";
   dueDate?: Date;
   userId: Schema.Types.ObjectId;
+  projectId?: Schema.Types.ObjectId;
+  goalId?: Schema.Types.ObjectId;
 }
 
 const TaskSchema = new Schema<ITaskDocument>(
