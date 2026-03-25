@@ -7,8 +7,16 @@ declare module "next-auth" {
       id: string;
       email: string;
       name?: string;
-      role: string;
+      role?: string;
+      githubAccessToken?: string;
     };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    githubAccessToken?: string;
   }
 }
 

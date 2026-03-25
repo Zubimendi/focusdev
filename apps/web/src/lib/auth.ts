@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === "github") {
         await connectToDatabase();
         let dbUser = await UserModel.findOne({ email: user.email });
@@ -79,8 +79,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).githubAccessToken = token.githubAccessToken;
+        session.user.id = token.id as string;
+        session.user.githubAccessToken = token.githubAccessToken as string;
       }
       return session;
     },

@@ -5,7 +5,7 @@ import { connectToDatabase } from "@focus/db";
 import { TaskModel } from "@focus/db/models";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const session: any = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
   
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,7 +26,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     return NextResponse.json(task);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

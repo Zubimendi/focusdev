@@ -185,8 +185,8 @@ export default function SettingsPage() {
             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="material-symbols-outlined text-4xl text-primary">redeem</span>
             </div>
-            <h2 className="text-3xl font-black text-on-surface mb-2">It's Free for Ever</h2>
-            <p className="text-on-surface-variant max-w-md mx-auto">FocusDev is open-source and free. We removed all paid features because clarity shouldn't have a price tag.</p>
+            <h2 className="text-3xl font-black text-on-surface mb-2">It&apos;s Free for Ever</h2>
+            <p className="text-on-surface-variant max-w-md mx-auto">FocusDev is open-source and free. We removed all paid features because clarity shouldn&apos;t have a price tag.</p>
           </section>
         )}
       </div>

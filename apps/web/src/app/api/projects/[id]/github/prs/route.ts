@@ -4,8 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@focus/db";
 import { ProjectModel } from "@focus/db/models";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const session: any = await getServerSession(authOptions);
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
   
   if (!session || !session.user || !session.user.githubAccessToken) {
     return NextResponse.json({ error: "Unauthorized or GitHub Not Connected" }, { status: 401 });
@@ -32,7 +32,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     const prs = await response.json();
     return NextResponse.json(prs);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
