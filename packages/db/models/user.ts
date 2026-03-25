@@ -7,6 +7,8 @@ export interface IUserDocument extends Document {
   name?: string;
   role: string;
   image?: string;
+  githubAccessToken?: string;
+  githubTokenExpiry?: Date;
 }
 
 const UserSchema = new Schema<IUserDocument>(
@@ -16,6 +18,8 @@ const UserSchema = new Schema<IUserDocument>(
     image: { type: String },
     password: { type: String, select: false },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    githubAccessToken: { type: String, select: false },
+    githubTokenExpiry: { type: Date },
   },
   { timestamps: true }
 );

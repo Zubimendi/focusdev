@@ -5,6 +5,8 @@ export interface IProject extends Document {
   description?: string;
   color: string;
   githubRepo?: string;
+  githubRepoId?: number;
+  githubRepoFullName?: string;
   ownerId: mongoose.Types.ObjectId;
   members: mongoose.Types.ObjectId[];
   isPublic: boolean;
@@ -18,6 +20,8 @@ const ProjectSchema = new Schema<IProject>(
     description: { type: String },
     color: { type: String, default: "#818cf8" },
     githubRepo: { type: String },
+    githubRepoId: { type: Number },
+    githubRepoFullName: { type: String },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     members: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isPublic: { type: Boolean, default: false },

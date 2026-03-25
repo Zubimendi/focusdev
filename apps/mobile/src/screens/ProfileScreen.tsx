@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, LogOut, Settings } from 'lucide-react-native';
 import { useAuthStore } from '../store/auth-store';
+import { useNavigation } from '@react-navigation/native';
 
 export default function ProfileScreen() {
   const logout = useAuthStore((state: any) => state.logout);
+  const navigation = useNavigation<any>();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -16,7 +18,7 @@ export default function ProfileScreen() {
       <Text style={styles.subtitle}>@tobe_dev · Level 42</Text>
 
       <View style={styles.menu}>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Settings')}>
           <Settings size={20} color="#c7c4d7" />
           <Text style={styles.menuText}>Settings</Text>
         </TouchableOpacity>

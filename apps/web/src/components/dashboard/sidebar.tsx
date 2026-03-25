@@ -4,7 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function SideNavBar() {
+interface SideNavBarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps) {
   const pathname = usePathname();
 
   const navItems = [
@@ -16,18 +21,26 @@ export default function SideNavBar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 p-6 flex flex-col gap-8 bg-[#0e1322] dark:bg-[#0e1322] shadow-[4px_0_24px_rgba(0,0,0,0.3)] z-50">
+    <aside className={`fixed left-0 top-0 h-full w-64 p-6 flex flex-col gap-8 bg-[#0e1322] dark:bg-[#0e1322] shadow-[4px_0_24px_rgba(0,0,0,0.3)] z-50 transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          className="md:hidden absolute top-6 right-6 text-on-surface-variant hover:text-on-surface p-1 rounded-lg hover:bg-slate-800/50 transition-all"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+      )}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
           <span className="material-symbols-outlined text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
         </div>
         <div>
-          <h1 className="text-2xl font-black text-indigo-500 tracking-tighter leading-none">FocusDev</h1>
+          <h1 className="text-2xl font-black text-indigo-500 tracking-tighter leading-none pr-8">FocusDev</h1>
           <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mt-1">Monolithic Clarity</p>
         </div>
       </div>
 
-      <nav className="flex flex-col gap-2 flex-1">
+      <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">
         {navItems.map((item) => (
           <Link
             key={item.name}

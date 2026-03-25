@@ -9,6 +9,8 @@ export interface ITaskDocument extends Document {
   userId: Schema.Types.ObjectId;
   projectId?: Schema.Types.ObjectId;
   goalId?: Schema.Types.ObjectId;
+  githubPullRequest?: string;
+  githubCommit?: string;
 }
 
 const TaskSchema = new Schema<ITaskDocument>(
@@ -21,6 +23,8 @@ const TaskSchema = new Schema<ITaskDocument>(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     projectId: { type: Schema.Types.ObjectId, ref: "Project" },
     goalId: { type: Schema.Types.ObjectId, ref: "Goal" },
+    githubPullRequest: { type: String },
+    githubCommit: { type: String },
   },
   { timestamps: true }
 );

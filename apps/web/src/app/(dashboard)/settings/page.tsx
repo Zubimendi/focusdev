@@ -1,10 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useSettingsStore } from "@/store/settings";
 
 export default function SettingsPage() {
+  const { theme, setTheme, timerDuration, setTimerDuration, notificationSound, setNotificationSound } = useSettingsStore();
+  const [localTimer, setLocalTimer] = useState(timerDuration);
+  
+  useEffect(() => {
+    setLocalTimer(timerDuration);
+  }, [timerDuration]);
+
   const saveSettings = () => {
+    setTimerDuration(localTimer);
     toast.success("All settings saved successfully! Workspace optimized.");
   };
 
@@ -27,7 +36,7 @@ export default function SettingsPage() {
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Profile Section */}
-        <section className="md:col-span-8 bg-surface-container-low rounded-2xl p-8 relative overflow-hidden border border-outline-variant/10">
+        <section className="md:col-span-12 bg-surface-container-low rounded-2xl p-8 relative overflow-hidden border border-outline-variant/10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-10"></div>
           <h2 className="text-xl font-bold mb-8 flex items-center gap-3">
             <span className="material-symbols-outlined text-primary">person</span>
@@ -66,25 +75,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Subscription Card */}
-        <section className="md:col-span-4 bg-surface-container-low rounded-2xl p-8 border-l-4 border-primary border border-outline-variant/10">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-6 opacity-60">Subscription</h3>
-          <div className="space-y-6">
-            <div>
-              <span className="text-primary font-black text-4xl tracking-tighter">Pro</span>
-              <p className="text-on-surface-variant text-sm mt-1 font-medium">Unlimited deep work sessions and cloud rituals.</p>
-            </div>
-            <div className="font-mono text-2xl font-bold text-secondary">
-              $12.00<span className="text-sm font-normal text-on-surface-variant">/mo</span>
-            </div>
-            <div className="pt-6 border-t border-outline-variant/10">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-on-surface-variant font-bold uppercase tracking-wider">Next billing cycle</span>
-                <span className="font-mono text-on-surface bg-surface-container-high px-2 py-1 rounded">OCT 24, 2024</span>
-              </div>
-            </div>
-          </div>
-        </section>
+
 
         {/* App Preferences */}
         <section className="md:col-span-12 bg-surface-container-low rounded-2xl p-8 border border-outline-variant/10">
@@ -97,11 +88,17 @@ export default function SettingsPage() {
             <div className="bg-surface-container-lowest p-6 rounded-xl space-y-4 border border-outline-variant/5 shadow-inner">
               <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant opacity-60 block">Appearance</label>
               <div className="flex bg-surface-container p-1.5 rounded-xl">
-                <button className="flex-1 flex items-center justify-center gap-3 py-2.5 rounded-lg bg-surface-container-highest text-on-surface font-bold shadow-md">
+                <button 
+                  onClick={() => setTheme('dark')}
+                  className={`flex-1 flex items-center justify-center gap-3 py-2.5 rounded-lg font-bold transition-all ${theme === 'dark' ? 'bg-surface-container-highest text-on-surface shadow-md' : 'text-on-surface-variant hover:text-on-surface opacity-50'}`}
+                >
                   <span className="material-symbols-outlined text-lg">dark_mode</span>
                   <span>Dark</span>
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface transition-all font-semibold opacity-50">
+                <button 
+                  onClick={() => setTheme('light')}
+                  className={`flex-1 flex items-center justify-center gap-3 py-2.5 rounded-lg font-bold transition-all ${theme === 'light' ? 'bg-surface-container-highest text-on-surface shadow-md' : 'text-on-surface-variant hover:text-on-surface opacity-50'}`}
+                >
                   <span className="material-symbols-outlined text-lg">light_mode</span>
                   <span>Light</span>
                 </button>
@@ -112,12 +109,16 @@ export default function SettingsPage() {
             <div className="bg-surface-container-lowest p-6 rounded-xl space-y-6 border border-outline-variant/5 shadow-inner">
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant opacity-60">Timer Duration</label>
-                <span className="font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded">25:00</span>
+                <span className="font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded">{localTimer}:00</span>
               </div>
               <input 
                 className="w-full accent-primary bg-surface-container-high rounded-full h-1.5 appearance-none cursor-pointer" 
                 type="range" 
-                defaultValue="25"
+                min="15"
+                max="60"
+                step="5"
+                value={localTimer}
+                onChange={(e) => setLocalTimer(parseInt(e.target.value, 10))}
               />
               <div className="flex justify-between text-[10px] text-on-surface-variant font-black uppercase tracking-widest">
                 <span>15m</span>
@@ -128,9 +129,17 @@ export default function SettingsPage() {
             {/* Sounds */}
             <div className="bg-surface-container-lowest p-6 rounded-xl space-y-4 border border-outline-variant/5 shadow-inner">
               <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant opacity-60 block">Notification Sound</label>
-              <div className="flex items-center justify-between bg-surface-container px-5 py-3.5 rounded-xl cursor-pointer hover:bg-surface-container-high hover:border-outline-variant/20 border border-transparent transition-all shadow-sm">
-                <span className="text-on-surface font-bold">Zen Chime</span>
-                <span className="material-symbols-outlined text-primary text-xl">volume_up</span>
+              <div className="relative">
+                <select 
+                  value={notificationSound}
+                  onChange={(e) => setNotificationSound(e.target.value)}
+                  className="w-full bg-surface-container px-5 py-3.5 rounded-xl cursor-pointer hover:bg-surface-container-high hover:border-outline-variant/20 border border-transparent transition-all shadow-sm text-on-surface font-bold outline-none appearance-none pr-10"
+                >
+                  <option value="Zen Chime">Zen Chime</option>
+                  <option value="Digital Beep">Digital Beep</option>
+                  <option value="Soft Ping">Soft Ping</option>
+                </select>
+                <span className="material-symbols-outlined text-primary text-xl absolute right-5 top-3.5 pointer-events-none">volume_up</span>
               </div>
             </div>
           </div>
