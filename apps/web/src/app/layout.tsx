@@ -23,6 +23,17 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const settings = JSON.parse(localStorage.getItem('focusdev-settings'));
+                const theme = settings?.state?.theme || 'dark';
+                document.documentElement.classList.add(theme);
+              } catch (e) {}
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-body bg-surface text-on-surface antialiased`}>
         <NextAuthSessionProvider>

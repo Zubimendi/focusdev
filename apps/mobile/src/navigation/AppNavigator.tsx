@@ -21,7 +21,11 @@ import SettingsScreen from '../screens/SettingsScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 function MainTabs() {
+  const { colors, isDark } = useAppTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -32,18 +36,18 @@ function MainTabs() {
           left: 0,
           right: 0,
           height: 90,
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(14, 19, 34, 0.95)',
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : isDark ? 'rgba(14, 19, 34, 0.95)' : 'rgba(255, 255, 255, 0.95)',
           borderTopWidth: 0,
           elevation: 0,
           paddingTop: 12,
         },
         tabBarBackground: () => (
           Platform.OS === 'ios' ? (
-            <BlurView intensity={80} tint="dark" style={{ flex: 1 }} />
+            <BlurView intensity={80} tint={isDark ? "dark" : "light"} style={{ flex: 1 }} />
           ) : null
         ),
-        tabBarActiveTintColor: '#818cf8',
-        tabBarInactiveTintColor: '#64748b',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.onSurfaceVariant,
         tabBarLabelStyle: {
           fontSize: 10,
           fontFamily: 'Inter_700Bold',

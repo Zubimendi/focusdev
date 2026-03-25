@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SettingsState {
   theme: 'dark' | 'light';
@@ -9,11 +11,19 @@ interface SettingsState {
   setNotificationSound: (sound: string) => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
-  theme: 'dark',
-  timerDuration: 25,
-  notificationSound: 'Zen Chime',
-  setTheme: (theme) => set({ theme }),
-  setTimerDuration: (timerDuration) => set({ timerDuration }),
-  setNotificationSound: (notificationSound) => set({ notificationSound }),
-}));
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      theme: 'dark',
+      timerDuration: 25,
+      notificationSound: 'Zen Chime',
+      setTheme: (theme) => set({ theme }),
+      setTimerDuration: (timerDuration) => set({ timerDuration }),
+      setNotificationSound: (notificationSound) => set({ notificationSound }),
+    }),
+    {
+      name: 'focusdev-settings',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);

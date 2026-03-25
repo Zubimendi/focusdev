@@ -10,9 +10,12 @@ import { projectService } from '../services/project';
 import { goalService } from '../services/goal';
 import { type Task } from '@focus/shared';
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 const { width } = Dimensions.get('window');
 
 export default function GoalsScreen() {
+  const { colors, isDark } = useAppTheme();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
@@ -21,7 +24,7 @@ export default function GoalsScreen() {
   const [newTask, setNewTask] = useState({ 
     title: '', 
     description: '', 
-    priority: 'medium' as const, 
+    priority: 'medium' as 'low' | 'medium' | 'high', 
     projectId: '', 
     goalId: '' 
   });
@@ -78,43 +81,43 @@ export default function GoalsScreen() {
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchData} tintColor="#818cf8" />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchData} tintColor={colors.primary} />}
       >
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.label}>DEVELOPER EXECUTION</Text>
-            <Text style={styles.title}>Checklists 🔥</Text>
+            <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>DEVELOPER EXECUTION</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>Checklists 🔥</Text>
           </View>
           <View style={styles.percentageContainer}>
-            <Text style={styles.pctText}>{pct}%</Text>
-            <Text style={styles.pctLabel}>DAILY COMPLETION</Text>
+            <Text style={[styles.pctText, { color: colors.primary }]}>{pct}%</Text>
+            <Text style={[styles.pctLabel, { color: colors.onSurfaceVariant }]}>DAILY COMPLETION</Text>
           </View>
         </View>
 
         {/* Weekly Goals Section */}
         <View style={styles.sectionHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Target size={18} color="#818cf8" />
-            <Text style={styles.sectionTitle}>Weekly Milestones</Text>
+            <Target size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Weekly Milestones</Text>
           </View>
         </View>
 
         {goals.length === 0 ? (
-          <View style={styles.emptyGoalBox}>
-            <Text style={styles.emptyGoalText}>No weekly goals active. Set one up to stay locked in.</Text>
+          <View style={[styles.emptyGoalBox, { backgroundColor: colors.primary + '05', borderColor: colors.primary + '50' }]}>
+            <Text style={[styles.emptyGoalText, { color: colors.primary }]}>No weekly goals active. Set one up to stay locked in.</Text>
           </View>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.goalsList}>
             {goals.map((goal, i) => (
-              <View key={goal.id || i} style={styles.goalCard}>
-                <Text style={styles.goalTitle}>{goal.title}</Text>
-                <View style={styles.goalProgressContainer}>
-                  <View style={[styles.goalProgressBar, { width: goal.status === 'met' ? '100%' : '30%' }]} />
+              <View key={goal.id || i} style={[styles.goalCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                <Text style={[styles.goalTitle, { color: colors.onSurface }]}>{goal.title}</Text>
+                <View style={[styles.goalProgressContainer, { backgroundColor: colors.outlineVariant }]}>
+                  <View style={[styles.goalProgressBar, { width: goal.status === 'met' ? '100%' : '30%', backgroundColor: colors.primary }]} />
                 </View>
               </View>
             ))}
@@ -124,47 +127,61 @@ export default function GoalsScreen() {
         {/* Task List Section */}
         <View style={[styles.sectionHeader, { marginTop: 40 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <LayoutGrid size={18} color="#818cf8" />
-            <Text style={styles.sectionTitle}>Daily Objectives</Text>
+            <LayoutGrid size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Daily Objectives</Text>
           </View>
-          <View style={styles.taskCountBadge}>
-            <Text style={styles.taskCountText}>{tasks.length} TOTAL</Text>
+          <View style={[styles.taskCountBadge, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.taskCountText, { color: colors.onSurfaceVariant }]}>{tasks.length} TOTAL</Text>
           </View>
         </View>
 
         <View style={styles.taskList}>
           {tasks.length === 0 && !loading ? (
-            <Text style={styles.emptyTasksText}>All clear! Add a task to start your focus cycle.</Text>
+            <Text style={[styles.emptyTasksText, { color: colors.onSurfaceVariant }]}>All clear! Add a task to start your focus cycle.</Text>
           ) : (
             tasks.map((task) => (
               <TouchableOpacity 
                 key={task.id} 
-                style={[styles.taskCard, task.status === 'done' && styles.taskDone]}
+                style={[
+                  styles.taskCard, 
+                  { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
+                  task.status === 'done' && { opacity: 0.6, backgroundColor: colors.surface + '80' }
+                ]}
                 onPress={() => toggleTaskStatus(task)}
               >
                 <View style={styles.taskCore}>
                   {task.status === 'done' ? (
                     <CheckCircle2 size={24} color="#4edea3" />
                   ) : (
-                    <Circle size={24} color="#464554" />
+                    <Circle size={24} color={colors.outline} />
                   )}
                   <View style={styles.taskInfo}>
-                    <Text style={[styles.taskTitle, task.status === 'done' && styles.taskTitleDone]}>
+                    <Text style={[
+                      styles.taskTitle, 
+                      { color: colors.onSurface },
+                      task.status === 'done' && { textDecorationLine: 'line-through', color: colors.onSurfaceVariant }
+                    ]}>
                       {task.title}
                     </Text>
                     <View style={styles.taskMeta}>
-                      <View style={[styles.priorityBadge, { backgroundColor: task.priority === 'high' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(129, 140, 248, 0.1)' }]}>
-                        <Text style={[styles.priorityText, { color: task.priority === 'high' ? '#f43f5e' : '#818cf8' }]}>
+                      <View style={[
+                        styles.priorityBadge, 
+                        { backgroundColor: task.priority === 'high' ? 'rgba(244, 63, 94, 0.1)' : colors.primary + '15' }
+                      ]}>
+                        <Text style={[
+                          styles.priorityText, 
+                          { color: task.priority === 'high' ? '#f43f5e' : colors.primary }
+                        ]}>
                           {task.priority.toUpperCase()}
                         </Text>
                       </View>
-                      <View style={styles.metaDivider} />
-                      <Clock size={12} color="#64748b" />
-                      <Text style={styles.metaText}>{task.status.replace('_', ' ').toUpperCase()}</Text>
+                      <View style={[styles.metaDivider, { backgroundColor: colors.outlineVariant }]} />
+                      <Clock size={12} color={colors.onSurfaceVariant} />
+                      <Text style={[styles.metaText, { color: colors.onSurfaceVariant }]}>{task.status.replace('_', ' ').toUpperCase()}</Text>
                     </View>
                   </View>
                 </View>
-                <ChevronRight size={20} color="#464554" />
+                <ChevronRight size={20} color={colors.outline} />
               </TouchableOpacity>
             ))
           )}
@@ -173,7 +190,7 @@ export default function GoalsScreen() {
 
       {/* FAB */}
       <TouchableOpacity 
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
         onPress={() => setIsModalVisible(true)}
       >
         <Plus size={32} color="#fff" />
@@ -186,47 +203,55 @@ export default function GoalsScreen() {
         animationType="slide"
         onRequestClose={() => setIsModalVisible(false)}
       >
-        <BlurView intensity={90} tint="dark" style={styles.modalOverlay}>
+        <BlurView intensity={90} tint={isDark ? "dark" : "light"} style={styles.modalOverlay}>
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalContent}
+            style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.outlineVariant }]}
           >
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>New Objective</Text>
+              <Text style={[styles.modalTitle, { color: colors.onSurface }]}>New Objective</Text>
               <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                <X size={24} color="#64748b" />
+                <X size={24} color={colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
-              <Text style={styles.inputLabel}>TITLE</Text>
+              <Text style={[styles.inputLabel, { color: colors.primary }]}>TITLE</Text>
               <TextInput 
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surface, color: colors.onSurface, borderColor: colors.outlineVariant }]}
                 placeholder="What are we shipping?"
-                placeholderTextColor="#464554"
+                placeholderTextColor={colors.outline}
                 value={newTask.title}
                 onChangeText={(text) => setNewTask({...newTask, title: text})}
               />
 
-              <Text style={styles.inputLabel}>DESCRIPTION</Text>
+              <Text style={[styles.inputLabel, { color: colors.primary }]}>DESCRIPTION</Text>
               <TextInput 
-                style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                style={[styles.input, { height: 80, textAlignVertical: 'top', backgroundColor: colors.surface, color: colors.onSurface, borderColor: colors.outlineVariant }]}
                 placeholder="Break it down..."
-                placeholderTextColor="#464554"
+                placeholderTextColor={colors.outline}
                 multiline
                 value={newTask.description}
                 onChangeText={(text) => setNewTask({...newTask, description: text})}
               />
 
-              <Text style={styles.inputLabel}>PRIORITY</Text>
+              <Text style={[styles.inputLabel, { color: colors.primary }]}>PRIORITY</Text>
               <View style={styles.priorityGrid}>
                 {(['low', 'medium', 'high'] as const).map(p => (
                   <TouchableOpacity 
                     key={p}
-                    style={[styles.pSelect, newTask.priority === p && styles.pSelectActive]}
+                    style={[
+                      styles.pSelect, 
+                      { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
+                      newTask.priority === p && { backgroundColor: colors.primary + '15', borderColor: colors.primary }
+                    ]}
                     onPress={() => setNewTask({...newTask, priority: p})}
                   >
-                    <Text style={[styles.pSelectText, newTask.priority === p && styles.pSelectTextActive]}>
+                    <Text style={[
+                      styles.pSelectText, 
+                      { color: colors.onSurfaceVariant },
+                      newTask.priority === p && { color: colors.primary }
+                    ]}>
                       {p.toUpperCase()}
                     </Text>
                   </TouchableOpacity>
@@ -235,15 +260,23 @@ export default function GoalsScreen() {
 
               {projects.length > 0 && (
                 <>
-                  <Text style={styles.inputLabel}>PROJECT</Text>
+                  <Text style={[styles.inputLabel, { color: colors.primary }]}>PROJECT</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.optionScroll}>
                     {projects.map(p => (
                       <TouchableOpacity 
                         key={p.id}
-                        style={[styles.optionChip, newTask.projectId === p.id && styles.optionChipActive]}
+                        style={[
+                          styles.optionChip, 
+                          { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
+                          newTask.projectId === p.id && { backgroundColor: colors.primary, borderColor: colors.primary }
+                        ]}
                         onPress={() => setNewTask({...newTask, projectId: p.id})}
                       >
-                        <Text style={[styles.optionChipText, newTask.projectId === p.id && styles.optionChipTextActive]}>
+                        <Text style={[
+                          styles.optionChipText, 
+                          { color: colors.onSurfaceVariant },
+                          newTask.projectId === p.id && { color: colors.onPrimary }
+                        ]}>
                           {p.name}
                         </Text>
                       </TouchableOpacity>
@@ -254,10 +287,10 @@ export default function GoalsScreen() {
             </ScrollView>
 
             <TouchableOpacity 
-              style={styles.createBtn}
+              style={[styles.createBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
               onPress={handleCreateTask}
             >
-              <Text style={styles.createBtnText}>INITIATE TASK</Text>
+              <Text style={[styles.createBtnText, { color: colors.onPrimary }]}>INITIATE TASK</Text>
             </TouchableOpacity>
           </KeyboardAvoidingView>
         </BlurView>

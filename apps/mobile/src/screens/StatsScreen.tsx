@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Terminal, Download, Share2, Timer, Code, Calendar, BarChart4, TrendingUp, Award, Star } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 const { width } = Dimensions.get('window');
 
 const heatmapData = [
@@ -44,10 +46,11 @@ function CodeIcon(props: any) { return <Code {...props} />; }
 function FlameIcon(props: any) { return <TrendingUp {...props} />; }
 
 export default function StatsScreen() {
+  const { colors, isDark } = useAppTheme();
   const [range, setRange] = useState<'week' | 'month'>('week');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -55,21 +58,21 @@ export default function StatsScreen() {
         {/* Header & Toggle */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.label}>PERFORMANCE HUB</Text>
-            <Text style={styles.title}>Your Progress</Text>
+            <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>PERFORMANCE HUB</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>Your Progress</Text>
           </View>
-          <View style={styles.rangeToggle}>
+          <View style={[styles.rangeToggle, { backgroundColor: colors.surface }]}>
             <TouchableOpacity 
               onPress={() => setRange('week')}
-              style={[styles.toggleBtn, range === 'week' && styles.toggleBtnActive]}
+              style={[styles.toggleBtn, range === 'week' && { backgroundColor: isDark ? '#232a3d' : '#e2e8f0' }]}
             >
-              <Text style={[styles.toggleText, range === 'week' && styles.toggleTextActive]}>THIS WEEK</Text>
+              <Text style={[styles.toggleText, { color: colors.onSurfaceVariant }, range === 'week' && { color: colors.onSurface }]}>THIS WEEK</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={() => setRange('month')}
-              style={[styles.toggleBtn, range === 'month' && styles.toggleBtnActive]}
+              style={[styles.toggleBtn, range === 'month' && { backgroundColor: isDark ? '#232a3d' : '#e2e8f0' }]}
             >
-              <Text style={[styles.toggleText, range === 'month' && styles.toggleTextActive]}>THIS MONTH</Text>
+              <Text style={[styles.toggleText, { color: colors.onSurfaceVariant }, range === 'month' && { color: colors.onSurface }]}>THIS MONTH</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -77,22 +80,22 @@ export default function StatsScreen() {
         {/* Stat Bento Grid */}
         <View style={styles.statGrid}>
           {stats.map((s, i) => (
-            <View key={i} style={styles.statCard}>
-              <s.icon size={20} color={s.color} />
+            <View key={i} style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+              <s.icon size={20} color={isDark ? s.color : colors.primary} />
               <View>
-                <Text style={styles.statLabel}>{s.label.toUpperCase()}</Text>
-                <Text style={[styles.statValue, s.valueColor ? { color: s.valueColor } : {}]}>{s.value}</Text>
+                <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{s.label.toUpperCase()}</Text>
+                <Text style={[styles.statValue, { color: colors.onSurface }, s.valueColor ? { color: s.valueColor } : {}]}>{s.value}</Text>
               </View>
             </View>
           ))}
         </View>
 
         {/* Activity Heatmap */}
-        <View style={styles.heatmapSection}>
+        <View style={[styles.heatmapSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <View style={styles.sectionTitleRow}>
-            <Text style={styles.sectionTitle}>Activity Density</Text>
-            <View style={styles.periodBadge}>
-              <Text style={styles.periodText}>LAST 30 DAYS</Text>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Activity Density</Text>
+            <View style={[styles.periodBadge, { backgroundColor: colors.background }]}>
+              <Text style={[styles.periodText, { color: colors.onSurfaceVariant }]}>LAST 30 DAYS</Text>
             </View>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.heatmapContainer}>
@@ -104,7 +107,7 @@ export default function StatsScreen() {
                       key={ri} 
                       style={[
                         styles.heatmapSquare, 
-                        { backgroundColor: val === 0 ? 'rgba(47, 52, 69, 0.6)' : `rgba(78, 222, 163, ${val/100})` }
+                        { backgroundColor: val === 0 ? (isDark ? 'rgba(47, 52, 69, 0.6)' : '#f1f5f9') : `rgba(78, 222, 163, ${isDark ? val/100 : 0.4 + val/200})` }
                       ]} 
                     />
                   ))}
@@ -115,22 +118,22 @@ export default function StatsScreen() {
         </View>
 
         {/* Daily Intensity Bar Chart */}
-        <View style={styles.intensitySection}>
-          <Text style={styles.sectionTitle}>Daily Intensity</Text>
+        <View style={[styles.intensitySection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Daily Intensity</Text>
           <View style={styles.chartContainer}>
             {barData.map((b, i) => (
               <View key={i} style={styles.barItem}>
-                <View style={[styles.bar, { height: b.height as any, backgroundColor: b.color }]} />
-                <Text style={styles.barLabel}>{b.day}</Text>
+                <View style={[styles.bar, { height: b.height as any, backgroundColor: isDark ? b.color : colors.primary + '80' }]} />
+                <Text style={[styles.barLabel, { color: colors.onSurfaceVariant }]}>{b.day}</Text>
               </View>
             ))}
           </View>
         </View>
 
         {/* Focus Allocation */}
-        <View style={styles.allocationSection}>
-          <Text style={styles.sectionTitle}>Focus Allocation</Text>
-          <View style={styles.allocationBar}>
+        <View style={[styles.allocationSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Focus Allocation</Text>
+          <View style={[styles.allocationBar, { backgroundColor: colors.background }]}>
             {allocation.map((a, i) =>                <View key={i} style={[styles.allocationSegment, { width: a.pct as any, backgroundColor: a.color }]} />
             )}
           </View>
@@ -139,9 +142,9 @@ export default function StatsScreen() {
               <View key={i} style={styles.allocationItem}>
                 <View style={styles.allocationLeft}>
                   <View style={[styles.dot, { backgroundColor: a.color }]} />
-                  <Text style={styles.allocationText}>{a.label}</Text>
+                  <Text style={[styles.allocationText, { color: colors.onSurfaceVariant }]}>{a.label}</Text>
                 </View>
-                <Text style={styles.allocationPct}>{a.pct}</Text>
+                <Text style={[styles.allocationPct, { color: colors.onSurface }]}>{a.pct}</Text>
               </View>
             ))}
           </View>
@@ -149,22 +152,22 @@ export default function StatsScreen() {
 
         {/* Highlights */}
         <View style={styles.highlightsGrid}>
-          <View style={[styles.highlightCard, { backgroundColor: 'rgba(78, 222, 163, 0.1)' }]}>
+          <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.1)' : '#ecfdf5' }]}>
             <View style={styles.highlightIcon}>
-              <Award size={24} color="#4edea3" fill="rgba(78, 222, 163, 0.4)" />
+              <Award size={24} color="#4edea3" fill={isDark ? "rgba(78, 222, 163, 0.4)" : "rgba(78, 222, 163, 0.2)"} />
             </View>
             <View>
-              <Text style={styles.highlightLabel}>BEST DAY</Text>
-              <Text style={styles.highlightValue}>Tuesday</Text>
+              <Text style={[styles.highlightLabel, { color: colors.onSurfaceVariant }]}>BEST DAY</Text>
+              <Text style={[styles.highlightValue, { color: colors.onSurface }]}>Tuesday</Text>
             </View>
           </View>
-          <View style={[styles.highlightCard, { backgroundColor: 'rgba(129, 140, 248, 0.1)' }]}>
+          <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(129, 140, 248, 0.1)' : '#eef2ff' }]}>
             <View style={styles.highlightIcon}>
-              <Star size={24} color="#818cf8" fill="rgba(129, 140, 248, 0.4)" />
+              <Star size={24} color={colors.primary} fill={isDark ? "rgba(129, 140, 248, 0.4)" : colors.primary + '30'} />
             </View>
             <View>
-              <Text style={styles.highlightLabel}>BEST WEEK</Text>
-              <Text style={styles.highlightValue}>Week 12</Text>
+              <Text style={[styles.highlightLabel, { color: colors.onSurfaceVariant }]}>BEST WEEK</Text>
+              <Text style={[styles.highlightValue, { color: colors.onSurface }]}>Week 12</Text>
             </View>
           </View>
         </View>

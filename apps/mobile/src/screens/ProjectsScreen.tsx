@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Folder, Link as LinkIcon, Plus, ChevronRight, LayoutGrid, Github } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 const { width } = Dimensions.get('window');
 
 const projects = [
@@ -14,8 +16,9 @@ const projects = [
 ];
 
 export default function ProjectsScreen() {
+  const { colors, isDark } = useAppTheme();
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -23,73 +26,73 @@ export default function ProjectsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.label}>DEVELOPER WORKSPACE</Text>
-            <Text style={styles.title}>Project Focus</Text>
+            <Text style={[styles.label, { color: colors.primary }]}>DEVELOPER WORKSPACE</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>Project Focus</Text>
           </View>
-          <TouchableOpacity style={styles.addBtn}>
-            <Plus size={24} color="#818cf8" />
+          <TouchableOpacity style={[styles.addBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <Plus size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.description}>
+        <Text style={[styles.description, { color: colors.onSurfaceVariant }]}>
           Track your deep work hours per repository and analyze where your engineering energy is going.
         </Text>
 
         {/* Project List */}
         <View style={styles.projectList}>
           {projects.map((project, i) => (
-            <TouchableOpacity key={i} style={styles.projectCard}>
+            <TouchableOpacity key={i} style={[styles.projectCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
               <View style={styles.cardHeader}>
                 <View style={[styles.iconContainer, { backgroundColor: project.color }]}>
                   <Folder size={24} color="#fff" />
                 </View>
-                <View style={[styles.statusBadge, { backgroundColor: project.status === 'active' ? 'rgba(78, 222, 163, 0.1)' : 'rgba(70, 69, 84, 0.2)' }]}>
-                  <Text style={[styles.statusText, { color: project.status === 'active' ? '#4edea3' : '#64748b' }]}>
+                <View style={[styles.statusBadge, { backgroundColor: project.status === 'active' ? 'rgba(78, 222, 163, 0.1)' : colors.outlineVariant + '40' }]}>
+                  <Text style={[styles.statusText, { color: project.status === 'active' ? '#4edea3' : colors.onSurfaceVariant }]}>
                     {project.status.toUpperCase()}
                   </Text>
                 </View>
               </View>
 
               <View style={styles.cardInfo}>
-                <Text style={styles.projectName}>{project.name}</Text>
+                <Text style={[styles.projectName, { color: colors.onSurface }]}>{project.name}</Text>
                 <View style={styles.repoRow}>
-                  <LinkIcon size={12} color="#64748b" />
-                  <Text style={styles.repoText}>{project.repo}</Text>
+                  <LinkIcon size={12} color={colors.onSurfaceVariant} />
+                  <Text style={[styles.repoText, { color: colors.onSurfaceVariant }]}>{project.repo}</Text>
                 </View>
               </View>
 
-              <View style={styles.cardFooter}>
+              <View style={[styles.cardFooter, { borderTopColor: colors.outlineVariant }]}>
                 <View>
-                  <Text style={styles.footerLabel}>TOTAL FOCUS</Text>
-                  <Text style={styles.focusValue}>{project.focusTime}</Text>
+                  <Text style={[styles.footerLabel, { color: colors.onSurfaceVariant }]}>TOTAL FOCUS</Text>
+                  <Text style={[styles.focusValue, { color: colors.onSurface }]}>{project.focusTime}</Text>
                 </View>
-                <TouchableOpacity style={styles.detailBtn}>
-                  <ChevronRight size={20} color="#818cf8" />
+                <TouchableOpacity style={[styles.detailBtn, { backgroundColor: colors.background }]}>
+                  <ChevronRight size={20} color={colors.primary} />
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
           ))}
 
           {/* Connect More Card */}
-          <TouchableOpacity style={styles.connectCard}>
+          <TouchableOpacity style={[styles.connectCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surface + '30' }]}>
             <View style={styles.connectIcon}>
-              <Github size={24} color="#818cf8" />
+              <Github size={24} color={colors.primary} />
             </View>
-            <Text style={styles.connectText}>CONNECT REPOSITORY</Text>
+            <Text style={[styles.connectText, { color: colors.primary }]}>CONNECT REPOSITORY</Text>
           </TouchableOpacity>
         </View>
 
         {/* Engineering Analysis Card */}
         <LinearGradient
-          colors={['rgba(99, 102, 241, 0.15)', 'rgba(99, 102, 241, 0.05)']}
-          style={styles.analysisCard}
+          colors={[isDark ? 'rgba(99, 102, 241, 0.15)' : '#e0e7ff', isDark ? 'rgba(99, 102, 241, 0.05)' : '#f3f4f6']}
+          style={[styles.analysisCard, { borderColor: isDark ? 'rgba(129, 140, 248, 0.2)' : '#c7d2fe' }]}
         >
           <View style={styles.analysisHeader}>
-            <LayoutGrid size={24} color="#818cf8" />
-            <Text style={styles.analysisTitle}>Engineering Analysis</Text>
+            <LayoutGrid size={24} color={colors.primary} />
+            <Text style={[styles.analysisTitle, { color: colors.onSurface }]}>Engineering Analysis</Text>
           </View>
-          <Text style={styles.analysisContent}>
-            You've spent <Text style={styles.highlight}>82%</Text> of your focus time this week on the <Text style={styles.underlined}>focusdev</Text> project. Consider checking your backlog on secondary projects.
+          <Text style={[styles.analysisContent, { color: colors.onSurfaceVariant }]}>
+            You've spent <Text style={[styles.highlight, { color: colors.primary }]}>82%</Text> of your focus time this week on the <Text style={[styles.underlined, { color: colors.onSurface }]}>focusdev</Text> project. Consider checking your backlog on secondary projects.
           </Text>
         </LinearGradient>
       </ScrollView>

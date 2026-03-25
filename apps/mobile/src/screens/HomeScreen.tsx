@@ -10,24 +10,34 @@ import { Svg, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { calculateStreak } from '../utils/streak';
+import { useAppTheme } from '../hooks/useAppTheme';
+import { useSettingsStore } from '../store/settings-store';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const timerDuration = useSettingsStore(state => state.timerDuration);
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [allSessions, setAllSessions] = useState<any[]>([]);
-  const [timerSeconds, setTimerSeconds] = useState(25 * 60);
+  const [timerSeconds, setTimerSeconds] = useState(timerDuration * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [loading, setLoading] = useState(true);
   const user = useAuthStore((state: any) => state.user);
+  const { colors, isDark } = useAppTheme();
+
+  useEffect(() => {
+    if (!isActive) {
+      setTimerSeconds(timerDuration * 60);
+    }
+  }, [timerDuration, isActive]);
 
   // Constants for the SVG ring
   const size = 260;
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const progress = timerSeconds / (25 * 60);
+  const progress = timerSeconds / (timerDuration * 60);
   const strokeDashoffset = circumference - (1 - progress) * circumference;
 
   const fetchData = useCallback(async () => {
@@ -81,7 +91,7 @@ export default function HomeScreen() {
           await focusService.endSession(sessionId, 'Completed focus block');
         }
         setIsActive(false);
-        setTimerSeconds(25 * 60);
+        setTimerSeconds(timerDuration * 60);
         setSessionId(null);
         fetchData();
       } catch (error) {
@@ -99,27 +109,27 @@ export default function HomeScreen() {
   const tags = ['Coding', 'Learning', 'Building', 'Review', 'Other'];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.background }]}>
               <View style={styles.logoRow}>
-                <Terminal color="#818cf8" size={24} />
-                <Text style={styles.headerTitle}>MONOLITH</Text>
+                <Terminal color={colors.primary} size={24} />
+                <Text style={[styles.headerTitle, { color: colors.primary }]}>MONOLITH</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 12 }}>
-                <TouchableOpacity style={styles.iconBtn}>
-                  <Bell color="#c7c4d7" size={20} />
+                <TouchableOpacity style={[styles.iconBtn, { backgroundColor: colors.surface }]}>
+                  <Bell color={colors.onSurfaceVariant} size={20} />
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.iconBtn}
+                  style={[styles.iconBtn, { backgroundColor: colors.surface }]}
                   onPress={() => navigation.navigate('Profile')}
                 >
-                  <UserIcon color="#c7c4d7" size={20} />
+                  <UserIcon color={colors.onSurfaceVariant} size={20} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -131,11 +141,11 @@ export default function HomeScreen() {
             >
               <View style={styles.welcomeSection}>
                 <View>
-                  <Text style={styles.welcomeLabel}>GOOD MORNING, DEVELOPER</Text>
-                  <Text style={styles.welcomeTitle}>{user?.name?.split(' ')[0] || 'Member'}</Text>
+                  <Text style={[styles.welcomeLabel, { color: colors.onSurfaceVariant }]}>GOOD MORNING, DEVELOPER</Text>
+                  <Text style={[styles.welcomeTitle, { color: colors.onSurface }]}>{user?.name?.split(' ')[0] || 'Member'}</Text>
                 </View>
-                <View style={styles.streakBadge}>
-                  <Text style={styles.streakText}>{calculateStreak(allSessions)} DAY STREAK 🔥</Text>
+                <View style={[styles.streakBadge, { backgroundColor: isDark ? 'rgba(255, 185, 95, 0.1)' : '#ffedd5', borderColor: isDark ? 'rgba(255, 185, 95, 0.2)' : '#fed7aa' }]}>
+                  <Text style={[styles.streakText, { color: isDark ? '#ffb95f' : '#ea580c' }]}>{calculateStreak(allSessions)} DAY STREAK 🔥</Text>
                 </View>
               </View>
 
@@ -146,7 +156,7 @@ export default function HomeScreen() {
                       cx={size / 2}
                       cy={size / 2}
                       r={radius}
-                      stroke="rgba(129, 140, 248, 0.1)"
+                      stroke={isDark ? "rgba(129, 140, 248, 0.1)" : "rgba(73, 75, 214, 0.1)"}
                       strokeWidth={strokeWidth}
                       fill="none"
                     />
@@ -154,7 +164,7 @@ export default function HomeScreen() {
                       cx={size / 2}
                       cy={size / 2}
                       r={radius}
-                      stroke="#818cf8"
+                      stroke={colors.primary}
                       strokeWidth={strokeWidth}
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}
@@ -164,26 +174,26 @@ export default function HomeScreen() {
                     />
                   </Svg>
                   <View style={styles.timeDisplay}>
-                    <Text style={styles.timeText}>{formatTime(timerSeconds)}</Text>
-                    <Text style={styles.sessionType}>{isActive ? 'FOCUSED ON...' : 'DEEP WORK'}</Text>
+                    <Text style={[styles.timeText, { color: colors.onSurface }]}>{formatTime(timerSeconds)}</Text>
+                    <Text style={[styles.sessionType, { color: colors.primary }]}>{isActive ? 'FOCUSED ON...' : 'DEEP WORK'}</Text>
                   </View>
                 </View>
               </View>
 
-              <View style={styles.actionCard}>
-                <Text style={styles.inputLabel}>ACTIVE MISSION</Text>
+              <View style={[styles.actionCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>ACTIVE MISSION</Text>
                 <TextInput 
-                  style={styles.input}
+                  style={[styles.input, { color: colors.onSurface }]}
                   placeholder="What are you working on?"
-                  placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                  placeholderTextColor={isDark ? "rgba(199, 196, 215, 0.4)" : "rgba(100, 116, 139, 0.4)"}
                   value={taskTitle}
                   onChangeText={setTaskTitle}
                   editable={!isActive}
                 />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagStrip}>
                   {tags.map((tag) => (
-                    <TouchableOpacity key={tag} style={styles.tag} onPress={() => !isActive && setTaskTitle(tag)}>
-                      <Text style={styles.tagText}>{tag.toUpperCase()}</Text>
+                    <TouchableOpacity key={tag} style={[styles.tag, { backgroundColor: isDark ? '#232a3d' : '#f1f5f9' }]} onPress={() => !isActive && setTaskTitle(tag)}>
+                      <Text style={[styles.tagText, { color: colors.onSurfaceVariant }]}>{tag.toUpperCase()}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -194,7 +204,7 @@ export default function HomeScreen() {
                     onPress={handleToggleTimer}
                   >
                     <LinearGradient
-                      colors={isActive ? ['#ef4444', '#b91c1c'] : ['#818cf8', '#6366f1']}
+                      colors={isActive ? ['#ef4444', '#b91c1c'] : [colors.primary, isDark ? '#6366f1' : '#312e81']}
                       style={styles.gradientBtn}
                     >
                       {isActive ? <Square size={20} color="#fff" fill="#fff" /> : <Play size={20} color="#fff" fill="#fff" />}
@@ -202,48 +212,48 @@ export default function HomeScreen() {
                     </LinearGradient>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity style={styles.skipBtn} onPress={() => {
-                    setTimerSeconds(25 * 60);
+                  <TouchableOpacity style={[styles.skipBtn, { backgroundColor: isDark ? '#232a3d' : '#f1f5f9' }]} onPress={() => {
+                    setTimerSeconds(timerDuration * 60);
                     setIsActive(false);
                     setSessionId(null);
                   }}>
-                    <FastForward size={20} color="#c7c4d7" />
-                    <Text style={styles.skipBtnText}>RESET</Text>
+                    <FastForward size={20} color={colors.onSurfaceVariant} />
+                    <Text style={[styles.skipBtnText, { color: colors.onSurfaceVariant }]}>RESET</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Recent Sessions</Text>
+                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Recent Sessions</Text>
                 <TouchableOpacity onPress={fetchData}>
-                  <Text style={styles.viewAll}>Refresh</Text>
+                  <Text style={[styles.viewAll, { color: colors.primary }]}>Refresh</Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.sessionsList}>
                 {recentTasks.length > 0 ? recentTasks.map((task) => (
-                  <TouchableOpacity key={task.id} style={styles.sessionCard}>
+                  <TouchableOpacity key={task.id} style={[styles.sessionCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                     <View style={styles.sessionInfo}>
-                      <Text style={styles.sessionTitle}>{task.title}</Text>
+                      <Text style={[styles.sessionTitle, { color: colors.onSurface }]}>{task.title}</Text>
                       <View style={styles.sessionMeta}>
-                        <View style={styles.tagSmall}>
-                          <Text style={styles.tagTextSmall}>{task.status.toUpperCase()}</Text>
+                        <View style={[styles.tagSmall, { backgroundColor: colors.primary + '15' }]}>
+                          <Text style={[styles.tagTextSmall, { color: colors.primary }]}>{task.status.toUpperCase()}</Text>
                         </View>
                         <View style={styles.timeMeta}>
-                          <Clock size={12} color="#64748b" />
-                          <Text style={styles.metaText}>
+                          <Clock size={12} color={colors.onSurfaceVariant} />
+                          <Text style={[styles.metaText, { color: colors.onSurfaceVariant }]}>
                             {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </Text>
                         </View>
                       </View>
                     </View>
                     <TouchableOpacity style={styles.editBtn}>
-                      <Text style={styles.editText}>EDIT</Text>
+                      <Text style={[styles.editText, { color: colors.onSurfaceVariant }]}>EDIT</Text>
                     </TouchableOpacity>
                   </TouchableOpacity>
                 )) : (
                   <View style={styles.emptySessions}>
-                    <Text style={styles.emptyText}>No recent sessions. Start focus!</Text>
+                    <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>No recent sessions. Start focus!</Text>
                   </View>
                 )}
               </View>

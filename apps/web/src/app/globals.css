@@ -3,25 +3,91 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #0e1322;
+  --surface: #ffffff;
   --on-surface: #0e1322;
   --on-surface-variant: #64748b;
+  --surface-container-lowest: #ffffff;
   --surface-container-low: #f8fafc;
   --surface-container: #f1f5f9;
+  --surface-container-high: #e2e8f0;
+  --surface-container-highest: #cbd5e1;
+  --surface-dim: #f1f5f9;
+  --surface-bright: #ffffff;
+  --on-background: #0e1322;
+  
+  --primary: #494bd6;
+  --on-primary: #ffffff;
+  --primary-container: #e1e0ff;
+  --on-primary-container: #07006c;
+  
+  --secondary: #006d48;
+  --on-secondary: #ffffff;
+  --secondary-container: #6ffbbe;
+  --on-secondary-container: #002113;
+  
+  --tertiary: #8b5000;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #ffddb8;
+  --on-tertiary-container: #2a1700;
+
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #410002;
+  
+  --outline: #747785;
+  --outline-variant: #c4c6d4;
+  --inverse-surface: #2f303f;
+  --inverse-on-surface: #f1f0f4;
+  --inverse-primary: #bec2ff;
 }
 
 .dark {
   --background: #0e1322;
   --foreground: #dee1f7;
+  --surface: #0e1322;
   --on-surface: #dee1f7;
-  --on-surface-variant: #8b8e9f;
-  --surface-container-low: #161b2c;
-  --surface-container: #1c2235;
+  --on-surface-variant: #c7c4d7;
+  --surface-container-lowest: #090e1c;
+  --surface-container-low: #161b2b;
+  --surface-container: #1a1f2f;
+  --surface-container-high: #25293a;
+  --surface-container-highest: #2f3445;
+  --surface-dim: #0e1322;
+  --surface-bright: #343949;
+  --on-background: #dee1f7;
+  
+  --primary: #c0c1ff;
+  --on-primary: #07006c;
+  --primary-container: #8083ff;
+  --on-primary-container: #0d0096;
+  
+  --secondary: #4edea3;
+  --on-secondary: #003824;
+  --secondary-container: #00a572;
+  --on-secondary-container: #00311f;
+  
+  --tertiary: #ffb95f;
+  --on-tertiary: #472a00;
+  --tertiary-container: #ca8100;
+  --on-tertiary-container: #3e2400;
+
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+  
+  --outline: #908fa0;
+  --outline-variant: #464554;
+  --inverse-surface: #dee1f7;
+  --inverse-on-surface: #2b3040;
+  --inverse-primary: #494bd6;
 }
 
 body {
-  color: var(--foreground);
+  color: var(--on-surface);
   background: var(--background);
   transition: background 0.3s ease, color 0.3s ease;
 }
@@ -31,12 +97,14 @@ body {
     text-wrap: balance;
   }
   .dot-grid {
-    background-image: radial-gradient(circle, #2f3445 1px, transparent 1px);
+    background-image: radial-gradient(circle, var(--outline-variant) 1px, transparent 1px);
     background-size: 24px 24px;
+    opacity: 0.2;
   }
   .glass-panel {
-    background: rgba(47, 52, 69, 0.7);
+    background: var(--surface-container);
     backdrop-filter: blur(20px);
+    border: 1px solid var(--outline-variant);
   }
 }
 

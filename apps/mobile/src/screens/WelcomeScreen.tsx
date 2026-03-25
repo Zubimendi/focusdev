@@ -5,12 +5,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Terminal, Timer, Target, ChevronRight } from 'lucide-react-native';
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen({ navigation }: any) {
+  const { colors, isDark } = useAppTheme();
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
       {/* Background radial-like glow effects */}
       <View style={styles.glowBottomLeft} />
@@ -40,8 +43,8 @@ export default function WelcomeScreen({ navigation }: any) {
 
           {/* Headline */}
           <View style={styles.headlineSection}>
-            <Text style={styles.title}>MONOLITH</Text>
-            <Text style={styles.subtitle}>Your dev focus, tracked.</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>MONOLITH</Text>
+            <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Your dev focus, tracked.</Text>
           </View>
 
           {/* Action Area */}
@@ -64,20 +67,20 @@ export default function WelcomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Login')}
               style={styles.loginLink}
             >
-              <Text style={styles.loginLinkText}>Log In</Text>
+              <Text style={[styles.loginLinkText, { color: colors.primary }]}>Log In</Text>
             </TouchableOpacity>
           </View>
 
           {/* Stats Preview Cards */}
           <View style={styles.statsGrid}>
             {/* Focus Depth Card */}
-            <View style={styles.glassCard}>
+            <View style={[styles.glassCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
               <View style={styles.cardHeader}>
                 <Timer size={14} color="#4edea3" />
-                <Text style={styles.cardLabel}>FOCUS DEPTH</Text>
+                <Text style={[styles.cardLabel, { color: colors.onSurfaceVariant }]}>FOCUS DEPTH</Text>
               </View>
-              <Text style={styles.cardValueMono}>02:00:00</Text>
-              <View style={styles.progressBarBg}>
+              <Text style={[styles.cardValueMono, { color: colors.primary }]}>02:00:00</Text>
+              <View style={[styles.progressBarBg, { backgroundColor: colors.background }]}>
                 <LinearGradient
                   colors={['#c0c1ff', '#8083ff']}
                   start={{ x: 0, y: 0 }}
@@ -88,17 +91,17 @@ export default function WelcomeScreen({ navigation }: any) {
             </View>
 
             {/* Daily Goal Card */}
-            <View style={styles.glassCard}>
+            <View style={[styles.glassCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
               <View style={styles.cardHeader}>
                 <Target size={14} color="#ffb95f" />
-                <Text style={styles.cardLabel}>DAILY GOAL</Text>
+                <Text style={[styles.cardLabel, { color: colors.onSurfaceVariant }]}>DAILY GOAL</Text>
               </View>
               <View style={styles.blocksContainer}>
                 <View style={[styles.block, { backgroundColor: '#4edea3' }]} />
                 <View style={[styles.block, { backgroundColor: '#4edea3', opacity: 0.4 }]} />
-                <View style={[styles.block, { backgroundColor: '#161b2b' }]} />
+                <View style={[styles.block, { backgroundColor: colors.background }]} />
               </View>
-              <Text style={styles.intensityLabel}>HIGH INTENSITY</Text>
+              <Text style={[styles.intensityLabel, { color: colors.onSurface }]}>HIGH INTENSITY</Text>
             </View>
           </View>
         </View>

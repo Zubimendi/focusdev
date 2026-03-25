@@ -6,9 +6,12 @@ import { User, Mail, Lock, Terminal, ArrowLeft, Eye, EyeOff } from 'lucide-react
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../store/auth-store';
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 const { width } = Dimensions.get('window');
 
 export default function RegisterScreen({ navigation }: any) {
+  const { colors, isDark } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -63,29 +66,29 @@ export default function RegisterScreen({ navigation }: any) {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <TouchableOpacity 
-                style={styles.backButton}
+                style={[styles.backButton, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                 onPress={() => navigation.goBack()}
               >
-                <ArrowLeft color="#c7c4d7" size={24} />
+                <ArrowLeft color={colors.onSurfaceVariant} size={24} />
               </TouchableOpacity>
 
               <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <Terminal color="#c0c1ff" size={32} strokeWidth={2.5} />
+                <View style={[styles.logoContainer, { backgroundColor: colors.surface, borderColor: isDark ? colors.primary + '40' : colors.outlineVariant }]}>
+                  <Terminal color={colors.primary} size={32} strokeWidth={2.5} />
                 </View>
-                <Text style={styles.title}>Join the focus</Text>
-                <Text style={styles.subtitle}>Enter the monolith, master your engineering time.</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]}>Join the focus</Text>
+                <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Enter the monolith, master your engineering time.</Text>
               </View>
 
               <View style={styles.form}>
                 <View style={styles.inputWrapper}>
-                  <Text style={styles.inputLabel}>FULL NAME</Text>
-                  <View style={styles.inputContainer}>
-                    <User color="#8083ff" size={18} style={styles.inputIcon} />
+                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>FULL NAME</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                    <User color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.onSurface }]}
                       placeholder="Linus Torvalds"
-                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      placeholderTextColor={colors.onSurfaceVariant + '66'}
                       value={name}
                       onChangeText={setName}
                     />
@@ -93,13 +96,13 @@ export default function RegisterScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                  <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
-                  <View style={styles.inputContainer}>
-                    <Mail color="#8083ff" size={18} style={styles.inputIcon} />
+                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>EMAIL ADDRESS</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                    <Mail color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.onSurface }]}
                       placeholder="linus@linux.org"
-                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      placeholderTextColor={colors.onSurfaceVariant + '66'}
                       value={email}
                       onChangeText={setEmail}
                       autoCapitalize="none"
@@ -109,13 +112,13 @@ export default function RegisterScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                  <Text style={styles.inputLabel}>PASSWORD</Text>
-                  <View style={styles.inputContainer}>
-                    <Lock color="#8083ff" size={18} style={styles.inputIcon} />
+                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>PASSWORD</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                    <Lock color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.onSurface }]}
                       placeholder="••••••••"
-                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      placeholderTextColor={colors.onSurfaceVariant + '66'}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -125,9 +128,9 @@ export default function RegisterScreen({ navigation }: any) {
                       style={styles.eyeIcon}
                     >
                       {showPassword ? (
-                        <EyeOff color="#c7c4d7" size={20} />
+                        <EyeOff color={colors.onSurfaceVariant} size={20} />
                       ) : (
-                        <Eye color="#c7c4d7" size={20} />
+                        <Eye color={colors.onSurfaceVariant} size={20} />
                       )}
                     </TouchableOpacity>
                   </View>
@@ -152,9 +155,9 @@ export default function RegisterScreen({ navigation }: any) {
                 </TouchableOpacity>
 
                 <View style={styles.footer}>
-                  <Text style={styles.footerText}>Already a member? </Text>
+                  <Text style={[styles.footerText, { color: colors.onSurfaceVariant }]}>Already a member? </Text>
                   <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.footerLink}>Login</Text>
+                    <Text style={[styles.footerLink, { color: colors.primary }]}>Login</Text>
                   </TouchableOpacity>
                 </View>
               </View>

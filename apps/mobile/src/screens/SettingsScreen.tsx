@@ -2,11 +2,13 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Moon, Sun, Clock, Bell } from "lucide-react-native";
+import { useAppTheme } from '../hooks/useAppTheme';
 import { useSettingsStore } from "../store/settings-store";
 import { useNavigation } from "@react-navigation/native";
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
+  const { colors, isDark } = useAppTheme();
   const {
     theme,
     setTheme,
@@ -15,43 +17,42 @@ export default function SettingsScreen() {
     notificationSound,
     setNotificationSound,
   } = useSettingsStore();
-  const isDark = theme === "dark";
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0e1322" : "#ffffff" }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={isDark ? "#dee1f7" : "#0e1322"} />
+          <ArrowLeft size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: isDark ? "#dee1f7" : "#0e1322" }]}>Settings</Text>
+        <Text style={[styles.title, { color: colors.onSurface }]}>Settings</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: isDark ? "#8b8e9f" : "#64748b" }]}>Appearance</Text>
-        <View style={[styles.card, { backgroundColor: isDark ? "#161b2b" : "#f1f5f9" }]}>
+        <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Appearance</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <TouchableOpacity
-            style={[styles.row, theme === "dark" && styles.activeRow]}
+            style={[styles.row, theme === "dark" && { backgroundColor: isDark ? "#1c2235" : "#e2e8f0" }]}
             onPress={() => setTheme("dark")}
           >
-            <Moon size={20} color={theme === "dark" ? "#c0c1ff" : "#64748b"} />
+            <Moon size={20} color={theme === "dark" ? colors.primary : colors.onSurfaceVariant} />
             <Text
-              style={[styles.rowText, { color: isDark ? "#c7c4d7" : "#0e1322" }, theme === "dark" && styles.activeText]}
+              style={[styles.rowText, { color: colors.onSurfaceVariant }, theme === "dark" && { color: colors.primary }]}
             >
               Dark Theme
             </Text>
           </TouchableOpacity>
-          <View style={[styles.divider, { backgroundColor: isDark ? "#1f2438" : "#e2e8f0" }]} />
+          <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
           <TouchableOpacity
-            style={[styles.row, theme === "light" && styles.activeRow]}
+            style={[styles.row, theme === "light" && { backgroundColor: isDark ? "#1c2235" : "#e2e8f0" }]}
             onPress={() => setTheme("light")}
           >
-            <Sun size={20} color={theme === "light" ? "#c0c1ff" : "#64748b"} />
+            <Sun size={20} color={theme === "light" ? colors.primary : colors.onSurfaceVariant} />
             <Text
-              style={[styles.rowText, { color: isDark ? "#c7c4d7" : "#0e1322" }, theme === "light" && styles.activeText]}
+              style={[styles.rowText, { color: colors.onSurfaceVariant }, theme === "light" && { color: colors.primary }]}
             >
               Light Theme
             </Text>
@@ -60,11 +61,11 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: isDark ? "#8b8e9f" : "#64748b" }]}>Pomodoro Config</Text>
-        <View style={[styles.card, { backgroundColor: isDark ? "#161b2b" : "#f1f5f9" }]}>
+        <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Pomodoro Config</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <View style={styles.row}>
-            <Clock size={20} color={isDark ? "#c7c4d7" : "#64748b"} />
-            <Text style={[styles.rowText, { color: isDark ? "#c7c4d7" : "#0e1322" }]}>Duration: {timerDuration}m</Text>
+            <Clock size={20} color={colors.onSurfaceVariant} />
+            <Text style={[styles.rowText, { color: colors.onSurface }]}>Duration: {timerDuration}m</Text>
           </View>
           <View style={styles.durationButtons}>
             {[15, 25, 45, 60].map((dur) => (
@@ -72,16 +73,16 @@ export default function SettingsScreen() {
                 key={dur}
                 style={[
                   styles.pill,
-                  { backgroundColor: isDark ? "#1f2438" : "#e2e8f0" },
-                  timerDuration === dur && styles.activePill,
+                  { backgroundColor: colors.background },
+                  timerDuration === dur && { backgroundColor: colors.primary },
                 ]}
                 onPress={() => setTimerDuration(dur)}
               >
                 <Text
                   style={[
                     styles.pillText,
-                    { color: isDark ? "#c7c4d7" : "#64748b" },
-                    timerDuration === dur && styles.activePillText,
+                    { color: colors.onSurfaceVariant },
+                    timerDuration === dur && { color: colors.onPrimary },
                   ]}
                 >
                   {dur}m
@@ -93,8 +94,8 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: isDark ? "#8b8e9f" : "#64748b" }]}>Notifications</Text>
-        <View style={[styles.card, { backgroundColor: isDark ? "#161b2b" : "#f1f5f9" }]}>
+        <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Notifications</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <TouchableOpacity
             style={styles.row}
             onPress={() =>
@@ -105,8 +106,8 @@ export default function SettingsScreen() {
               )
             }
           >
-            <Bell size={20} color={isDark ? "#c7c4d7" : "#64748b"} />
-            <Text style={[styles.rowText, { color: isDark ? "#c7c4d7" : "#0e1322" }]}>Sound: {notificationSound}</Text>
+            <Bell size={20} color={colors.onSurfaceVariant} />
+            <Text style={[styles.rowText, { color: colors.onSurface }]}>Sound: {notificationSound}</Text>
           </TouchableOpacity>
         </View>
       </View>

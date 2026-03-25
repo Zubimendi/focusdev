@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useSettingsStore } from "@/store/settings";
+import { signIn } from "next-auth/react";
 
 export default function SettingsPage() {
   const { theme, setTheme, timerDuration, setTimerDuration, notificationSound, setNotificationSound } = useSettingsStore();
@@ -170,7 +171,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => window.location.href = '/api/auth/signin/github'}
+                  onClick={() => signIn('github', { callbackUrl: '/settings' })}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all"
                 >
                   Connect

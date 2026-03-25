@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Circle } from 'react-native-svg';
 import { Terminal, Calendar, Filter, Clock, Edit2, Bolt } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { width } = Dimensions.get('window');
 
@@ -16,21 +17,14 @@ const sessions = [
 
 const getInitialDays = () => {
   const now = new Date();
-  const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday...
-  const diff = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1); // Start from Monday
-  
+  const currentDay = now.getDay();
+  const diff = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
   const monday = new Date(now.setDate(diff));
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
   return weekDays.map((day, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    return {
-      day,
-      date: d.getDate(),
-      fullDate: d.toDateString(),
-      active: d.toDateString() === new Date().toDateString()
-    };
+    return { day, date: d.getDate(), fullDate: d.toDateString(), active: d.toDateString() === new Date().toDateString() };
   });
 };
 
@@ -38,6 +32,7 @@ const days = getInitialDays();
 const currentLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
 export default function SessionsScreen() {
+  const { colors, isDark } = useAppTheme();
   const progress = 0.75;
   const size = 64;
   const strokeWidth = 5;
@@ -46,15 +41,15 @@ export default function SessionsScreen() {
   const offset = circumference - progress * circumference;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
         <View style={styles.logoRow}>
-          <Terminal color="#818cf8" size={24} />
-          <Text style={styles.logoText}>MONOLITH</Text>
+          <Terminal color={colors.primary} size={24} />
+          <Text style={[styles.logoText, { color: colors.primary }]}>MONOLITH</Text>
         </View>
         <TouchableOpacity style={styles.profileBtn}>
-          <Calendar color="#64748b" size={20} />
-          <View style={styles.avatarPlaceholder} />
+          <Calendar color={colors.onSurfaceVariant} size={20} />
+          <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? '#2f3445' : '#e2e8f0' }]} />
         </TouchableOpacity>
       </View>
 
@@ -65,12 +60,12 @@ export default function SessionsScreen() {
       >
         <View style={styles.titleRow}>
           <View>
-            <Text style={styles.label}>LOG HISTORY</Text>
-            <Text style={styles.title}>Sessions</Text>
+            <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>LOG HISTORY</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>Sessions</Text>
           </View>
-          <TouchableOpacity style={styles.filterBtn}>
-            <Filter size={14} color="#dee1f7" />
-            <Text style={styles.filterText}>{currentLabel}</Text>
+          <TouchableOpacity style={[styles.filterBtn, { backgroundColor: colors.surface }]}>
+            <Filter size={14} color={colors.onSurface} />
+            <Text style={[styles.filterText, { color: colors.onSurface }]}>{currentLabel}</Text>
           </TouchableOpacity>
         </View>
 
@@ -85,28 +80,28 @@ export default function SessionsScreen() {
               key={idx} 
               style={[
                 styles.dateCard, 
-                item.active ? styles.dateCardActive : styles.dateCardInactive
+                item.active ? { backgroundColor: colors.primary } : { backgroundColor: colors.surface, opacity: 0.6 }
               ]}
             >
-              <Text style={[styles.dateDay, item.active && styles.textActive]}>{item.day}</Text>
-              <Text style={[styles.dateDate, item.active && styles.textActive]}>{item.date}</Text>
-              {item.active && <View style={styles.activeDot} />}
+              <Text style={[styles.dateDay, { color: item.active ? colors.onPrimary : colors.onSurfaceVariant }]}>{item.day}</Text>
+              <Text style={[styles.dateDate, { color: item.active ? colors.onPrimary : colors.onSurface }]}>{item.date}</Text>
+              {item.active && <View style={[styles.activeDot, { backgroundColor: colors.onPrimary }]} />}
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        <View style={styles.summaryCard}>
+        <View style={[styles.summaryCard, { backgroundColor: isDark ? 'rgba(47, 52, 69, 0.7)' : 'rgba(255, 255, 255, 0.7)', borderColor: colors.outlineVariant }]}>
           <View style={styles.summaryInfo}>
-            <Text style={styles.summaryLabel}>TODAY'S PERFORMANCE</Text>
+            <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>TODAY&apos;S PERFORMANCE</Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>4</Text>
-                <Text style={styles.statUnit}>sessions</Text>
+                <Text style={[styles.statValue, { color: colors.primary }]}>4</Text>
+                <Text style={[styles.statUnit, { color: colors.onSurfaceVariant }]}>sessions</Text>
               </View>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>1h 40m</Text>
-                <Text style={styles.statUnit}>focus</Text>
+                <Text style={[styles.statValue, { color: colors.primary }]}>1h 40m</Text>
+                <Text style={[styles.statUnit, { color: colors.onSurfaceVariant }]}>focus</Text>
               </View>
             </View>
           </View>
@@ -117,7 +112,7 @@ export default function SessionsScreen() {
                 cx={size / 2}
                 cy={size / 2}
                 r={radius}
-                stroke="#161b2b"
+                stroke={isDark ? "#161b2b" : "#f1f5f9"}
                 strokeWidth={strokeWidth}
                 fill="none"
               />
@@ -141,23 +136,23 @@ export default function SessionsScreen() {
 
         <View style={styles.sessionsList}>
           {sessions.map((session) => (
-            <View key={session.id} style={styles.sessionCard}>
+            <View key={session.id} style={[styles.sessionCard, { backgroundColor: colors.surface }]}>
               <View style={[styles.cardSidebar, { backgroundColor: session.color }]} />
               <View style={styles.cardContent}>
                 <View style={styles.cardInfo}>
-                  <Text style={styles.sessionTitle}>{session.title}</Text>
+                  <Text style={[styles.sessionTitle, { color: colors.onSurface }]}>{session.title}</Text>
                   <View style={styles.sessionTags}>
                     <View style={[styles.tag, { backgroundColor: `${session.color}15` }]}>
                       <Text style={[styles.tagText, { color: session.color }]}>{session.type}</Text>
                     </View>
                     <View style={styles.timeInfo}>
-                      <Clock size={12} color="#c7c4d7" />
-                      <Text style={styles.timeText}>{session.duration} · {session.time}</Text>
+                      <Clock size={12} color={colors.onSurfaceVariant} />
+                      <Text style={[styles.timeText, { color: colors.onSurfaceVariant }]}>{session.duration} · {session.time}</Text>
                     </View>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.editBtn}>
-                  <Edit2 size={16} color="#64748b" />
+                <TouchableOpacity style={[styles.editBtn, { backgroundColor: isDark ? 'rgba(47, 52, 69, 0.4)' : 'rgba(226, 232, 240, 0.4)' }]}>
+                  <Edit2 size={16} color={colors.onSurfaceVariant} />
                 </TouchableOpacity>
               </View>
             </View>

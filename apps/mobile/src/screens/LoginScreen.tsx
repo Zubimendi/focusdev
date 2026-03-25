@@ -6,9 +6,12 @@ import { Mail, Lock, Terminal, ArrowLeft, Eye, EyeOff } from 'lucide-react-nativ
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../store/auth-store';
 
+import { useAppTheme } from '../hooks/useAppTheme';
+
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen({ navigation }: any) {
+  const { colors, isDark } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -46,11 +49,11 @@ export default function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
-      <View style={styles.glowTopRight} />
-      <View style={styles.glowBottomLeft} />
+      <View style={[styles.glowTopRight, { backgroundColor: isDark ? 'rgba(192, 193, 255, 0.08)' : 'rgba(128, 131, 255, 0.1)' }]} />
+      <View style={[styles.glowBottomLeft, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.05)' : 'rgba(78, 222, 163, 0.1)' }]} />
 
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView 
@@ -61,29 +64,29 @@ export default function LoginScreen({ navigation }: any) {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <TouchableOpacity 
-                style={styles.backButton}
+                style={[styles.backButton, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                 onPress={() => navigation.goBack()}
               >
-                <ArrowLeft color="#c7c4d7" size={24} />
+                <ArrowLeft color={colors.onSurfaceVariant} size={24} />
               </TouchableOpacity>
 
               <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <Terminal color="#c0c1ff" size={32} strokeWidth={2.5} />
+                <View style={[styles.logoContainer, { backgroundColor: colors.surface, borderColor: isDark ? colors.primary + '33' : colors.outlineVariant }]}>
+                  <Terminal color={colors.primary} size={32} strokeWidth={2.5} />
                 </View>
-                <Text style={styles.title}>Welcome back</Text>
-                <Text style={styles.subtitle}>Resume your deep work sessions.</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]}>Welcome back</Text>
+                <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Resume your deep work sessions.</Text>
               </View>
 
               <View style={styles.form}>
                 <View style={styles.inputWrapper}>
-                  <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
-                  <View style={styles.inputContainer}>
-                    <Mail color="#8083ff" size={18} style={styles.inputIcon} />
+                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>EMAIL ADDRESS</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                    <Mail color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.onSurface }]}
                       placeholder="architect@focus.dev"
-                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      placeholderTextColor={colors.onSurfaceVariant + '66'}
                       value={email}
                       onChangeText={setEmail}
                       autoCapitalize="none"
@@ -93,13 +96,13 @@ export default function LoginScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                  <Text style={styles.inputLabel}>PASSWORD</Text>
-                  <View style={styles.inputContainer}>
-                    <Lock color="#8083ff" size={18} style={styles.inputIcon} />
+                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>PASSWORD</Text>
+                  <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                    <Lock color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.onSurface }]}
                       placeholder="••••••••"
-                      placeholderTextColor="rgba(199, 196, 215, 0.4)"
+                      placeholderTextColor={colors.onSurfaceVariant + '66'}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -109,9 +112,9 @@ export default function LoginScreen({ navigation }: any) {
                       style={styles.eyeIcon}
                     >
                       {showPassword ? (
-                        <EyeOff color="#c7c4d7" size={20} />
+                        <EyeOff color={colors.onSurfaceVariant} size={20} />
                       ) : (
-                        <Eye color="#c7c4d7" size={20} />
+                        <Eye color={colors.onSurfaceVariant} size={20} />
                       )}
                     </TouchableOpacity>
                   </View>
@@ -127,21 +130,21 @@ export default function LoginScreen({ navigation }: any) {
                   style={styles.buttonWrapper}
                 >
                   <LinearGradient
-                    colors={['#c0c1ff', '#8083ff']}
+                    colors={isDark ? ['#c0c1ff', '#8083ff'] : ['#8083ff', '#5b5ee1']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.button}
                   >
-                    <Text style={styles.buttonText}>
+                    <Text style={[styles.buttonText, { color: isDark ? colors.onPrimary : '#ffffff' }]}>
                       {isLoading ? 'Verifying...' : 'Authenticate'}
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
                 <View style={styles.footer}>
-                  <Text style={styles.footerText}>New to the monolith? </Text>
+                  <Text style={[styles.footerText, { color: colors.onSurfaceVariant }]}>New to the monolith? </Text>
                   <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                    <Text style={styles.footerLink}>Register now</Text>
+                    <Text style={[styles.footerLink, { color: colors.primary }]}>Register now</Text>
                   </TouchableOpacity>
                 </View>
               </View>
