@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner';
+import ClientThemeProvider from "@/components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -19,26 +20,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-body bg-surface text-on-surface antialiased`}>
         <NextAuthSessionProvider>
-          {children}
-          <Toaster 
-            position="bottom-right" 
-            richColors 
-            theme="dark" 
-            toastOptions={{
-              style: {
-                background: '#1a1f2f',
-                borderColor: 'rgba(70, 69, 84, 0.2)',
-                color: '#dee1f7',
-                fontFamily: 'Inter, sans-serif'
-              }
-            }}
-          />
+          <ClientThemeProvider>
+            {children}
+            <Toaster 
+              position="bottom-right" 
+              richColors 
+              theme="dark" 
+              toastOptions={{
+                style: {
+                  background: '#1a1f2f',
+                  borderColor: 'rgba(70, 69, 84, 0.2)',
+                  color: '#dee1f7',
+                  fontFamily: 'Inter, sans-serif'
+                }
+              }}
+            />
+          </ClientThemeProvider>
         </NextAuthSessionProvider>
       </body>
     </html>

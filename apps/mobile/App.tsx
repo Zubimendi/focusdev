@@ -7,6 +7,7 @@ import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fo
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 import AppNavigator from './src/navigation/AppNavigator';
+import { useSettingsStore } from './src/store/settings-store';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -49,6 +50,7 @@ const toastConfig = {
 };
 
 export default function App() {
+  const theme = useSettingsStore((state) => state.theme);
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -72,9 +74,9 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <View style={{ flex: 1, backgroundColor: theme === 'dark' ? '#0e1322' : '#ffffff' }} onLayout={onLayoutRootView}>
         <AppNavigator />
-        <StatusBar style="light" />
+        <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
         <Toast config={toastConfig} />
       </View>
     </SafeAreaProvider>

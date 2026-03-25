@@ -1,12 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { useSettingsStore } from "@/store/settings";
 
 export default function FocusTimer() {
+  const { timerDuration } = useSettingsStore();
+  const initialSeconds = useMemo(() => timerDuration * 60, [timerDuration]);
   const [isActive, setIsActive] = useState(false);
-  const [seconds, setSeconds] = useState(1500); // Default 25:00
+  const [seconds, setSeconds] = useState(initialSeconds); 
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isActive) {
+      setSeconds(initialSeconds);
+    }
+  }, [initialSeconds, isActive]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -23,7 +32,7 @@ export default function FocusTimer() {
   const toggleTimer = async () => {
     if (!isActive) {
       if (seconds === 0) {
-        setSeconds(1500);
+        setSeconds(initialSeconds);
         return;
       }
       try {
@@ -52,7 +61,7 @@ export default function FocusTimer() {
         });
         if (res.ok) {
           setIsActive(false);
-          setSeconds(1500);
+          setSeconds(initialSeconds);
           setSessionId(null);
           toast.success("Focus session ended. Great work!");
         }
@@ -60,7 +69,7 @@ export default function FocusTimer() {
         console.error("Failed to end session", error);
         toast.error("Couldn't sync session end, local timer reset.");
         setIsActive(false);
-        setSeconds(1500);
+        setSeconds(initialSeconds);
       }
     }
   };
@@ -71,7 +80,7 @@ export default function FocusTimer() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progress = ((1500 - seconds) / 1500) * 1000;
+  const progress = ((initialSeconds - seconds) / initialSeconds) * 1000;
 
   return (
     <section className="relative flex flex-col items-center justify-center py-12 bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/10">

@@ -3,13 +3,27 @@
 @tailwind utilities;
 
 :root {
+  --background: #ffffff;
+  --foreground: #0e1322;
+  --on-surface: #0e1322;
+  --on-surface-variant: #64748b;
+  --surface-container-low: #f8fafc;
+  --surface-container: #f1f5f9;
+}
+
+.dark {
   --background: #0e1322;
   --foreground: #dee1f7;
+  --on-surface: #dee1f7;
+  --on-surface-variant: #8b8e9f;
+  --surface-container-low: #161b2c;
+  --surface-container: #1c2235;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {

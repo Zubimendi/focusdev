@@ -1,21 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { focusService } from '../services/focus';
+import { useSettingsStore } from '../store/settings-store';
 
 export default function FocusTimer() {
+  const { theme, timerDuration } = useSettingsStore();
+  const initialSeconds = timerDuration * 60;
   const [isActive, setIsActive] = useState(false);
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(initialSeconds);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isActive) {
+      setSeconds(initialSeconds);
+    }
+  }, [initialSeconds, isActive]);
+
+  useEffect(() => {
     let interval: any;
-    if (isActive) {
+    if (isActive && seconds > 0) {
       interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
+        setSeconds((prev) => prev - 1);
       }, 1000);
+    } else if (seconds === 0) {
+      setIsActive(false);
     }
     return () => clearInterval(interval);
-  }, [isActive]);
+  }, [isActive, seconds]);
 
   const toggleTimer = async () => {
     if (!isActive) {
@@ -30,7 +41,7 @@ export default function FocusTimer() {
       try {
         await focusService.endSession(sessionId!, 'Focused session');
         setIsActive(false);
-        setSeconds(0);
+        setSeconds(initialSeconds);
         setSessionId(null);
       } catch (error) {
         console.error('Failed to end session', error);
@@ -45,8 +56,8 @@ export default function FocusTimer() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.timer}>{formatTime(seconds)}</Text>
+    <View style={[styles.container, { backgroundColor: theme === 'dark' ? '#161b2b' : '#f8fafc' }]}>
+      <Text style={[styles.timer, { color: theme === 'dark' ? '#dee1f7' : '#0e1322' }]}>{formatTime(seconds)}</Text>
       <TouchableOpacity
         style={[styles.button, isActive ? styles.stopButton : styles.startButton]}
         onPress={toggleTimer}
@@ -58,8 +69,8 @@ export default function FocusTimer() {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', backgroundColor: '#fff', padding: 30, borderRadius: 20, marginBottom: 30, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  timer: { fontSize: 60, fontWeight: 'bold', fontFamily: 'monospace', marginBottom: 20 },
+  container: { alignItems: 'center', padding: 30, borderRadius: 20, marginBottom: 30, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  timer: { fontSize: 60, fontWeight: 'bold', fontFamily: 'JetBrainsMono_700Bold', marginBottom: 20 },
   button: { paddingHorizontal: 40, paddingVertical: 15, borderRadius: 30 },
   startButton: { backgroundColor: '#34C759' },
   stopButton: { backgroundColor: '#FF3B30' },
