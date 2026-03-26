@@ -83,7 +83,7 @@ export default function FocusTimer() {
   const progress = ((initialSeconds - seconds) / initialSeconds) * 1000;
 
   return (
-    <section className="relative flex flex-col items-center justify-center py-12 bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/10">
+    <section className="relative flex flex-col items-center justify-center py-12 bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm">
       {/* Background Glow */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
       

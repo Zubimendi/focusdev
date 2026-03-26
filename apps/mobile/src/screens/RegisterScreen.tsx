@@ -51,16 +51,17 @@ export default function RegisterScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
-      <View style={styles.glowTopRight} />
-      <View style={styles.glowBottomLeft} />
+      {/* Replicate Landing Screen Glows */}
+      <View style={[styles.glowTopRight, { backgroundColor: isDark ? 'rgba(192, 193, 255, 0.08)' : 'rgba(79, 70, 229, 0.08)' }]} />
+      <View style={[styles.glowBottomLeft, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.05)' : 'rgba(14, 165, 233, 0.05)' }]} />
 
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+          style={{ flex: 1, backgroundColor: colors.background }}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -69,7 +70,7 @@ export default function RegisterScreen({ navigation }: any) {
                 style={[styles.backButton, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                 onPress={() => navigation.goBack()}
               >
-                <ArrowLeft color={colors.onSurfaceVariant} size={24} />
+                <ArrowLeft color={colors.onSurface} size={24} />
               </TouchableOpacity>
 
               <View style={styles.header}>
@@ -82,13 +83,13 @@ export default function RegisterScreen({ navigation }: any) {
 
               <View style={styles.form}>
                 <View style={styles.inputWrapper}>
-                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>FULL NAME</Text>
+                  <Text style={[styles.inputLabel, { color: colors.primary }]}>FULL NAME</Text>
                   <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                     <User color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.onSurface }]}
                       placeholder="Linus Torvalds"
-                      placeholderTextColor={colors.onSurfaceVariant + '66'}
+                      placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                       value={name}
                       onChangeText={setName}
                     />
@@ -96,13 +97,13 @@ export default function RegisterScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>EMAIL ADDRESS</Text>
+                  <Text style={[styles.inputLabel, { color: colors.primary }]}>EMAIL ADDRESS</Text>
                   <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                     <Mail color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.onSurface }]}
                       placeholder="linus@linux.org"
-                      placeholderTextColor={colors.onSurfaceVariant + '66'}
+                      placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                       value={email}
                       onChangeText={setEmail}
                       autoCapitalize="none"
@@ -112,13 +113,13 @@ export default function RegisterScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.inputWrapper}>
-                  <Text style={[styles.inputLabel, { color: colors.onSurfaceVariant }]}>PASSWORD</Text>
+                  <Text style={[styles.inputLabel, { color: colors.primary }]}>PASSWORD</Text>
                   <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                     <Lock color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.onSurface }]}
                       placeholder="••••••••"
-                      placeholderTextColor={colors.onSurfaceVariant + '66'}
+                      placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -143,12 +144,12 @@ export default function RegisterScreen({ navigation }: any) {
                   style={styles.buttonWrapper}
                 >
                   <LinearGradient
-                    colors={['#c0c1ff', '#8083ff']}
+                    colors={isDark ? ['#c0c1ff', '#8083ff'] : [colors.primary, '#6366f1']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.button}
                   >
-                    <Text style={styles.buttonText}>
+                    <Text style={[styles.buttonText, { color: '#ffffff' }]}>
                       {isLoading ? 'Creating Module...' : 'Initialize Account'}
                     </Text>
                   </LinearGradient>
@@ -172,7 +173,6 @@ export default function RegisterScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0e1322',
   },
   glowTopRight: {
     position: 'absolute',
@@ -181,7 +181,6 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: 'rgba(192, 193, 255, 0.08)',
   },
   glowBottomLeft: {
     position: 'absolute',
@@ -190,7 +189,6 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: 'rgba(78, 222, 163, 0.05)',
   },
   safeArea: {
     flex: 1,
@@ -205,11 +203,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#2f3445',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(199, 196, 215, 0.05)',
     marginBottom: 40,
   },
   header: {
@@ -218,24 +214,20 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 56,
     height: 56,
-    backgroundColor: '#2f3445',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(192, 193, 255, 0.2)',
     marginBottom: 24,
   },
   title: {
     fontSize: 32,
     fontFamily: 'Inter_900Black',
-    color: '#dee1f7',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#c7c4d7',
     marginTop: 8,
     opacity: 0.8,
   },
@@ -248,27 +240,22 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 11,
     fontFamily: 'Inter_800ExtraBold',
-    color: 'rgba(199, 196, 215, 0.5)',
     letterSpacing: 1.5,
     marginLeft: 4,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(47, 52, 69, 0.5)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(199, 196, 215, 0.1)',
     paddingHorizontal: 16,
   },
   inputIcon: {
     marginRight: 12,
-    opacity: 0.8,
   },
   input: {
     flex: 1,
     paddingVertical: 16,
-    color: '#dee1f7',
     fontSize: 16,
     fontFamily: 'Inter_500Medium',
   },
@@ -291,7 +278,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: '#1000a9',
     fontSize: 17,
     fontFamily: 'Inter_800ExtraBold',
     letterSpacing: 0.5,
@@ -303,13 +289,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: '#c7c4d7',
     fontSize: 14,
     fontFamily: 'Inter_500Medium',
     opacity: 0.7,
   },
   footerLink: {
-    color: '#c0c1ff',
     fontSize: 14,
     fontFamily: 'Inter_700Bold',
     textDecorationLine: 'underline',

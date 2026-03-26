@@ -16,8 +16,8 @@ export default function WelcomeScreen({ navigation }: any) {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
       {/* Background radial-like glow effects */}
-      <View style={styles.glowBottomLeft} />
-      <View style={styles.glowTopRight} />
+      <View style={[styles.glowBottomLeft, { backgroundColor: isDark ? 'rgba(192, 193, 255, 0.1)' : 'rgba(192, 193, 255, 0.15)' }]} />
+      <View style={[styles.glowTopRight, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.1)' : 'rgba(78, 222, 163, 0.12)' }]} />
 
       <SafeAreaView style={styles.safeArea}>
         {/* Progress indicators at top */}
@@ -28,16 +28,16 @@ export default function WelcomeScreen({ navigation }: any) {
             end={{ x: 1, y: 1 }}
             style={styles.progressBarActive}
           />
-          <View style={styles.progressBarInactive} />
-          <View style={styles.progressBarInactive} />
+          <View style={[styles.progressBarInactive, { backgroundColor: colors.surfaceContainerHigh }]} />
+          <View style={[styles.progressBarInactive, { backgroundColor: colors.surfaceContainerHigh }]} />
         </View>
 
         <View style={styles.content}>
           {/* Logo Section */}
           <View style={styles.logoWrapper}>
-            <View style={styles.logoGlow} />
-            <View style={styles.logoContainer}>
-              <Terminal color="#c0c1ff" size={48} strokeWidth={2.5} />
+            <View style={[styles.logoGlow, { backgroundColor: isDark ? 'rgba(192, 193, 255, 0.2)' : 'rgba(73, 75, 214, 0.15)' }]} />
+            <View style={[styles.logoContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+              <Terminal color={colors.primary} size={48} strokeWidth={2.5} />
             </View>
           </View>
 
@@ -54,12 +54,12 @@ export default function WelcomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Register')}
             >
               <LinearGradient
-                colors={['#c0c1ff', '#8083ff']}
+                colors={isDark ? ['#c0c1ff', '#8083ff'] : ['#494bd6', '#6366f1']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.primaryButton}
               >
-                <Text style={styles.primaryButtonText}>Get Started</Text>
+                <Text style={[styles.primaryButtonText, { color: isDark ? '#1000a9' : '#ffffff' }]}>Get Started</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -113,7 +113,6 @@ export default function WelcomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0e1322',
   },
   safeArea: {
     flex: 1,
@@ -127,7 +126,6 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: 'rgba(192, 193, 255, 0.1)',
   },
   glowTopRight: {
     position: 'absolute',
@@ -136,7 +134,6 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: 'rgba(78, 222, 163, 0.1)',
   },
   progressContainer: {
     paddingTop: 40,
@@ -154,7 +151,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#2f3445',
   },
   content: {
     flex: 1,
@@ -174,17 +170,14 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(192, 193, 255, 0.2)',
   },
   logoContainer: {
     width: 96,
     height: 96,
-    backgroundColor: '#2f3445',
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(70, 69, 84, 0.3)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -198,13 +191,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 48,
     fontFamily: 'Inter_900Black',
-    color: '#dee1f7',
     letterSpacing: -1,
   },
   subtitle: {
     fontSize: 18,
     fontFamily: 'Inter_400Regular',
-    color: '#c7c4d7',
     fontWeight: '500',
     marginTop: 8,
   },
@@ -226,7 +217,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   primaryButtonText: {
-    color: '#1000a9',
     fontSize: 18,
     fontFamily: 'Inter_800ExtraBold',
   },
@@ -234,7 +224,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginLinkText: {
-    color: '#c0c1ff',
     fontSize: 16,
     fontFamily: 'Inter_700Bold',
     textDecorationLine: 'underline',
@@ -246,11 +235,9 @@ const styles = StyleSheet.create({
   },
   glassCard: {
     flex: 1,
-    backgroundColor: 'rgba(47, 52, 69, 0.5)',
     borderRadius: 24,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(199, 196, 215, 0.1)',
     gap: 12,
   },
   cardHeader: {
@@ -261,19 +248,16 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 10,
     fontFamily: 'Inter_800ExtraBold',
-    color: '#c7c4d7',
     letterSpacing: 1.5,
   },
   cardValueMono: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#c0c1ff',
-    fontFamily: 'JetBrainsMono_700Bold', // Will need font loading
+    fontFamily: 'JetBrainsMono_700Bold',
   },
   progressBarBg: {
     height: 4,
     width: '100%',
-    backgroundColor: '#161b2b',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -293,7 +277,6 @@ const styles = StyleSheet.create({
   intensityLabel: {
     fontSize: 10,
     fontFamily: 'Inter_800ExtraBold',
-    color: '#dee1f7',
     letterSpacing: 1,
   },
 });

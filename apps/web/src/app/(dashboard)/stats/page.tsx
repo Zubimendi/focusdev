@@ -33,7 +33,7 @@ export default function StatsPage() {
           <h1 className="text-5xl font-black tracking-tighter text-on-surface">Your Progress</h1>
         </div>
         
-        <div className="flex bg-surface-container-low p-1.5 rounded-xl border border-outline-variant/10 self-start md:self-auto">
+        <div className="flex bg-surface-container-low p-1.5 rounded-xl self-start md:self-auto shadow-sm">
           <button 
             onClick={() => setRange("week")}
             className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all uppercase tracking-widest ${
@@ -56,7 +56,7 @@ export default function StatsPage() {
       {/* Stats Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="bg-surface-container-low p-8 rounded-2xl border border-outline-variant/5 flex flex-col gap-6 group hover:bg-surface-container-high transition-all">
+          <div key={i} className="bg-surface-container-low p-8 rounded-2xl flex flex-col gap-6 group hover:bg-surface-container-high transition-all shadow-sm">
             <div className="flex justify-between items-start">
               <div className={`p-3 rounded-xl bg-surface-container-highest ${s.color}`}>
                 <span className="material-symbols-outlined">{s.icon}</span>
@@ -76,7 +76,7 @@ export default function StatsPage() {
       {/* Main Charts Area */}
       <div className="grid grid-cols-12 gap-8">
         {/* Activity Heatmap */}
-        <section className="col-span-12 lg:col-span-8 bg-surface-container-low p-10 rounded-2xl border border-outline-variant/5">
+        <section className="col-span-12 lg:col-span-8 bg-surface-container-low p-10 rounded-2xl shadow-sm">
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-2xl font-bold tracking-tight text-on-surface">Activity Density</h2>
             <div className="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
@@ -113,7 +113,7 @@ export default function StatsPage() {
         </section>
 
         {/* Intensity Chart */}
-        <section className="col-span-12 lg:col-span-4 bg-surface-container-low p-10 rounded-2xl border border-outline-variant/5 flex flex-col">
+        <section className="col-span-12 lg:col-span-4 bg-surface-container-low p-10 rounded-2xl flex flex-col shadow-sm">
           <h2 className="text-2xl font-bold tracking-tight text-on-surface mb-10">Daily Intensity</h2>
           <div className="flex-1 flex items-end justify-between gap-4 h-48 md:h-64 mb-6">
             {barData.map((b, i) => (
@@ -126,7 +126,7 @@ export default function StatsPage() {
               </div>
             ))}
           </div>
-          <div className="pt-6 border-t border-outline-variant/10">
+          <div className="pt-6">
             <p className="text-sm text-on-surface-variant leading-relaxed">
               Your peak focus occurs between <span className="text-on-surface font-bold">10:00 AM</span> and <span className="text-on-surface font-bold">2:00 PM</span>.
             </p>
@@ -135,7 +135,7 @@ export default function StatsPage() {
 
         {/* Highlights Section */}
         <section className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-primary/10 to-transparent p-8 rounded-2xl border border-primary/20 flex items-center gap-6">
+          <div className="bg-gradient-to-br from-primary/10 to-transparent p-8 rounded-2xl flex items-center gap-6 shadow-sm shadow-primary/5">
             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary">
               <span className="material-symbols-outlined text-3xl">workspace_premium</span>
             </div>
@@ -145,7 +145,7 @@ export default function StatsPage() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-secondary/10 to-transparent p-8 rounded-2xl border border-secondary/20 flex items-center gap-6">
+          <div className="bg-gradient-to-br from-secondary/10 to-transparent p-8 rounded-2xl flex items-center gap-6 shadow-sm shadow-secondary/5">
             <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
               <span className="material-symbols-outlined text-3xl">stars</span>
             </div>
@@ -155,7 +155,7 @@ export default function StatsPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-error/10 to-transparent p-8 rounded-2xl border border-error/20 flex items-center gap-6">
+          <div className="bg-gradient-to-br from-error/10 to-transparent p-8 rounded-2xl flex items-center gap-6 shadow-sm shadow-error/5">
             <div className="w-16 h-16 rounded-full bg-error/20 flex items-center justify-center text-error">
               <span className="material-symbols-outlined text-3xl">trending_up</span>
             </div>

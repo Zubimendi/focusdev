@@ -31,15 +31,15 @@ export default function DashboardLayout({
   }
 
   if (status === "loading") {
-    return <div className="flex h-screen items-center justify-center bg-[#0e1322] text-white">Loading...</div>;
+    return <div className="flex h-screen items-center justify-center bg-background text-on-surface">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0e1322] font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container flex overflow-hidden">
+    <div className="min-h-screen bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container flex overflow-hidden">
       {/* Mobile overlay */}
       {!isFocusedTask && isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm" 
+          className="fixed inset-0 bg-black/20 dark:bg-black/50 z-40 md:hidden backdrop-blur-sm" 
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -54,22 +54,21 @@ export default function DashboardLayout({
       <div className={`${!isFocusedTask ? 'md:ml-64' : ''} flex flex-col min-h-screen w-full flex-1 overflow-x-hidden`}>
         {/* TopNavBar Replacement (Suppressed in Focused Tasks) */}
         {!isFocusedTask && (
-          <header className="bg-[#0e1322]/80 backdrop-blur-md sticky top-0 z-30">
+          <header className="bg-background/80 backdrop-blur-md sticky top-0 z-30">
             <div className="flex justify-between items-center w-full px-4 md:px-8 h-16 max-w-[1920px] mx-auto">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setIsMobileMenuOpen(true)}
-                  className="md:hidden p-2 -ml-2 text-on-surface-variant hover:bg-slate-800/50 transition-all rounded-lg active:scale-95"
+                  className="md:hidden p-2 -ml-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-lg active:scale-95"
                 >
                   <span className="material-symbols-outlined">menu</span>
                 </button>
-                {/* Secondary Page Title or Breadcrumb could go here */}
               </div>
               <div className="flex items-center gap-4">
-                <button className="p-2 text-on-surface-variant hover:bg-slate-800/50 transition-all rounded-lg active:scale-95">
+                <button className="p-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-lg active:scale-95">
                   <span className="material-symbols-outlined">notifications</span>
                 </button>
-                <Link href="/settings" className="p-2 text-on-surface-variant hover:bg-slate-800/50 transition-all rounded-lg active:scale-95">
+                <Link href="/settings" className="p-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-lg active:scale-95">
                   <span className="material-symbols-outlined">settings</span>
                 </Link>
                 <div className="flex items-center gap-3 ml-2">
@@ -91,7 +90,6 @@ export default function DashboardLayout({
                 </div>
               </div>
             </div>
-            <div className="h-px w-full bg-[#161b2c]"></div>
           </header>
         )}
 

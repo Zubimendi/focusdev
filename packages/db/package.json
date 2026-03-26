@@ -9,7 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "mongoose": "latest",
+    "mongoose": "^8.0.0",
     "@focus/shared": "workspace:*"
   },
   "devDependencies": {

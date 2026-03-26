@@ -76,10 +76,35 @@ function MainTabs() {
 
 export default function AppNavigator() {
   const token = useAuthStore((state: any) => state.token);
+  const { colors, isDark } = useAppTheme();
+
+  // Build a React Navigation theme that matches our app theme
+  const navTheme = {
+    dark: isDark,
+    colors: {
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.background,
+      text: colors.onSurface,
+      border: colors.outlineVariant,
+      notification: colors.error,
+    },
+    fonts: {
+      regular: { fontFamily: 'Inter_400Regular', fontWeight: '400' as const },
+      medium: { fontFamily: 'Inter_500Medium', fontWeight: '500' as const },
+      bold: { fontFamily: 'Inter_700Bold', fontWeight: '700' as const },
+      heavy: { fontFamily: 'Inter_800ExtraBold', fontWeight: '800' as const },
+    }
+  };
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <NavigationContainer theme={navTheme}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          cardStyle: { backgroundColor: colors.background },
+        }}
+      >
         {token ? (
           <>
             <Stack.Screen name="Main" component={MainTabs} />

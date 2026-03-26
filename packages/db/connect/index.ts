@@ -29,6 +29,7 @@ export async function connectToDatabase() {
     };
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then(async (mongoose) => {
+      console.log('--- MongoDB Connected via Mongoose ---');
       // Sync indexes to enforce unique constraints at DB level
       await mongoose.connection.syncIndexes();
       return mongoose;

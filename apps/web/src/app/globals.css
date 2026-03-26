@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0e1322;
+  --background: #ffffff;
+  --foreground: #000000;
   --surface: #ffffff;
-  --on-surface: #0e1322;
-  --on-surface-variant: #64748b;
+  --on-surface: #000000;
+  --on-surface-variant: #1e293b;
   --surface-container-lowest: #ffffff;
   --surface-container-low: #f8fafc;
   --surface-container: #f1f5f9;
@@ -15,33 +15,33 @@
   --surface-container-highest: #cbd5e1;
   --surface-dim: #f1f5f9;
   --surface-bright: #ffffff;
-  --on-background: #0e1322;
+  --on-background: #000000;
   
-  --primary: #494bd6;
+  --primary: #4f46e5;
   --on-primary: #ffffff;
-  --primary-container: #e1e0ff;
-  --on-primary-container: #07006c;
+  --primary-container: #e0e7ff;
+  --on-primary-container: #312e81;
   
-  --secondary: #006d48;
+  --secondary: #0ea5e9;
   --on-secondary: #ffffff;
-  --secondary-container: #6ffbbe;
-  --on-secondary-container: #002113;
+  --secondary-container: #e0f2fe;
+  --on-secondary-container: #075985;
   
-  --tertiary: #8b5000;
+  --tertiary: #f59e0b;
   --on-tertiary: #ffffff;
-  --tertiary-container: #ffddb8;
-  --on-tertiary-container: #2a1700;
+  --tertiary-container: #fef3c7;
+  --on-tertiary-container: #78350f;
 
-  --error: #ba1a1a;
+  --error: #ef4444;
   --on-error: #ffffff;
-  --error-container: #ffdad6;
-  --on-error-container: #410002;
+  --error-container: #fee2e2;
+  --on-error-container: #7f1d1d;
   
-  --outline: #747785;
-  --outline-variant: #c4c6d4;
-  --inverse-surface: #2f303f;
-  --inverse-on-surface: #f1f0f4;
-  --inverse-primary: #bec2ff;
+  --outline: #94a3b8;
+  --outline-variant: #e2e8f0;
+  --inverse-surface: #0f172a;
+  --inverse-on-surface: #f8fafc;
+  --inverse-primary: #818cf8;
 }
 
 .dark {
