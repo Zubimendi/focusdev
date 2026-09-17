@@ -3,10 +3,57 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface SummaryStat {
+  label: string;
+  value: string;
+  change: string;
+  icon: string;
+  color: string;
+}
+
+interface BarDay {
+  day: string;
+  height: string;
+  minutes: number;
+  color: string;
+}
+
+interface ProjectBreakdown {
+  projectId: string;
+  name: string;
+  color: string;
+  focusMinutes: number;
+  tasksDone: number;
+}
+
+interface StatsHighlights {
+  bestDay?: string;
+  longestSession?: string;
+  focusScore?: number;
+  peakHours?: { start: string; end: string };
+}
+
+interface StatsData {
+  summary?: SummaryStat[];
+  last7Days?: BarDay[];
+  heatmap?: number[];
+  highlights?: StatsHighlights;
+  byProject?: ProjectBreakdown[];
+}
+
+interface DevActivity {
+  id: string;
+  type: "commit" | "pull_request" | string;
+  repo: string;
+  message: string;
+  timestamp: string;
+  count?: number;
+}
+
 export default function StatsPage() {
   const [range, setRange] = useState<"week" | "month">("week");
-  const [data, setData] = useState<any>(null);
-  const [activity, setActivity] = useState<any[]>([]);
+  const [data, setData] = useState<StatsData | null>(null);
+  const [activity, setActivity] = useState<DevActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,7 +144,7 @@ export default function StatsPage() {
       </header>
 
       <section className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${loading ? "opacity-60" : ""}`}>
-        {stats.map((s: any, i: number) => (
+        {stats.map((s, i) => (
           <div
             key={i}
             className="bg-surface-container-low p-8 rounded-2xl flex flex-col gap-6 group hover:bg-surface-container-high transition-all shadow-sm"
@@ -178,7 +225,7 @@ export default function StatsPage() {
             Daily Intensity
           </h2>
           <div className="flex-1 flex items-end justify-between gap-2 h-48 md:h-64 mb-6 overflow-x-auto">
-            {barData.map((b: any, i: number) => (
+            {barData.map((b, i) => (
               <div key={i} className="flex-1 min-w-[1.5rem] flex flex-col items-center gap-4 group">
                 <div
                   className={`w-full rounded-t-lg transition-all duration-700 hover:brightness-110 ${b.color}`}
@@ -262,9 +309,9 @@ export default function StatsPage() {
               By Project
             </h2>
             <div className="flex flex-col gap-3">
-              {byProject.map((p: any) => {
+              {byProject.map((p) => {
                 const totalFocus = byProject.reduce(
-                  (a: number, x: any) => a + (x.focusMinutes || 0),
+                  (a, x) => a + (x.focusMinutes || 0),
                   0
                 );
                 const pct =
@@ -318,7 +365,7 @@ export default function StatsPage() {
 
         <div className="flex flex-col gap-4">
           {activity.length > 0 ? (
-            activity.map((act: any) => (
+            activity.map((act) => (
               <div
                 key={act.id}
                 className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-xl hover:bg-surface-container-highest transition-all group"
