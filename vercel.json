@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
-  "installCommand": "pnpm install",
   "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm turbo run build --filter=web",
   "outputDirectory": "apps/web/.next",
   "regions": ["cdg1"],
   "cleanUrls": true

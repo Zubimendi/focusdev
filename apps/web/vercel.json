@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
+  "regions": ["cdg1"],
+  "cleanUrls": true
+}
