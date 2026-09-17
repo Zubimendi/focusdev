@@ -5,12 +5,15 @@ export const TaskSchema = z.object({
   description: z.string().max(500).optional(),
   status: z.enum(["todo", "in_progress", "done"]).default("todo"),
   priority: z.enum(["low", "medium", "high"]).default("medium"),
-  dueDate: z.string().datetime().optional(),
+  dueDate: z.string().optional(),
+  projectId: z.string().optional(),
+  goalId: z.string().optional(),
 });
 
 export const FocusSessionSchema = z.object({
   taskId: z.string().optional(),
-  startTime: z.string().datetime(),
+  projectId: z.string().optional(),
+  startTime: z.string().datetime().optional(),
   endTime: z.string().datetime().optional(),
   duration: z.number().int().min(0).optional(), // in minutes
   notes: z.string().max(1000).optional(),

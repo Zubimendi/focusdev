@@ -17,7 +17,8 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
     { name: "Checklists", href: "/checklists", icon: "fact_check", active: pathname === "/checklists" },
     { name: "Timer", href: "/timer", icon: "timer", active: pathname === "/timer", fill: true },
     { name: "Stats", href: "/stats", icon: "bar_chart", active: pathname === "/stats" },
-    { name: "Projects", href: "/projects", icon: "folder_open", active: pathname === "/projects" },
+    { name: "Projects", href: "/projects", icon: "folder_open", active: pathname?.startsWith("/projects") },
+    { name: "Weekly Review", href: "/reviews/week", icon: "rate_review", active: pathname?.startsWith("/reviews") },
   ];
 
   return (

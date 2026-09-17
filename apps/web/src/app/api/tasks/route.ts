@@ -10,8 +10,18 @@ export async function GET(req: Request) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     await connectToDatabase();
-    const tasks = await TaskModel.find({ userId: user.id }).sort({ createdAt: -1 });
-    return NextResponse.json({ tasks }, { status: 200 });
+    const { searchParams } = new URL(req.url);
+    const projectId = searchParams.get("projectId");
+    const query: Record<string, unknown> = { userId: user.id };
+    if (projectId) query.projectId = projectId;
+
+    const tasks = await TaskModel.find(query).sort({ createdAt: -1 });
+    return NextResponse.json(
+      {
+        tasks: tasks.map((t) => ({ ...t.toObject(), id: String(t._id) })),
+      },
+      { status: 200 }
+    );
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import FocusTimer from "@/components/dashboard/focus-timer";
 import DailyChecklist from "@/components/dashboard/daily-checklist";
 import { toast } from "sonner";
@@ -10,6 +11,22 @@ interface DashboardStats {
   sessionsToday: number;
   focusMinutesToday: number;
   taskTitle: string;
+  projectId: string;
+}
+
+interface ProjectOption {
+  id: string;
+  name: string;
+  color: string;
+  focusMinutes?: number;
+}
+
+interface OpenTask {
+  id: string;
+  _id?: string;
+  title: string;
+  status: string;
+  projectId?: string;
 }
 
 export default function DashboardPage() {
@@ -17,32 +34,88 @@ export default function DashboardPage() {
     sessionsToday: 0,
     focusMinutesToday: 0,
     taskTitle: "",
+    projectId: "",
   });
-  const [allSessions, setAllSessions] = useState<{ startTime: string | Date; duration?: number }[]>([]);
+  const [allSessions, setAllSessions] = useState<
+    { startTime: string | Date; duration?: number }[]
+  >([]);
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [openTasks, setOpenTasks] = useState<OpenTask[]>([]);
+  const [reviewDue, setReviewDue] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const sessionsRes = await fetch("/api/focus/sessions");
+        const [sessionsRes, projectsRes, tasksRes] = await Promise.all([
+            fetch("/api/focus/sessions"),
+            fetch("/api/projects?status=active"),
+            fetch("/api/tasks"),
+          ]);
 
-          if (sessionsRes.ok) {
-            const sessionsData = await sessionsRes.json();
-            const sessions = sessionsData.sessions || [];
-            setAllSessions(sessions);
-            const today = new Date().toDateString();
-            const todaySessions = sessions.filter((s: { startTime: string | Date }) => 
+        if (sessionsRes.ok) {
+          const sessionsData = await sessionsRes.json();
+          const sessions = sessionsData.sessions || [];
+          setAllSessions(sessions);
+          const today = new Date().toDateString();
+          const todaySessions = sessions.filter(
+            (s: { startTime: string | Date }) =>
               new Date(s.startTime).toDateString() === today
-            );
-            const todayMinutes = todaySessions.reduce(
-              (sum: number, s: { duration?: number }) => sum + (s.duration || 0), 0
-            );
-            setStats(prev => ({
-              ...prev,
-              sessionsToday: todaySessions.length,
-              focusMinutesToday: todayMinutes,
-            }));
+          );
+          const todayMinutes = todaySessions.reduce(
+            (sum: number, s: { duration?: number }) => sum + (s.duration || 0),
+            0
+          );
+          setStats((prev) => ({
+            ...prev,
+            sessionsToday: todaySessions.length,
+            focusMinutesToday: todayMinutes,
+          }));
+        }
+
+        if (projectsRes.ok) {
+          const data = await projectsRes.json();
+          setProjects(
+            (data.projects || []).map(
+              (p: { id?: string; _id?: string; name: string; color: string; focusMinutes?: number }) => ({
+                id: p.id || String(p._id),
+                name: p.name,
+                color: p.color,
+                focusMinutes: p.focusMinutes || 0,
+              })
+            )
+          );
+        }
+
+        if (tasksRes.ok) {
+          const data = await tasksRes.json();
+          setOpenTasks(
+            (data.tasks || [])
+              .filter((t: OpenTask) => t.status !== "done")
+              .slice(0, 8)
+              .map((t: OpenTask) => ({
+                ...t,
+                id: t.id || String(t._id),
+              }))
+          );
+        }
+
+        // Prompt if previous week has no saved reflection
+        try {
+          const listRes = await fetch("/api/reviews?periodType=week");
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            const reviews = listData.reviews || [];
+            const now = new Date();
+            const day = now.getDay();
+            const isLateWeek = day === 0 || day >= 5;
+            const latest = reviews[0];
+            const hasReflection = latest?.wins || latest?.blockers;
+            if (isLateWeek && !hasReflection) setReviewDue(true);
           }
+        } catch {
+          /* ignore */
+        }
       } catch (err) {
         console.error("Failed to fetch dashboard stats", err);
       } finally {
@@ -61,11 +134,25 @@ export default function DashboardPage() {
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: stats.taskTitle }),
+        body: JSON.stringify({
+          title: stats.taskTitle,
+          ...(stats.projectId ? { projectId: stats.projectId } : {}),
+        }),
       });
       if (res.ok) {
         toast.success(`Task "${stats.taskTitle}" created!`);
-        setStats(prev => ({ ...prev, taskTitle: "" }));
+        setStats((prev) => ({ ...prev, taskTitle: "" }));
+        const data = await res.json();
+        const task = data.task;
+        setOpenTasks((prev) => [
+          {
+            id: task.id || String(task._id),
+            title: task.title,
+            status: task.status,
+            projectId: task.projectId,
+          },
+          ...prev,
+        ].slice(0, 8));
       } else {
         toast.error("Failed to create task");
       }
@@ -81,16 +168,40 @@ export default function DashboardPage() {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
-  const tags = ["Coding", "Learning", "Building", "Review", "Other"];
+  const projectName = (projectId?: string) => {
+    if (!projectId) return null;
+    return projects.find((p) => p.id === projectId);
+  };
 
   return (
     <main className="max-w-[1920px] mx-auto px-8 py-12 flex flex-col lg:flex-row gap-8">
-      {/* Main Center Content: Timer & Active Session */}
       <div className="flex-1 flex flex-col gap-8 order-1 md:order-2">
-        {/* Hero Timer Section */}
+        {reviewDue && (
+          <Link
+            href="/reviews/week"
+            className="bg-secondary/10 border border-secondary/20 rounded-xl px-5 py-4 flex items-center justify-between gap-4 hover:bg-secondary/15 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-secondary">
+                rate_review
+              </span>
+              <div>
+                <p className="font-bold text-on-surface text-sm">
+                  Weekly review ready
+                </p>
+                <p className="text-xs text-on-surface-variant">
+                  Close out this week with metrics, OKRs, and a short reflection.
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest text-secondary">
+              Review →
+            </span>
+          </Link>
+        )}
+
         <FocusTimer />
 
-        {/* Task Input Section */}
         <section className="bg-surface-container-low p-8 rounded-xl flex flex-col gap-6">
           <div className="flex flex-col gap-4">
             <label className="text-sm font-bold text-on-surface-variant flex items-center gap-2 uppercase tracking-widest">
@@ -98,32 +209,53 @@ export default function DashboardPage() {
               Active Mission
             </label>
             <div className="relative">
-              <input 
-                className="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-4 px-6 text-xl placeholder:text-on-surface-variant/40 font-medium transition-all outline-none text-on-surface" 
-                placeholder="What are you working on?" 
+              <input
+                className="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-4 px-6 text-xl placeholder:text-on-surface-variant/40 font-medium transition-all outline-none text-on-surface"
+                placeholder="What are you working on?"
                 type="text"
                 value={stats.taskTitle}
-                onChange={(e) => setStats(prev => ({ ...prev, taskTitle: e.target.value }))}
+                onChange={(e) =>
+                  setStats((prev) => ({ ...prev, taskTitle: e.target.value }))
+                }
                 onKeyDown={(e) => e.key === "Enter" && handleCreateTask()}
               />
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <button 
-                key={tag}
-                onClick={() => setStats(prev => ({ ...prev, taskTitle: tag }))}
+          {projects.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setStats((prev) => ({ ...prev, projectId: "" }))}
                 className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
-                  stats.taskTitle === tag 
-                    ? 'bg-secondary/10 text-secondary border border-secondary/20' 
-                    : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/10 hover:text-on-surface'
+                  !stats.projectId
+                    ? "bg-secondary/10 text-secondary border border-secondary/20"
+                    : "bg-surface-container-high text-on-surface-variant border border-outline-variant/10 hover:text-on-surface"
                 }`}
               >
-                {tag}
+                No project
               </button>
-            ))}
-          </div>
-          <button 
+              {projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() =>
+                    setStats((prev) => ({ ...prev, projectId: p.id }))
+                  }
+                  className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors border ${
+                    stats.projectId === p.id
+                      ? "border-transparent text-white"
+                      : "bg-surface-container-high text-on-surface-variant border-outline-variant/10 hover:text-on-surface"
+                  }`}
+                  style={
+                    stats.projectId === p.id
+                      ? { backgroundColor: p.color }
+                      : undefined
+                  }
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
             onClick={handleCreateTask}
             className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm shadow-lg shadow-primary/10 hover:scale-[1.01] active:scale-[0.99] transition-all uppercase tracking-wider"
           >
@@ -131,36 +263,113 @@ export default function DashboardPage() {
           </button>
         </section>
 
-        {/* Bottom Stats Strip */}
+        {/* Today by project */}
+        {projects.length > 0 && (
+          <section className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold tracking-wider text-on-surface-variant uppercase">
+                This Week by Project
+              </h2>
+              <Link
+                href="/projects"
+                className="text-xs font-bold text-primary hover:underline"
+              >
+                All projects
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {projects.slice(0, 4).map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/projects/${p.id}`}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-high transition-colors"
+                >
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: p.color }}
+                  />
+                  <span className="text-sm font-medium text-on-surface flex-1 truncate">
+                    {p.name}
+                  </span>
+                  <span className="text-xs font-mono font-bold text-on-surface-variant">
+                    {formatFocusTime(p.focusMinutes || 0)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            {openTasks.length > 0 && (
+              <div className="border-t border-outline-variant/10 pt-4 flex flex-col gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  Open tasks
+                </p>
+                {openTasks.slice(0, 5).map((t) => {
+                  const proj = projectName(t.projectId ? String(t.projectId) : undefined);
+                  return (
+                    <div
+                      key={t.id}
+                      className="flex items-center gap-2 text-sm text-on-surface"
+                    >
+                      <span className="material-symbols-outlined text-sm text-on-surface-variant">
+                        check_box_outline_blank
+                      </span>
+                      <span className="flex-1 truncate">{t.title}</span>
+                      {proj && (
+                        <span
+                          className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white shrink-0"
+                          style={{ backgroundColor: proj.color }}
+                        >
+                          {proj.name}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Sessions Today</span>
+            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+              Sessions Today
+            </span>
             <div className="flex items-baseline gap-2">
               {loading ? (
                 <div className="h-9 w-12 bg-surface-container-high rounded animate-pulse" />
               ) : (
-                <span className="text-3xl font-mono font-bold text-on-surface">{stats.sessionsToday}</span>
+                <span className="text-3xl font-mono font-bold text-on-surface">
+                  {stats.sessionsToday}
+                </span>
               )}
             </div>
           </div>
           <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Focus Time</span>
+            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+              Focus Time
+            </span>
             <div className="flex items-baseline gap-2">
               {loading ? (
                 <div className="h-9 w-20 bg-surface-container-high rounded animate-pulse" />
               ) : (
-                <span className="text-3xl font-mono font-bold text-on-surface">{formatFocusTime(stats.focusMinutesToday)}</span>
+                <span className="text-3xl font-mono font-bold text-on-surface">
+                  {formatFocusTime(stats.focusMinutesToday)}
+                </span>
               )}
             </div>
           </div>
           <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Current Streak</span>
+            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+              Current Streak
+            </span>
             <div className="flex items-baseline gap-2">
               {loading ? (
                 <div className="h-9 w-16 bg-surface-container-high rounded animate-pulse" />
               ) : (
                 <>
-                  <span className="text-3xl font-mono font-bold text-primary">{calculateStreak(allSessions)} days</span>
+                  <span className="text-3xl font-mono font-bold text-primary">
+                    {calculateStreak(allSessions)} days
+                  </span>
                   <span className="text-lg">🔥</span>
                 </>
               )}
@@ -169,7 +378,6 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      {/* Right Sidebar: Checklist */}
       <DailyChecklist />
     </main>
   );

@@ -9,6 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "zod": "latest"
   },
   "devDependencies": {

@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/auth-store';
 import { taskService } from '../services/task';
 import { focusService } from '../services/focus';
+import { projectService } from '../services/project';
+import { goalService } from '../services/goal';
 import { type Task } from '@focus/shared';
 import { Terminal, Bell, Play, Square, FastForward, Clock, User as UserIcon } from 'lucide-react-native';
 import { Svg, Circle } from 'react-native-svg';
@@ -12,12 +14,14 @@ import { useNavigation } from '@react-navigation/native';
 import { calculateStreak } from '../utils/streak';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useSettingsStore } from '../store/settings-store';
+import { Audio } from 'expo-av';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const timerDuration = useSettingsStore(state => state.timerDuration);
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [allSessions, setAllSessions] = useState<any[]>([]);
+  const [tags, setTags] = useState<string[]>(['Coding', 'Learning', 'Building']);
   const [timerSeconds, setTimerSeconds] = useState(timerDuration * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -25,6 +29,23 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const user = useAuthStore((state: any) => state.user);
   const { colors, isDark } = useAppTheme();
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  const playSuccessSound = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' }
+      );
+      setSound(sound);
+      await sound.playAsync();
+    } catch (error) {
+      console.error('Failed to play sound', error);
+    }
+  };
+
+  useEffect(() => {
+    return sound ? () => { sound.unloadAsync(); } : undefined;
+  }, [sound]);
 
   useEffect(() => {
     if (!isActive) {
@@ -43,12 +64,23 @@ export default function HomeScreen() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [tRes, sRes] = await Promise.all([
+      const [tRes, sRes, pRes, gRes] = await Promise.all([
         taskService.getTasks(),
-        focusService.getSessions()
+        focusService.getSessions(),
+        projectService.getProjects(),
+        goalService.getGoals()
       ]);
       setRecentTasks(tRes.tasks?.slice(0, 3) || []);
       setAllSessions(sRes.sessions || []);
+      
+      const dynamicTags = [
+        ...new Set([
+          ...(pRes.projects?.map((p: any) => p.name) || []),
+          ...(gRes.goals?.map((g: any) => g.title) || []),
+          'Coding', 'Learning', 'Building'
+        ])
+      ].slice(0, 8);
+      setTags(dynamicTags);
     } catch (error) {
       console.error('Failed to fetch data', error);
     } finally {
@@ -67,6 +99,7 @@ export default function HomeScreen() {
         setTimerSeconds((prev) => prev - 1);
       }, 1000);
     } else if (timerSeconds === 0 && isActive) {
+      playSuccessSound();
       handleToggleTimer(); 
     }
     return () => clearInterval(interval);
@@ -106,8 +139,6 @@ export default function HomeScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const tags = ['Coding', 'Learning', 'Building', 'Review', 'Other'];
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
@@ -126,8 +157,8 @@ export default function HomeScreen() {
                   <Bell color={colors.onSurfaceVariant} size={20} />
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.iconBtn, { backgroundColor: colors.surface }]}
-                  onPress={() => navigation.navigate('Profile')}
+                   style={[styles.iconBtn, { backgroundColor: colors.surface }]}
+                   onPress={() => navigation.navigate('Profile')}
                 >
                   <UserIcon color={colors.onSurfaceVariant} size={20} />
                 </TouchableOpacity>
@@ -231,7 +262,7 @@ export default function HomeScreen() {
               </View>
 
               <View style={styles.sessionsList}>
-                {recentTasks.length > 0 ? recentTasks.map((task) => (
+                {recentTasks.length > 0 ? recentTasks.map((task: any) => (
                   <TouchableOpacity key={task.id} style={[styles.sessionCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                     <View style={styles.sessionInfo}>
                       <Text style={[styles.sessionTitle, { color: colors.onSurface }]}>{task.title}</Text>
@@ -340,3 +371,4 @@ const styles = StyleSheet.create({
   emptySessions: { padding: 20, alignItems: 'center' },
   emptyText: { color: '#64748b', fontStyle: 'italic', fontSize: 12 }
 });
+

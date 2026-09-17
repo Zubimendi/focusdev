@@ -7,6 +7,11 @@ export interface IGoal extends Document {
   projectId?: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   status: "open" | "met" | "failed";
+  periodType?: "week" | "month" | "year";
+  periodStart?: Date;
+  targetValue?: number;
+  currentValue?: number;
+  unit?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,11 +24,17 @@ const GoalSchema = new Schema<IGoal>(
     projectId: { type: Schema.Types.ObjectId, ref: "Project" },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     status: { type: String, enum: ["open", "met", "failed"], default: "open" },
+    periodType: { type: String, enum: ["week", "month", "year"] },
+    periodStart: { type: Date },
+    targetValue: { type: Number },
+    currentValue: { type: Number },
+    unit: { type: String },
   },
   { timestamps: true }
 );
 
 GoalSchema.index({ userId: 1 });
 GoalSchema.index({ projectId: 1 });
+GoalSchema.index({ userId: 1, periodType: 1, periodStart: 1 });
 
 export const GoalModel = mongoose.models.Goal || mongoose.model<IGoal>("Goal", GoalSchema);

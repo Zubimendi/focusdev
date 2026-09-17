@@ -4,6 +4,7 @@ export interface IProject extends Document {
   name: string;
   description?: string;
   color: string;
+  status: "active" | "paused" | "archived";
   githubRepo?: string;
   githubRepoId?: number;
   githubRepoFullName?: string;
@@ -19,6 +20,11 @@ const ProjectSchema = new Schema<IProject>(
     name: { type: String, required: true },
     description: { type: String },
     color: { type: String, default: "#818cf8" },
+    status: {
+      type: String,
+      enum: ["active", "paused", "archived"],
+      default: "active",
+    },
     githubRepo: { type: String },
     githubRepoId: { type: Number },
     githubRepoFullName: { type: String },
