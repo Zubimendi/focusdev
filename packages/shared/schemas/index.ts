@@ -5,7 +5,7 @@ export * from "./focus";
 export const ProjectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   description: z.string().optional(),
-  color: z.string().default("#818cf8"),
+  color: z.string().default("#2d6a5e"),
   status: z.enum(["active", "paused", "archived"]).default("active"),
   githubRepo: z.string().optional(),
   isPublic: z.boolean().default(false),

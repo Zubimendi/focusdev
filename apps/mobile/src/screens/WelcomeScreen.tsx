@@ -23,7 +23,7 @@ export default function WelcomeScreen({ navigation }: any) {
         {/* Progress indicators at top */}
         <View style={styles.progressContainer}>
           <LinearGradient
-            colors={['#c0c1ff', '#8083ff']}
+            colors={['#7eb8a8', '#2d6a5e']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.progressBarActive}
@@ -54,12 +54,12 @@ export default function WelcomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Register')}
             >
               <LinearGradient
-                colors={isDark ? ['#c0c1ff', '#8083ff'] : ['#494bd6', '#6366f1']}
+                colors={isDark ? ['#7eb8a8', '#2d6a5e'] : ['#2d6a5e', '#2d6a5e']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.primaryButton}
               >
-                <Text style={[styles.primaryButtonText, { color: isDark ? '#1000a9' : '#ffffff' }]}>Get Started</Text>
+                <Text style={[styles.primaryButtonText, { color: isDark ? '#0f1614' : '#ffffff' }]}>Get Started</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -82,7 +82,7 @@ export default function WelcomeScreen({ navigation }: any) {
               <Text style={[styles.cardValueMono, { color: colors.primary }]}>02:00:00</Text>
               <View style={[styles.progressBarBg, { backgroundColor: colors.background }]}>
                 <LinearGradient
-                  colors={['#c0c1ff', '#8083ff']}
+                  colors={['#7eb8a8', '#2d6a5e']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={[styles.progressBarFill, { width: '66%' }]}
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#8083ff',
+    shadowColor: '#2d6a5e',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 12,

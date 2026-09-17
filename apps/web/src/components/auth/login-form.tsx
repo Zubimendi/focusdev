@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import FocusLogo from "@/components/brand/focus-logo";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -60,11 +61,8 @@ export default function LoginForm() {
     <div className="w-full max-w-md bg-surface dark:bg-surface-container-low p-10 rounded-xl shadow-xl dark:shadow-none lg:bg-transparent">
       {/* Header */}
       <div className="mb-10 flex flex-col items-center lg:items-start text-on-surface">
-        <div className="mb-6 flex items-center gap-2">
-          <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center shadow-lg shadow-primary/10">
-            <span className="material-symbols-outlined text-on-primary-container text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-          </div>
-          <span className="text-2xl font-black tracking-tighter text-on-surface">FocusDev</span>
+        <div className="mb-6 text-primary">
+          <FocusLogo size={36} className="text-primary text-2xl" />
         </div>
         <h2 className="text-3xl font-bold text-on-surface tracking-tight mb-2">Welcome to FocusDev</h2>
         <p className="text-on-surface-variant font-medium">Log in to your high-performance workspace.</p>

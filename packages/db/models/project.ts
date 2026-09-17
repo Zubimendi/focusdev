@@ -19,7 +19,7 @@ const ProjectSchema = new Schema<IProject>(
   {
     name: { type: String, required: true },
     description: { type: String },
-    color: { type: String, default: "#818cf8" },
+    color: { type: String, default: "#2d6a5e" },
     status: {
       type: String,
       enum: ["active", "paused", "archived"],

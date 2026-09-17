@@ -37,7 +37,7 @@ export default function ProjectsPage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    color: "#818cf8",
+    color: "#2d6a5e",
   });
 
   const loadProjects = useCallback(async () => {
@@ -78,7 +78,7 @@ export default function ProjectsPage() {
       if (!res.ok) throw new Error("Failed");
       toast.success("Project created");
       setShowCreate(false);
-      setForm({ name: "", description: "", color: "#818cf8" });
+      setForm({ name: "", description: "", color: "#2d6a5e" });
       await loadProjects();
     } catch {
       toast.error("Failed to create project");
@@ -100,7 +100,7 @@ export default function ProjectsPage() {
     <main className="max-w-6xl mx-auto px-8 py-12 flex flex-col gap-12">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-indigo-500 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded w-fit">
+          <label className="text-xs font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded w-fit">
             Developer Workspace
           </label>
           <h1 className="text-4xl font-black text-on-surface tracking-tight">
@@ -113,7 +113,7 @@ export default function ProjectsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 group"
+          className="px-6 py-3 bg-primary hover:opacity-90 text-on-primary font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center gap-2 group"
         >
           <span className="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform">
             add
@@ -166,7 +166,7 @@ export default function ProjectsPage() {
             <button
               type="submit"
               disabled={creating}
-              className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm disabled:opacity-50"
+              className="px-5 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm disabled:opacity-50"
             >
               {creating ? "Creating…" : "Create"}
             </button>
@@ -193,7 +193,7 @@ export default function ProjectsPage() {
           </p>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm"
+            className="px-5 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm"
           >
             New Project
           </button>
@@ -269,10 +269,10 @@ export default function ProjectsPage() {
 
           <button
             onClick={() => setShowCreate(true)}
-            className="bg-surface-container-low/40 rounded-2xl p-6 border-2 border-dashed border-white/5 hover:border-indigo-500/20 hover:bg-surface-container-low transition-all flex flex-col items-center justify-center gap-4 text-on-surface-variant group h-full min-h-[220px]"
+            className="bg-surface-container-low/40 rounded-2xl p-6 border-2 border-dashed border-white/5 hover:border-primary/20 hover:bg-surface-container-low transition-all flex flex-col items-center justify-center gap-4 text-on-surface-variant group h-full min-h-[220px]"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
-              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-white transition-colors">
+            <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary transition-colors">
+              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary transition-colors">
                 add
               </span>
             </div>
@@ -284,9 +284,9 @@ export default function ProjectsPage() {
       )}
 
       {topProject && totalWeek > 0 && (
-        <section className="bg-gradient-to-br from-indigo-900/40 to-indigo-900/10 p-8 rounded-3xl border border-indigo-500/10 flex flex-col lg:flex-row items-center gap-8 shadow-2xl">
-          <div className="w-24 h-24 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0 border border-indigo-500/20">
-            <span className="material-symbols-outlined text-4xl text-indigo-400">
+        <section className="bg-gradient-to-br from-primary-container/30 to-primary/5 p-8 rounded-3xl border border-primary/10 flex flex-col lg:flex-row items-center gap-8 shadow-2xl">
+          <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20">
+            <span className="material-symbols-outlined text-4xl text-primary">
               insights
             </span>
           </div>
@@ -294,11 +294,11 @@ export default function ProjectsPage() {
             <h2 className="text-2xl font-bold text-on-surface tracking-tight">
               Engineering Analysis
             </h2>
-            <p className="text-slate-400 max-w-xl">
+            <p className="text-on-surface-variant max-w-xl">
               You&apos;ve spent{" "}
-              <span className="text-indigo-400 font-bold">{topShare}%</span> of
+              <span className="text-primary font-bold">{topShare}%</span> of
               your focus time this week on{" "}
-              <span className="text-on-surface font-semibold underline decoration-indigo-500/50 underline-offset-4">
+              <span className="text-on-surface font-semibold underline decoration-primary/50 underline-offset-4">
                 {topProject.name}
               </span>
               .

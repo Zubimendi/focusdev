@@ -233,7 +233,7 @@ export default function WeeklyReviewPage() {
             >
               <div
                 className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: p.color || "#818cf8" }}
+                style={{ backgroundColor: p.color || "#2d6a5e" }}
               />
               <span className="flex-1 font-medium text-on-surface">
                 {p.name || "Project"}

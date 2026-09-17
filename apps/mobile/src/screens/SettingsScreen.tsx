@@ -116,7 +116,7 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0e1322" },
+  container: { flex: 1, backgroundColor: "#0f1614" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   backButton: { padding: 8, marginLeft: -8 },
-  title: { fontSize: 20, fontFamily: "Inter_900Black", color: "#dee1f7" },
+  title: { fontSize: 20, fontFamily: "Inter_900Black", color: "#eef1f0" },
   section: { marginTop: 32, paddingHorizontal: 24 },
   sectionTitle: {
     fontSize: 13,
@@ -134,11 +134,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textTransform: "uppercase",
   },
-  card: { backgroundColor: "#161b2b", borderRadius: 16, overflow: "hidden" },
+  card: { backgroundColor: "#1c2421", borderRadius: 16, overflow: "hidden" },
   row: { flexDirection: "row", alignItems: "center", padding: 16, gap: 12 },
   activeRow: { backgroundColor: "#1c2235" },
   rowText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#c7c4d7" },
-  activeText: { color: "#c0c1ff" },
+  activeText: { color: "#7eb8a8" },
   divider: { height: 1, backgroundColor: "#1f2438", marginLeft: 48 },
   durationButtons: {
     flexDirection: "row",
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#1f2438",
   },
-  activePill: { backgroundColor: "#c0c1ff" },
+  activePill: { backgroundColor: "#7eb8a8" },
   pillText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#c7c4d7" },
-  activePillText: { color: "#0e1322" },
+  activePillText: { color: "#0f1614" },
 });

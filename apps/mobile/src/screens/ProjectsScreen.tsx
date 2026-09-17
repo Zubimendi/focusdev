@@ -53,7 +53,7 @@ export default function ProjectsScreen() {
           ...p,
           id: p.id || p._id,
           status: p.status || 'active',
-          color: p.color || '#6366f1',
+          color: p.color || '#2d6a5e',
         }))
       );
     } catch (err) {
@@ -78,7 +78,7 @@ export default function ProjectsScreen() {
       await projectService.createProject({
         name: name.trim(),
         description: description.trim() || undefined,
-        color: '#6366f1',
+        color: '#2d6a5e',
       });
       setName('');
       setDescription('');
@@ -227,12 +227,12 @@ export default function ProjectsScreen() {
         {topProject && totalWeek > 0 && (
           <LinearGradient
             colors={[
-              isDark ? 'rgba(99, 102, 241, 0.15)' : '#e0e7ff',
-              isDark ? 'rgba(99, 102, 241, 0.05)' : '#f3f4f6',
+              isDark ? 'rgba(45, 106, 94, 0.18)' : '#e0e7ff',
+              isDark ? 'rgba(45, 106, 94, 0.08)' : '#f3f4f6',
             ]}
             style={[
               styles.analysisCard,
-              { borderColor: isDark ? 'rgba(129, 140, 248, 0.2)' : '#c7d2fe' },
+              { borderColor: isDark ? 'rgba(126, 184, 168, 0.25)' : '#c7d2fe' },
             ]}
           >
             <View style={styles.analysisHeader}>
@@ -311,7 +311,7 @@ export default function ProjectsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0e1322' },
+  container: { flex: 1, backgroundColor: '#0f1614' },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 120 },
   header: {
     flexDirection: 'row',
@@ -320,13 +320,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 16,
   },
-  label: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#818cf8', letterSpacing: 2 },
-  title: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#dee1f7', marginTop: 4 },
+  label: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#7eb8a8', letterSpacing: 2 },
+  title: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#eef1f0', marginTop: 4 },
   addBtn: {
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: '#161b2b',
+    backgroundColor: '#1c2421',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   createCtaText: { color: '#fff', fontFamily: 'Inter_800ExtraBold', fontSize: 12, letterSpacing: 1 },
   projectList: { gap: 16 },
   projectCard: {
-    backgroundColor: '#161b2b',
+    backgroundColor: '#1c2421',
     padding: 24,
     borderRadius: 24,
     borderWidth: 1,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   statusText: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', letterSpacing: 1 },
   cardInfo: { marginBottom: 20 },
-  projectName: { fontSize: 18, fontFamily: 'Inter_700Bold', color: '#dee1f7', marginBottom: 6 },
+  projectName: { fontSize: 18, fontFamily: 'Inter_700Bold', color: '#eef1f0', marginBottom: 6 },
   repoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: 0.6 },
   repoText: { fontSize: 12, fontFamily: 'JetBrainsMono_400Regular', color: '#64748b' },
   cardFooter: {
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     letterSpacing: 1,
   },
-  focusValue: { fontSize: 20, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7' },
+  focusValue: { fontSize: 20, fontFamily: 'JetBrainsMono_700Bold', color: '#eef1f0' },
   connectCard: {
     padding: 24,
     borderRadius: 24,
@@ -406,14 +406,14 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(129, 140, 248, 0.1)',
+    backgroundColor: 'rgba(126, 184, 168, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   connectText: {
     fontSize: 11,
     fontFamily: 'Inter_800ExtraBold',
-    color: '#818cf8',
+    color: '#7eb8a8',
     letterSpacing: 1.5,
   },
   analysisCard: {
@@ -421,19 +421,19 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginTop: 40,
     borderWidth: 1,
-    borderColor: 'rgba(129, 140, 248, 0.2)',
+    borderColor: 'rgba(126, 184, 168, 0.25)',
   },
   analysisHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  analysisTitle: { fontSize: 18, fontFamily: 'Inter_900Black', color: '#dee1f7' },
+  analysisTitle: { fontSize: 18, fontFamily: 'Inter_900Black', color: '#eef1f0' },
   analysisContent: {
     fontSize: 14,
     fontFamily: 'Inter_500Medium',
     color: '#64748b',
     lineHeight: 22,
   },
-  highlight: { color: '#818cf8', fontFamily: 'Inter_800ExtraBold' },
+  highlight: { color: '#7eb8a8', fontFamily: 'Inter_800ExtraBold' },
   underlined: {
-    color: '#dee1f7',
+    color: '#eef1f0',
     textDecorationLine: 'underline',
     fontFamily: 'Inter_700Bold',
   },

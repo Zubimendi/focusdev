@@ -187,7 +187,7 @@ export default function HomeScreen() {
                       cx={size / 2}
                       cy={size / 2}
                       r={radius}
-                      stroke={isDark ? "rgba(129, 140, 248, 0.1)" : "rgba(73, 75, 214, 0.1)"}
+                      stroke={isDark ? "rgba(126, 184, 168, 0.15)" : "rgba(73, 75, 214, 0.1)"}
                       strokeWidth={strokeWidth}
                       fill="none"
                     />
@@ -235,7 +235,7 @@ export default function HomeScreen() {
                     onPress={handleToggleTimer}
                   >
                     <LinearGradient
-                      colors={isActive ? ['#ef4444', '#b91c1c'] : [colors.primary, isDark ? '#6366f1' : '#312e81']}
+                      colors={isActive ? ['#ef4444', '#b91c1c'] : [colors.primary, isDark ? '#2d6a5e' : '#24584e']}
                       style={styles.gradientBtn}
                     >
                       {isActive ? <Square size={20} color="#fff" fill="#fff" /> : <Play size={20} color="#fff" fill="#fff" />}
@@ -297,7 +297,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0e1322' },
+  container: { flex: 1, backgroundColor: '#0f1614' },
   header: { 
     height: 64, 
     flexDirection: 'row', 
@@ -306,8 +306,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  headerTitle: { fontSize: 20, fontFamily: 'Inter_900Black', color: '#818cf8', letterSpacing: -1 },
-  iconBtn: { padding: 8, backgroundColor: '#161b2b', borderRadius: 10 },
+  headerTitle: { fontSize: 20, fontFamily: 'Inter_900Black', color: '#7eb8a8', letterSpacing: -1 },
+  iconBtn: { padding: 8, backgroundColor: '#1c2421', borderRadius: 10 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 110 },
   welcomeSection: { 
     flexDirection: 'row', 
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     marginBottom: 40
   },
   welcomeLabel: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 2 },
-  welcomeTitle: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#dee1f7', marginTop: 4 },
+  welcomeTitle: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#eef1f0', marginTop: 4 },
   streakBadge: { 
     backgroundColor: 'rgba(255, 185, 95, 0.1)', 
     paddingHorizontal: 12, 
@@ -331,11 +331,11 @@ const styles = StyleSheet.create({
   ringContainer: { width: 260, height: 260, alignItems: 'center', justifyContent: 'center' },
   svg: { position: 'absolute' },
   timeDisplay: { alignItems: 'center' },
-  timeText: { fontSize: 54, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7', letterSpacing: -2 },
-  sessionType: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#818cf8', letterSpacing: 4, marginTop: 4 },
-  actionCard: { backgroundColor: '#161b2b', borderRadius: 24, padding: 24, marginTop: 40, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.2)' },
+  timeText: { fontSize: 54, fontFamily: 'JetBrainsMono_700Bold', color: '#eef1f0', letterSpacing: -2 },
+  sessionType: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#7eb8a8', letterSpacing: 4, marginTop: 4 },
+  actionCard: { backgroundColor: '#1c2421', borderRadius: 24, padding: 24, marginTop: 40, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.2)' },
   inputLabel: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 2, marginBottom: 16 },
-  input: { fontSize: 18, fontFamily: 'Inter_600SemiBold', color: '#dee1f7', marginBottom: 20 },
+  input: { fontSize: 18, fontFamily: 'Inter_600SemiBold', color: '#eef1f0', marginBottom: 20 },
   tagStrip: { marginBottom: 24 },
   tag: { backgroundColor: '#232a3d', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
   tagText: { fontSize: 10, fontFamily: 'Inter_700Bold', color: '#c7c4d7' },
@@ -346,11 +346,11 @@ const styles = StyleSheet.create({
   skipBtn: { flex: 1, height: 56, backgroundColor: '#232a3d', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   skipBtnText: { color: '#c7c4d7', fontSize: 10, fontFamily: 'Inter_800ExtraBold' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 48, marginBottom: 20 },
-  sectionTitle: { fontSize: 20, fontFamily: 'Inter_800ExtraBold', color: '#dee1f7' },
-  viewAll: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: '#818cf8' },
+  sectionTitle: { fontSize: 20, fontFamily: 'Inter_800ExtraBold', color: '#eef1f0' },
+  viewAll: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: '#7eb8a8' },
   sessionsList: { gap: 12 },
   sessionCard: { 
-    backgroundColor: '#161b2b', 
+    backgroundColor: '#1c2421', 
     padding: 20, 
     borderRadius: 20, 
     flexDirection: 'row', 
@@ -360,10 +360,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(70, 69, 84, 0.1)'
   },
   sessionInfo: { gap: 8 },
-  sessionTitle: { fontSize: 16, fontFamily: 'Inter_700Bold', color: '#dee1f7' },
+  sessionTitle: { fontSize: 16, fontFamily: 'Inter_700Bold', color: '#eef1f0' },
   sessionMeta: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  tagSmall: { backgroundColor: 'rgba(129, 140, 248, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
-  tagTextSmall: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#818cf8' },
+  tagSmall: { backgroundColor: 'rgba(126, 184, 168, 0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  tagTextSmall: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#7eb8a8' },
   timeMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   metaText: { fontSize: 11, fontFamily: 'JetBrainsMono_400Regular', color: '#64748b' },
   editBtn: { padding: 8 },

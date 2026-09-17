@@ -160,8 +160,8 @@ export default function TimerPage() {
             ></circle>
             <defs>
               <linearGradient id="timerGradient" x1="0%" x2="100%" y1="0%" y2="100%">
-                <stop offset="0%" stopColor="#c0c1ff"></stop>
-                <stop offset="100%" stopColor="#8083ff"></stop>
+                <stop offset="0%" stopColor="#7eb8a8"></stop>
+                <stop offset="100%" stopColor="#2d6a5e"></stop>
               </linearGradient>
             </defs>
           </svg>

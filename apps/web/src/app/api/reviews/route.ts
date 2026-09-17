@@ -220,7 +220,7 @@ export async function GET(req: Request) {
           byProject: snapshot.byProject.map((p) => ({
             ...p,
             name: projectMap.get(p.projectId)?.name || "Unknown",
-            color: projectMap.get(p.projectId)?.color || "#818cf8",
+            color: projectMap.get(p.projectId)?.color || "#2d6a5e",
           })),
         },
         goals: snapshot.goals,

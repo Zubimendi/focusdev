@@ -24,10 +24,10 @@ export default function LandingPage() {
       className={`${display.variable} ${sans.variable} landing-root min-h-screen antialiased`}
       style={
         {
-          "--landing-core": "#EEF1F0",
+          "--landing-core": "var(--surface)",
           fontFamily: "var(--font-landing-sans), system-ui, sans-serif",
-          background: "#EEF1F0",
-          color: "#1C2421",
+          background: "var(--surface)",
+          color: "var(--on-surface)",
         } as CSSProperties
       }
     >

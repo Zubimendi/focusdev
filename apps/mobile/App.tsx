@@ -74,7 +74,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1, backgroundColor: theme === 'dark' ? '#0e1322' : '#ffffff' }} onLayout={onLayoutRootView}>
+      <View style={{ flex: 1, backgroundColor: theme === 'dark' ? '#0f1614' : '#eef1f0' }} onLayout={onLayoutRootView}>
         <AppNavigator />
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
         <Toast config={toastConfig} />

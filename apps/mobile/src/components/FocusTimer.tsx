@@ -56,8 +56,8 @@ export default function FocusTimer() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme === 'dark' ? '#161b2b' : '#f8fafc' }]}>
-      <Text style={[styles.timer, { color: theme === 'dark' ? '#dee1f7' : '#0e1322' }]}>{formatTime(seconds)}</Text>
+    <View style={[styles.container, { backgroundColor: theme === 'dark' ? '#1c2421' : '#f8fafc' }]}>
+      <Text style={[styles.timer, { color: theme === 'dark' ? '#eef1f0' : '#0f1614' }]}>{formatTime(seconds)}</Text>
       <TouchableOpacity
         style={[styles.button, isActive ? styles.stopButton : styles.startButton]}
         onPress={toggleTimer}

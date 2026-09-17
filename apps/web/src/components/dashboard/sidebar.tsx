@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import FocusLogo from "@/components/brand/focus-logo";
 
 interface SideNavBarProps {
   isOpen?: boolean;
@@ -31,14 +32,8 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
           <span className="material-symbols-outlined">close</span>
         </button>
       )}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center shadow-lg shadow-primary/10">
-          <span className="material-symbols-outlined text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-        </div>
-        <div>
-          <h1 className="text-2xl font-black text-on-surface tracking-tighter leading-none pr-8">FocusDev</h1>
-          <p className="text-[10px] text-on-surface-variant font-mono tracking-widest uppercase mt-1">Monolithic Clarity</p>
-        </div>
+      <div className="flex items-center gap-3 text-primary">
+        <FocusLogo size={36} className="text-primary text-xl" />
       </div>
 
       <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">

@@ -9,10 +9,10 @@ import { useAppTheme } from '../hooks/useAppTheme';
 const { width } = Dimensions.get('window');
 
 const sessions = [
-  { id: '1', title: 'Refactor Auth Middleware', type: 'Coding', duration: '45 min', time: '10:30 AM', color: '#6366f1' },
+  { id: '1', title: 'Refactor Auth Middleware', type: 'Coding', duration: '45 min', time: '10:30 AM', color: '#2d6a5e' },
   { id: '2', title: 'Architecture Whiteboarding', type: 'Building', duration: '25 min', time: '01:15 PM', color: '#4edea3' },
   { id: '3', title: 'Post-mortem Review', type: 'Learning', duration: '15 min', time: '03:45 PM', color: '#ffb95f' },
-  { id: '4', title: 'Unit Test Suite Execution', type: 'Coding', duration: '15 min', time: '05:00 PM', color: '#6366f1' },
+  { id: '4', title: 'Unit Test Suite Execution', type: 'Coding', duration: '15 min', time: '05:00 PM', color: '#2d6a5e' },
 ];
 
 const getInitialDays = () => {
@@ -112,7 +112,7 @@ export default function SessionsScreen() {
                 cx={size / 2}
                 cy={size / 2}
                 r={radius}
-                stroke={isDark ? "#161b2b" : "#f1f5f9"}
+                stroke={isDark ? "#1c2421" : "#f1f5f9"}
                 strokeWidth={strokeWidth}
                 fill="none"
               />
@@ -166,7 +166,7 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0e1322',
+    backgroundColor: '#0f1614',
   },
   header: {
     height: 64,
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    backgroundColor: '#0e1322',
+    backgroundColor: '#0f1614',
   },
   logoRow: {
     flexDirection: 'row',
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#818cf8',
+    color: '#7eb8a8',
     letterSpacing: -1,
     fontFamily: 'Inter_900Black',
   },
@@ -224,20 +224,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontFamily: 'Inter_900Black',
-    color: '#dee1f7',
+    color: '#eef1f0',
     marginTop: 4,
   },
   filterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#161b2b',
+    backgroundColor: '#1c2421',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
   },
   filterText: {
-    color: '#dee1f7',
+    color: '#eef1f0',
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
@@ -258,11 +258,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dateCardInactive: {
-    backgroundColor: '#161b2b',
+    backgroundColor: '#1c2421',
     opacity: 0.6,
   },
   dateCardActive: {
-    backgroundColor: '#8083ff',
+    backgroundColor: '#2d6a5e',
   },
   dateDay: {
     fontSize: 10,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   dateDate: {
     fontSize: 20,
     fontFamily: 'JetBrainsMono_700Bold',
-    color: '#dee1f7',
+    color: '#eef1f0',
     marginTop: 4,
   },
   textActive: {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontFamily: 'JetBrainsMono_700Bold',
-    color: '#c0c1ff',
+    color: '#7eb8a8',
   },
   statUnit: {
     fontSize: 12,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   sessionCard: {
-    backgroundColor: '#161b2b',
+    backgroundColor: '#1c2421',
     borderRadius: 16,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   sessionTitle: {
     fontSize: 16,
     fontFamily: 'Inter_700Bold',
-    color: '#dee1f7',
+    color: '#eef1f0',
   },
   sessionTags: {
     flexDirection: 'row',

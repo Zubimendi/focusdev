@@ -42,13 +42,12 @@ export default function RootLayout({
             <Toaster 
               position="bottom-right" 
               richColors 
-              theme="dark" 
+              theme="system" 
               toastOptions={{
                 style: {
-                  background: '#1a1f2f',
-                  borderColor: 'rgba(70, 69, 84, 0.2)',
-                  color: '#dee1f7',
-                  fontFamily: 'Inter, sans-serif'
+                  background: 'var(--surface-container-low)',
+                  borderColor: 'var(--outline-variant)',
+                  color: 'var(--on-surface)',
                 }
               }}
             />

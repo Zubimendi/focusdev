@@ -17,16 +17,16 @@ const heatmapData = [
 ];
 
 const stats = [
-  { icon: ClockIcon, label: "Focus Hours", value: "38.5h", color: "#818cf8" },
-  { icon: TimerIcon, label: "Sessions", value: "24", color: "#818cf8" },
-  { icon: CodeIcon, label: "LeetCode Solved", value: "14", color: "#818cf8" },
+  { icon: ClockIcon, label: "Focus Hours", value: "38.5h", color: "#7eb8a8" },
+  { icon: TimerIcon, label: "Sessions", value: "24", color: "#7eb8a8" },
+  { icon: CodeIcon, label: "LeetCode Solved", value: "14", color: "#7eb8a8" },
   { icon: FlameIcon, label: "Streak Days", value: "12", color: "#ffb95f", valueColor: "#ffb95f" },
 ];
 
 const barData = [
   { day: "M", height: "60%", color: "rgba(129, 140, 248, 0.4)" },
   { day: "T", height: "80%", color: "#4edea3" },
-  { day: "W", height: "40%", color: "#818cf8" },
+  { day: "W", height: "40%", color: "#7eb8a8" },
   { day: "T", height: "70%", color: "#ffb4ab" },
   { day: "F", height: "30%", color: "rgba(78, 222, 163, 0.6)" },
   { day: "S", height: "20%", color: "rgba(129, 140, 248, 0.8)" },
@@ -34,7 +34,7 @@ const barData = [
 ];
 
 const allocation = [
-  { label: "Coding", pct: "70%", color: "#818cf8" },
+  { label: "Coding", pct: "70%", color: "#7eb8a8" },
   { label: "Learning", pct: "20%", color: "#4edea3" },
   { label: "Building", pct: "10%", color: "#ffb4ab" },
 ];
@@ -161,7 +161,7 @@ export default function StatsScreen() {
               <Text style={[styles.highlightValue, { color: colors.onSurface }]}>Tuesday</Text>
             </View>
           </View>
-          <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(129, 140, 248, 0.1)' : '#eef2ff' }]}>
+          <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(126, 184, 168, 0.15)' : '#eef2ff' }]}>
             <View style={styles.highlightIcon}>
               <Star size={24} color={colors.primary} fill={isDark ? "rgba(129, 140, 248, 0.4)" : colors.primary + '30'} />
             </View>
@@ -177,7 +177,7 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0e1322' },
+  container: { flex: 1, backgroundColor: '#0f1614' },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 120 },
   header: { 
     marginTop: 20,
@@ -185,10 +185,10 @@ const styles = StyleSheet.create({
     gap: 20
   },
   label: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 2 },
-  title: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#dee1f7', marginTop: 4 },
+  title: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#eef1f0', marginTop: 4 },
   rangeToggle: { 
     flexDirection: 'row', 
-    backgroundColor: '#161b2b', 
+    backgroundColor: '#1c2421', 
     padding: 6, 
     borderRadius: 16,
     alignSelf: 'flex-start'
@@ -196,12 +196,12 @@ const styles = StyleSheet.create({
   toggleBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   toggleBtnActive: { backgroundColor: '#232a3d' },
   toggleText: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#64748b' },
-  toggleTextActive: { color: '#dee1f7' },
+  toggleTextActive: { color: '#eef1f0' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: { 
     width: (width - 48 - 12) / 2, 
-    backgroundColor: '#161b2b', 
+    backgroundColor: '#1c2421', 
     padding: 24, 
     borderRadius: 24, 
     gap: 16,
@@ -209,11 +209,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(70, 69, 84, 0.1)'
   },
   statLabel: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 1 },
-  statValue: { fontSize: 24, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7' },
+  statValue: { fontSize: 24, fontFamily: 'JetBrainsMono_700Bold', color: '#eef1f0' },
 
-  heatmapSection: { marginTop: 40, backgroundColor: '#161b2b', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
+  heatmapSection: { marginTop: 40, backgroundColor: '#1c2421', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
   sectionTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontFamily: 'Inter_900Black', color: '#dee1f7' },
+  sectionTitle: { fontSize: 18, fontFamily: 'Inter_900Black', color: '#eef1f0' },
   periodBadge: { backgroundColor: '#232a3d', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   periodText: { fontSize: 9, fontFamily: 'JetBrainsMono_700Bold', color: '#64748b' },
   heatmapContainer: { marginHorizontal: -4 },
@@ -221,13 +221,13 @@ const styles = StyleSheet.create({
   heatmapColumn: { gap: 6 },
   heatmapSquare: { width: 14, height: 14, borderRadius: 3 },
 
-  intensitySection: { marginTop: 24, backgroundColor: '#161b2b', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
+  intensitySection: { marginTop: 24, backgroundColor: '#1c2421', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
   chartContainer: { flexDirection: 'row', height: 160, alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 20 },
   barItem: { flex: 1, alignItems: 'center', gap: 12 },
   bar: { width: 12, borderRadius: 6 },
   barLabel: { fontSize: 10, fontFamily: 'JetBrainsMono_700Bold', color: '#64748b' },
 
-  allocationSection: { marginTop: 24, backgroundColor: '#161b2b', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
+  allocationSection: { marginTop: 24, backgroundColor: '#1c2421', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
   allocationBar: { height: 12, borderRadius: 6, overflow: 'hidden', flexDirection: 'row', marginTop: 20, marginBottom: 24 },
   allocationSegment: { height: '100%' },
   allocationList: { gap: 16 },
@@ -235,11 +235,11 @@ const styles = StyleSheet.create({
   allocationLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   allocationText: { fontSize: 14, fontFamily: 'Inter_600SemiBold', color: '#c7c4d7' },
-  allocationPct: { fontSize: 14, fontFamily: 'JetBrainsMono_700Bold', color: '#dee1f7' },
+  allocationPct: { fontSize: 14, fontFamily: 'JetBrainsMono_700Bold', color: '#eef1f0' },
 
   highlightsGrid: { flexDirection: 'row', gap: 12, marginTop: 24 },
   highlightCard: { flex: 1, padding: 20, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 16 },
   highlightIcon: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255, 255, 255, 0.05)', alignItems: 'center', justifyContent: 'center' },
   highlightLabel: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 1 },
-  highlightValue: { fontSize: 18, fontFamily: 'Inter_800ExtraBold', color: '#dee1f7', marginTop: 2 }
+  highlightValue: { fontSize: 18, fontFamily: 'Inter_800ExtraBold', color: '#eef1f0', marginTop: 2 }
 });

@@ -314,7 +314,7 @@ export async function GET(req: Request) {
       .map((pid) => ({
         projectId: pid,
         name: projectNameMap.get(pid)?.name || "Unknown",
-        color: projectNameMap.get(pid)?.color || "#818cf8",
+        color: projectNameMap.get(pid)?.color || "#2d6a5e",
         focusMinutes: Math.round(projectFocus.get(pid) || 0),
         tasksDone: tasksByProject.get(pid) || 0,
       }))

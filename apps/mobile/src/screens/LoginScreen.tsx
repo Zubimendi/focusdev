@@ -131,7 +131,7 @@ export default function LoginScreen({ navigation }: any) {
                   style={styles.buttonWrapper}
                 >
                   <LinearGradient
-                    colors={isDark ? ['#c0c1ff', '#8083ff'] : [colors.primary, '#6366f1']}
+                    colors={isDark ? ['#7eb8a8', '#2d6a5e'] : [colors.primary, '#2d6a5e']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.button}
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginTop: 12,
-    shadowColor: '#8083ff',
+    shadowColor: '#2d6a5e',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
