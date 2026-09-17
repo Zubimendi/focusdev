@@ -16,11 +16,3 @@ Focus is a high-level, production-grade application featuring a robust Next.js 1
 
 ---
 
-## 🐛 Bug Audit Trail
-*This section logs significant errors encountered during development, the root cause, and the applied resolution for continuous learning and reference purposes.*
-
-| Date | Issue/Bug Description | Root Cause | Resolution / Learnings |
-|------|-----------------------|------------|------------------------|
-| 2026-03-23 | `npm install` ETIMEDOUT | Network connectivity or registry timeout during large monorepo install. | Retried installation at root to leverage workspaces and cache. |
-
----
