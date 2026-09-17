@@ -58,7 +58,10 @@ export default function LandingPage() {
         }
       `}</style>
 
-      <header className="relative min-h-[100svh] flex flex-col overflow-hidden">
+      <header
+        className="relative min-h-[100svh] flex flex-col overflow-hidden"
+        style={{ "--landing-core": "#1C2421" } as CSSProperties}
+      >
         <div className="absolute inset-0">
           <Image
             src="/landing-hero.jpg"
@@ -68,22 +71,24 @@ export default function LandingPage() {
             className="object-cover object-center scale-[1.02]"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#EEF1F0]/93 via-[#EEF1F0]/80 to-[#EEF1F0]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(45,106,94,0.14),transparent_55%)]" />
+          {/* Dark scrim so light hero type stays readable over the photo */}
+          <div className="absolute inset-0 bg-[#0F1614]/72" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F1614]/55 via-[#0F1614]/45 to-[#EEF1F0]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_25%_30%,rgba(126,184,168,0.18),transparent_55%)]" />
         </div>
 
         <nav className="relative z-20 flex items-center justify-between px-6 md:px-12 py-6 landing-rise">
-          <FocusLogo size={36} className="text-[#1C2421] text-[1.45rem]" />
+          <FocusLogo size={36} className="text-[#F4F7F5] text-[1.45rem]" />
           <div className="flex items-center gap-3 md:gap-5">
             <Link
               href="/login"
-              className="text-sm font-medium text-[#1C2421]/70 hover:text-[#1C2421] transition-colors"
+              className="text-sm font-medium text-white/75 hover:text-white transition-colors"
             >
               Log in
             </Link>
             <Link
               href="/register"
-              className="text-sm font-semibold px-4 py-2 rounded-md bg-[#1C2421] text-[#EEF1F0] hover:bg-[#2D6A5E] transition-colors"
+              className="text-sm font-semibold px-4 py-2 rounded-md bg-white text-[#1C2421] hover:bg-[#EEF1F0] transition-colors"
             >
               Start free
             </Link>
@@ -91,20 +96,20 @@ export default function LandingPage() {
         </nav>
 
         <main className="relative z-10 flex-1 flex flex-col justify-center px-6 md:px-12 pb-16 pt-8 max-w-6xl mx-auto w-full">
-          <p className="landing-rise landing-rise-delay-1 mb-6 text-[#2D6A5E] text-sm md:text-base tracking-[0.08em] uppercase font-medium">
+          <p className="landing-rise landing-rise-delay-1 mb-6 text-[#A8D4C6] text-sm md:text-base tracking-[0.08em] uppercase font-medium">
             For developers who protect their attention
           </p>
 
           <h1
-            className="landing-rise landing-rise-delay-2 text-[clamp(3.25rem,9vw,6.75rem)] leading-[0.92] tracking-[-0.03em] text-[#1C2421] max-w-4xl font-medium"
+            className="landing-rise landing-rise-delay-2 text-[clamp(3.25rem,9vw,6.75rem)] leading-[0.92] tracking-[-0.03em] text-[#F7FAF8] max-w-4xl font-medium drop-shadow-sm"
             style={{ fontFamily: "var(--font-landing-display), Georgia, serif" }}
           >
             Deep work,
             <br />
-            <span className="text-[#2D6A5E]">quietly measured.</span>
+            <span className="text-[#B8E0D2]">quietly measured.</span>
           </h1>
 
-          <p className="landing-rise landing-rise-delay-3 mt-7 max-w-xl text-lg md:text-xl text-[#1C2421]/70 leading-relaxed">
+          <p className="landing-rise landing-rise-delay-3 mt-7 max-w-xl text-lg md:text-xl text-white/80 leading-relaxed">
             FocusDev is your personal studio for focus sessions, projects, and
             weekly reviews—built for how you actually ship.
           </p>
@@ -112,13 +117,13 @@ export default function LandingPage() {
           <div className="landing-rise landing-rise-delay-4 mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/register"
-              className="inline-flex items-center justify-center px-7 py-3.5 rounded-md bg-[#2D6A5E] text-[#EEF1F0] text-base font-semibold hover:bg-[#24584E] transition-colors"
+              className="inline-flex items-center justify-center px-7 py-3.5 rounded-md bg-[#7EB8A8] text-[#0F1614] text-base font-semibold hover:bg-[#95C9BB] transition-colors"
             >
               Begin your practice
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center px-7 py-3.5 rounded-md border border-[#1C2421]/20 text-[#1C2421] text-base font-medium hover:border-[#1C2421]/45 transition-colors"
+              className="inline-flex items-center justify-center px-7 py-3.5 rounded-md border border-white/35 text-white text-base font-medium hover:border-white/70 hover:bg-white/10 transition-colors"
             >
               I already have an account
             </Link>
