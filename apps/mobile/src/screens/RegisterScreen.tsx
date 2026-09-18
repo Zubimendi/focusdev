@@ -29,7 +29,6 @@ import {
 import Toast from "react-native-toast-message";
 import { useAuthStore } from "../store/auth-store";
 import { useAppTheme } from "../hooks/useAppTheme";
-import { API_URL } from "../services/api";
 
 type Status =
   | { kind: "idle" }
@@ -52,16 +51,16 @@ export default function RegisterScreen({ navigation }: any) {
     Keyboard.dismiss();
 
     if (!name.trim() || !email.trim() || !password) {
-      const message = "Please fill in name, email, and password.";
+      const message = "Fill in your name, email, and password.";
       setStatus({ kind: "error", message });
-      Toast.show({ type: "error", text1: "Missing fields", text2: message });
+      Toast.show({ type: "error", text1: "Missing details", text2: message });
       return;
     }
 
     if (password.length < 8) {
-      const message = "Password must be at least 8 characters.";
+      const message = "Use at least 8 characters for your password.";
       setStatus({ kind: "error", message });
-      Toast.show({ type: "error", text1: "Weak password", text2: message });
+      Toast.show({ type: "error", text1: "Password too short", text2: message });
       return;
     }
 
@@ -69,30 +68,28 @@ export default function RegisterScreen({ navigation }: any) {
 
     try {
       await register({
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
         name: name.trim(),
       });
 
-      const message = "Account created. You can log in now.";
+      const message = "You’re all set — continue to sign in.";
       setStatus({ kind: "success", message });
       Toast.show({
         type: "success",
         text1: "Account created",
         text2: message,
-        visibilityTime: 4000,
       });
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : "Registration failed. Check the Metro logs for [API] lines.";
+          : "Couldn't create your account. Try again.";
       setStatus({ kind: "error", message });
       Toast.show({
         type: "error",
-        text1: "Registration failed",
+        text1: "Couldn't sign up",
         text2: message,
-        visibilityTime: 6000,
       });
     }
   };
@@ -333,14 +330,6 @@ export default function RegisterScreen({ navigation }: any) {
                   </LinearGradient>
                 </TouchableOpacity>
 
-                {__DEV__ && (
-                  <Text style={[styles.devHint, { color: colors.onSurfaceVariant }]}>
-                    API: {API_URL}
-                    {"\n"}
-                    Watch Metro for [API →] / [API ←] logs
-                  </Text>
-                )}
-
                 <View style={styles.footer}>
                   <Text
                     style={[styles.footerText, { color: colors.onSurfaceVariant }]}
@@ -475,13 +464,6 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_800ExtraBold",
     letterSpacing: 0.5,
     color: "#ffffff",
-  },
-  devHint: {
-    fontSize: 11,
-    fontFamily: "JetBrainsMono_400Regular",
-    lineHeight: 16,
-    opacity: 0.7,
-    textAlign: "center",
   },
   footer: {
     flexDirection: "row",

@@ -68,8 +68,9 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[auth/register] ✕ 500 ${message}`);
+    // Do not leak exception text to clients
     return NextResponse.json(
-      { error: "Internal server error", detail: message },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

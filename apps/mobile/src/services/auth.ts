@@ -8,28 +8,42 @@ import {
 } from "@focus/shared";
 import { api, API_URL } from "./api";
 
+/** User-facing messages only — never leak URLs, IPs, or stack details into UI. */
 function formatAuthError(err: unknown, fallback: string): Error {
   if (err && typeof err === "object" && "issues" in err) {
-    const issues = (err as { issues?: { message?: string }[] }).issues;
-    const first = issues?.[0]?.message;
-    if (first) return new Error(first);
+    return new Error("Check your details and try again.");
   }
   if (axios.isAxiosError(err)) {
-    if (err.code === "ECONNABORTED") {
+    if (err.code === "ECONNABORTED" || !err.response) {
+      console.warn(`[auth] network/timeout talking to ${API_URL}`, err.message);
       return new Error(
-        `Timed out talking to ${API_URL}. Is Next.js running and is this the right IP?`
+        "Couldn't reach the server. Check your connection and try again."
       );
     }
-    if (!err.response) {
+    const status = err.response.status;
+    const data = err.response.data as { error?: string } | undefined;
+    if (status === 401) return new Error("Invalid email or password.");
+    if (status === 409) {
+      return new Error("An account with this email already exists.");
+    }
+    if (status === 400) {
       return new Error(
-        `Cannot reach API at ${API_URL}. Check Wi‑Fi, firewall, and apps/mobile/.env`
+        data?.error && !/mongo|stack|uri|localhost/i.test(data.error)
+          ? data.error
+          : "Check your details and try again."
       );
     }
-    const data = err.response.data as { error?: string };
-    if (data?.error) return new Error(data.error);
-    return new Error(`Server error (${err.response.status})`);
+    console.warn(`[auth] server ${status}`, data);
+    return new Error(fallback);
   }
-  if (err instanceof Error) return err;
+  if (err instanceof Error) {
+    // Never surface raw Error.message if it looks technical
+    if (/http|api|metro|timeout|ECONN|ENOTFOUND|network/i.test(err.message)) {
+      console.warn("[auth]", err.message);
+      return new Error(fallback);
+    }
+    return err;
+  }
   return new Error(fallback);
 }
 
@@ -37,20 +51,20 @@ export const authService = {
   async register(data: unknown): Promise<ApiResponse<unknown>> {
     const validation = RegisterSchema.safeParse(data);
     if (!validation.success) {
-      throw formatAuthError(validation.error, "Invalid form input");
+      throw formatAuthError(validation.error, "Couldn't create your account.");
     }
     try {
       const response = await api.post("/auth/register", validation.data);
       return response.data;
     } catch (err) {
-      throw formatAuthError(err, "Registration failed");
+      throw formatAuthError(err, "Couldn't create your account.");
     }
   },
 
   async login(data: unknown): Promise<AuthResponse> {
     const validation = LoginSchema.safeParse(data);
     if (!validation.success) {
-      throw formatAuthError(validation.error, "Invalid credentials");
+      throw formatAuthError(validation.error, "Couldn't sign you in.");
     }
     try {
       const response = await api.post("/auth/login", validation.data);
@@ -58,7 +72,7 @@ export const authService = {
       await SecureStore.setItemAsync("auth_token", token);
       return { token, user };
     } catch (err) {
-      throw formatAuthError(err, "Login failed");
+      throw formatAuthError(err, "Couldn't sign you in.");
     }
   },
 
@@ -68,7 +82,7 @@ export const authService = {
 
   async getMe(): Promise<ApiResponse<unknown>> {
     const token = await SecureStore.getItemAsync("auth_token");
-    if (!token) throw new Error("No token found");
+    if (!token) throw new Error("Not signed in");
 
     const response = await api.get("/auth/me", {
       headers: { Authorization: `Bearer ${token}` },

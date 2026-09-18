@@ -22,28 +22,28 @@ export default function LoginScreen({ navigation }: any) {
     if (!email || !password) {
       Toast.show({
         type: 'error',
-        text1: 'Authentication Error',
-        text2: 'Please enter your credentials to proceed.'
+        text1: 'Missing details',
+        text2: 'Enter your email and password.',
       });
       return;
     }
 
     try {
-      await login({ email, password });
+      await login({ email: email.trim().toLowerCase(), password });
       Toast.show({
         type: 'success',
-        text1: 'Welcome Home',
-        text2: 'Session authenticated successfully.'
+        text1: 'Welcome back',
+        text2: 'You’re signed in.',
       });
-    } catch (error: any) {
-      let message = 'Verification failed. Please check your credentials.';
-      if (error.message.includes('401')) message = 'Invalid email or password.';
-      if (error.message.includes('network')) message = 'Network anomaly detected. Check your connection.';
-      
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Couldn’t sign you in. Try again.';
       Toast.show({
         type: 'error',
-        text1: 'Auth Core Failure',
-        text2: message
+        text1: 'Sign in failed',
+        text2: message,
       });
     }
   };
