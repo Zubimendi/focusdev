@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Tabs } from "@/components/ui/tabs";
 
 interface SummaryStat {
   label: string;
@@ -81,14 +84,14 @@ export default function StatsPage() {
 
   if (loading && !data) {
     return (
-      <main className="max-w-[1400px] mx-auto p-12 flex flex-col gap-12 animate-pulse">
-        <div className="h-20 bg-surface-container-low rounded-2xl w-1/3"></div>
-        <div className="grid grid-cols-4 gap-6">
+      <main className="max-w-[1400px] mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8 animate-pulse">
+        <div className="h-14 bg-surface-container-low rounded-[var(--radius-md)] w-1/3 border border-[var(--border)]" />
+        <div className="grid grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-surface-container-low rounded-2xl"></div>
+            <div key={i} className="h-28 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
           ))}
         </div>
-        <div className="h-64 bg-surface-container-low rounded-2xl"></div>
+        <div className="h-64 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
       </main>
     );
   }
@@ -99,81 +102,56 @@ export default function StatsPage() {
   const highlights = data?.highlights || {};
   const byProject = data?.byProject || [];
 
+  const rangeTabs = range === "week" ? ["This week", "This month"] : ["This week", "This month"];
+
   return (
-    <main className="max-w-[1400px] mx-auto p-12 flex flex-col gap-12">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <span className="text-secondary font-mono text-sm tracking-[0.3em] uppercase mb-2 block">
-            Performance Hub
-          </span>
-          <h1 className="text-5xl font-black tracking-tighter text-on-surface">
-            Your Progress
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Link
-            href="/reviews/week"
-            className="px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest bg-secondary/10 text-secondary hover:bg-secondary/20 transition-all"
-          >
-            Weekly Review
-          </Link>
-          <div className="flex bg-surface-container-low p-1.5 rounded-xl self-start md:self-auto shadow-sm">
-            <button
-              onClick={() => setRange("week")}
-              className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all uppercase tracking-widest ${
-                range === "week"
-                  ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
+    <main className="max-w-[1400px] mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8">
+      <PageHeader
+        title="Stats"
+        description="Focus time, consistency, and development activity."
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href="/reviews/week"
+              className="inline-flex items-center justify-center rounded-md font-medium transition-colors h-9 px-4 text-sm bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-[var(--border)]"
             >
-              This Week
-            </button>
-            <button
-              onClick={() => setRange("month")}
-              className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all uppercase tracking-widest ${
-                range === "month"
-                  ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              This Month
-            </button>
+              Weekly review
+            </Link>
+            <Tabs
+              tabs={rangeTabs}
+              active={range === "week" ? "This week" : "This month"}
+              onChange={(tab) => setRange(tab === "This week" ? "week" : "month")}
+            />
           </div>
-        </div>
-      </header>
+        }
+      />
 
-      <section className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${loading ? "opacity-60" : ""}`}>
+      <section className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${loading ? "opacity-60" : ""}`}>
         {stats.map((s, i) => (
-          <div
-            key={i}
-            className="bg-surface-container-low p-8 rounded-2xl flex flex-col gap-6 group hover:bg-surface-container-high transition-all shadow-sm"
-          >
+          <Panel key={i} className="flex flex-col gap-4">
             <div className="flex justify-between items-start">
-              <div className={`p-3 rounded-xl bg-surface-container-highest ${s.color}`}>
-                <span className="material-symbols-outlined">{s.icon}</span>
+              <div className={`p-2 rounded-md bg-surface-container border border-[var(--border)] ${s.color}`}>
+                <span className="material-symbols-outlined text-[20px]">{s.icon}</span>
               </div>
-              <span className="text-[10px] font-bold text-secondary uppercase bg-secondary/10 px-2 py-1 rounded">
+              <span className="text-xs font-medium text-secondary bg-secondary/10 px-2 py-0.5 rounded-md">
                 {s.change}
               </span>
             </div>
             <div>
-              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">
-                {s.label}
-              </p>
-              <p className="text-4xl font-mono font-bold text-on-surface">{s.value}</p>
+              <p className="text-xs text-on-surface-variant mb-1">{s.label}</p>
+              <p className="text-2xl font-mono font-medium text-on-surface">{s.value}</p>
             </div>
-          </div>
+          </Panel>
         ))}
       </section>
 
-      <div className="grid grid-cols-12 gap-8">
-        <section className="col-span-12 lg:col-span-8 bg-surface-container-low p-10 rounded-2xl shadow-sm">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-2xl font-bold tracking-tight text-on-surface">
-              Activity Density
+      <div className="grid grid-cols-12 gap-4">
+        <Panel className="col-span-12 lg:col-span-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-headline text-base text-on-surface tracking-tight">
+              Activity density
             </h2>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs text-on-surface-variant">
               <span>Less</span>
               {[0, 1, 2, 3, 4].map((v) => (
                 <div
@@ -214,15 +192,14 @@ export default function StatsPage() {
               />
             ))}
           </div>
-          <p className="mt-8 text-sm text-on-surface-variant italic">
-            Visualizing your deep focus consistency over the last 50 production
-            cycles.
+          <p className="mt-6 text-xs text-on-surface-variant">
+            Deep focus consistency over the last 50 cycles.
           </p>
-        </section>
+        </Panel>
 
-        <section className="col-span-12 lg:col-span-4 bg-surface-container-low p-10 rounded-2xl flex flex-col shadow-sm">
-          <h2 className="text-2xl font-bold tracking-tight text-on-surface mb-10">
-            Daily Intensity
+        <Panel className="col-span-12 lg:col-span-4 flex flex-col">
+          <h2 className="font-headline text-base text-on-surface tracking-tight mb-6">
+            Daily intensity
           </h2>
           <div className="flex-1 flex items-end justify-between gap-2 h-48 md:h-64 mb-6 overflow-x-auto">
             {barData.map((b, i) => (
@@ -232,7 +209,7 @@ export default function StatsPage() {
                   style={{ height: b.height || "4%" }}
                   title={`${b.minutes}m`}
                 />
-                <span className="text-[10px] font-bold text-on-surface-variant uppercase">
+                <span className="text-xs text-on-surface-variant">
                   {b.day}
                 </span>
               </div>
@@ -251,62 +228,56 @@ export default function StatsPage() {
               .
             </p>
           </div>
-        </section>
+        </Panel>
 
-        <section className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-primary/10 to-transparent p-8 rounded-2xl flex items-center gap-6 shadow-sm shadow-primary/5">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-3xl">
+        <section className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Panel className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-md bg-primary/10 border border-[var(--border)] flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined text-[20px]">
                 workspace_premium
               </span>
             </div>
             <div>
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-                Best Day
-              </p>
-              <p className="text-xl font-bold text-on-surface">
+              <p className="text-xs text-on-surface-variant">Best day</p>
+              <p className="text-base font-medium text-on-surface">
                 {highlights.bestDay || "—"}
               </p>
             </div>
-          </div>
+          </Panel>
 
-          <div className="bg-gradient-to-br from-secondary/10 to-transparent p-8 rounded-2xl flex items-center gap-6 shadow-sm shadow-secondary/5">
-            <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-3xl">stars</span>
+          <Panel className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-md bg-secondary/10 border border-[var(--border)] flex items-center justify-center text-secondary shrink-0">
+              <span className="material-symbols-outlined text-[20px]">stars</span>
             </div>
             <div>
-              <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">
-                Longest Session
-              </p>
-              <p className="text-xl font-bold text-on-surface">
+              <p className="text-xs text-on-surface-variant">Longest session</p>
+              <p className="text-base font-medium text-on-surface">
                 {highlights.longestSession || "—"}
               </p>
             </div>
-          </div>
+          </Panel>
 
-          <div className="bg-gradient-to-br from-error/10 to-transparent p-8 rounded-2xl flex items-center gap-6 shadow-sm shadow-error/5">
-            <div className="w-16 h-16 rounded-full bg-error/20 flex items-center justify-center text-error">
-              <span className="material-symbols-outlined text-3xl">
+          <Panel className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-md bg-error/10 border border-[var(--border)] flex items-center justify-center text-error shrink-0">
+              <span className="material-symbols-outlined text-[20px]">
                 trending_up
               </span>
             </div>
             <div>
-              <p className="text-[10px] font-black text-error uppercase tracking-[0.2em]">
-                Focus Score
-              </p>
-              <p className="text-xl font-bold text-on-surface">
+              <p className="text-xs text-on-surface-variant">Focus score</p>
+              <p className="text-base font-medium text-on-surface">
                 {highlights.focusScore != null
                   ? `${highlights.focusScore} / 100`
                   : "—"}
               </p>
             </div>
-          </div>
+          </Panel>
         </section>
 
         {byProject.length > 0 && (
-          <section className="col-span-12 bg-surface-container-low p-10 rounded-2xl shadow-sm">
-            <h2 className="text-2xl font-bold tracking-tight text-on-surface mb-6">
-              By Project
+          <Panel className="col-span-12">
+            <h2 className="font-headline text-base text-on-surface tracking-tight mb-4">
+              By project
             </h2>
             <div className="flex flex-col gap-3">
               {byProject.map((p) => {
@@ -325,7 +296,7 @@ export default function StatsPage() {
                   <Link
                     key={p.projectId}
                     href={`/projects/${p.projectId}`}
-                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container-high transition-colors"
+                    className="flex items-center gap-4 p-3 rounded-md hover:bg-surface-container-low transition-colors"
                   >
                     <div
                       className="w-3 h-3 rounded-full shrink-0"
@@ -347,20 +318,18 @@ export default function StatsPage() {
                 );
               })}
             </div>
-          </section>
+          </Panel>
         )}
       </div>
 
-      <section className="bg-surface-container-low p-10 rounded-2xl shadow-sm">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-on-surface">
-              Latest Dev Activity
-            </h2>
-            <p className="text-sm text-on-surface-variant">
-              Real-time progress from your GitHub repositories
-            </p>
-          </div>
+      <Panel>
+        <div className="mb-6">
+          <h2 className="font-headline text-base text-on-surface tracking-tight">
+            Latest dev activity
+          </h2>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Recent commits and pull requests from linked repositories
+          </p>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -368,7 +337,7 @@ export default function StatsPage() {
             activity.map((act) => (
               <div
                 key={act.id}
-                className="flex items-center justify-between p-4 bg-surface-container-highest/30 rounded-xl hover:bg-surface-container-highest transition-all group"
+                className="flex items-center justify-between p-3 rounded-md border border-[var(--border)] bg-surface-container-low hover:bg-surface-container transition-colors group"
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -386,29 +355,29 @@ export default function StatsPage() {
                     <h4 className="font-bold text-on-surface group-hover:text-primary transition-colors">
                       {act.message}
                     </h4>
-                    <p className="text-xs text-on-surface-variant font-mono uppercase tracking-widest">
+                    <p className="text-xs text-on-surface-variant font-mono">
                       {act.repo}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
-                    {new Date(act.timestamp).toLocaleDateString()} AT{" "}
+                  <p className="text-xs text-on-surface-variant">
+                    {new Date(act.timestamp).toLocaleDateString()}{" "}
                     {new Date(act.timestamp).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </p>
                   {act.type === "commit" && (
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-primary/20 text-primary text-[9px] font-black rounded uppercase">
-                      {act.count} COMMITS
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-md">
+                      {act.count} commits
                     </span>
                   )}
                 </div>
               </div>
             ))
           ) : (
-            <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-outline-variant/20 rounded-2xl">
+            <div className="py-12 flex flex-col items-center justify-center border border-dashed border-[var(--border)] rounded-[var(--radius-md)]">
               <span className="material-symbols-outlined text-4xl text-outline-variant mb-4">
                 terminal
               </span>
@@ -418,10 +387,7 @@ export default function StatsPage() {
             </div>
           )}
         </div>
-      </section>
-
-      <div className="fixed top-1/4 -right-20 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
-      <div className="fixed bottom-1/4 -left-20 w-96 h-96 bg-secondary/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+      </Panel>
     </main>
   );
 }

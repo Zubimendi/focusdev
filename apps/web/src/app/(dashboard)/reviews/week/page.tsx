@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Button } from "@/components/ui/button";
 
 interface GoalScore {
   goalId: string;
@@ -164,17 +167,17 @@ export default function WeeklyReviewPage() {
 
   if (loading) {
     return (
-      <main className="max-w-3xl mx-auto px-8 py-12 animate-pulse flex flex-col gap-6">
-        <div className="h-12 w-64 bg-surface-container-low rounded-xl" />
-        <div className="h-32 bg-surface-container-low rounded-2xl" />
-        <div className="h-64 bg-surface-container-low rounded-2xl" />
+      <main className="max-w-3xl mx-auto px-6 py-8 lg:px-10 animate-pulse flex flex-col gap-6">
+        <div className="h-12 w-64 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
+        <div className="h-32 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
+        <div className="h-64 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
       </main>
     );
   }
 
   if (!review) {
     return (
-      <main className="max-w-3xl mx-auto px-8 py-12">
+      <main className="max-w-3xl mx-auto px-6 py-8 lg:px-10">
         <p className="text-on-surface-variant">Could not load review.</p>
       </main>
     );
@@ -186,46 +189,35 @@ export default function WeeklyReviewPage() {
       : "This week";
 
   return (
-    <main className="max-w-3xl mx-auto px-8 py-12 flex flex-col gap-10">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-          <Link href="/stats" className="hover:text-primary">
-            Stats
-          </Link>
-          <span className="material-symbols-outlined text-sm">chevron_right</span>
-          <span>Weekly Review</span>
-        </div>
-        <h1 className="text-4xl font-black text-on-surface tracking-tight">
-          Weekly Review
-        </h1>
-        <p className="text-on-surface-variant">{periodLabel}</p>
-      </header>
+    <main className="max-w-3xl mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8 w-full">
+      <div className="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+        <Link href="/stats" className="hover:text-primary">
+          Stats
+        </Link>
+        <span className="material-symbols-outlined text-sm">chevron_right</span>
+        <span>Weekly review</span>
+      </div>
+      <PageHeader title="Weekly review" description={periodLabel} />
 
-      {/* Quant snapshot */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Focus", value: formatFocusTime(review.focusMinutes) },
           { label: "Sessions", value: String(review.sessionCount) },
-          { label: "Tasks Done", value: String(review.tasksDone) },
+          { label: "Tasks done", value: String(review.tasksDone) },
           { label: "Streak", value: `${review.streak}d` },
         ].map((s) => (
-          <div
-            key={s.label}
-            className="bg-surface-container-low p-5 rounded-xl"
-          >
-            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">
-              {s.label}
-            </p>
-            <p className="text-2xl font-mono font-bold text-on-surface">
+          <Panel key={s.label} className="!p-4">
+            <p className="text-xs text-on-surface-variant mb-1">{s.label}</p>
+            <p className="text-xl font-mono font-medium text-on-surface">
               {s.value}
             </p>
-          </div>
+          </Panel>
         ))}
       </section>
 
       {review.byProject?.length > 0 && (
-        <section className="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-on-surface">By Project</h2>
+        <Panel className="flex flex-col gap-3">
+          <h2 className="text-sm font-medium text-on-surface">By project</h2>
           {review.byProject.map((p) => (
             <div
               key={p.projectId}
@@ -246,12 +238,11 @@ export default function WeeklyReviewPage() {
               </span>
             </div>
           ))}
-        </section>
+        </Panel>
       )}
 
-      {/* OKR scoring */}
-      <section className="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-4">
-        <h2 className="text-lg font-bold text-on-surface">Period Goals / OKRs</h2>
+      <Panel className="flex flex-col gap-4">
+        <h2 className="text-sm font-medium text-on-surface">Period goals</h2>
         {goals.length === 0 ? (
           <p className="text-sm text-on-surface-variant">
             No goals for this week yet. Add one below.
@@ -263,7 +254,7 @@ export default function WeeklyReviewPage() {
               return (
                 <div
                   key={g.id}
-                  className="p-4 rounded-xl bg-surface-container-highest/40 flex flex-col gap-3"
+                  className="p-4 rounded-md border border-[var(--border)] bg-surface-container-low flex flex-col gap-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -286,7 +277,7 @@ export default function WeeklyReviewPage() {
                               score: st === "met" ? 100 : st === "failed" ? 0 : score?.score,
                             })
                           }
-                          className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium ${
                             score?.status === st
                               ? st === "met"
                                 ? "bg-secondary text-on-secondary"
@@ -302,7 +293,7 @@ export default function WeeklyReviewPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                    <label className="text-xs text-on-surface-variant">
                       Score
                     </label>
                     <input
@@ -327,19 +318,17 @@ export default function WeeklyReviewPage() {
           </div>
         )}
 
-        <div className="border-t border-outline-variant/10 pt-4 flex flex-col gap-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Add weekly OKR
-          </p>
+        <div className="border-t border-[var(--border)] pt-4 flex flex-col gap-2">
+          <p className="text-xs text-on-surface-variant">Add weekly goal</p>
           <div className="flex flex-col sm:flex-row gap-2">
             <input
-              className="flex-1 bg-surface-container-lowest rounded-lg py-2.5 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface text-sm"
+              className="flex-1 h-9 px-3 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm"
               placeholder="Goal title"
               value={newGoalTitle}
               onChange={(e) => setNewGoalTitle(e.target.value)}
             />
             <input
-              className="w-24 bg-surface-container-lowest rounded-lg py-2.5 px-3 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface text-sm"
+              className="w-24 h-9 px-3 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm"
               placeholder="Target"
               type="number"
               value={newGoalTarget}
@@ -348,67 +337,59 @@ export default function WeeklyReviewPage() {
             <select
               value={newGoalUnit}
               onChange={(e) => setNewGoalUnit(e.target.value)}
-              className="bg-surface-container-lowest rounded-lg py-2.5 px-3 outline-none text-on-surface text-sm"
+              className="h-9 px-3 rounded-md bg-surface border border-[var(--border)] outline-none text-on-surface text-sm"
             >
               <option value="hours">hours</option>
               <option value="tasks">tasks</option>
               <option value="%">%</option>
             </select>
-            <button
-              onClick={addWeeklyGoal}
-              className="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm"
-            >
+            <Button type="button" size="sm" onClick={addWeeklyGoal}>
               Add
-            </button>
+            </Button>
           </div>
         </div>
-      </section>
+      </Panel>
 
-      {/* Reflection */}
-      <section className="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-5">
-        <h2 className="text-lg font-bold text-on-surface">Reflection</h2>
+      <Panel className="flex flex-col gap-5">
+        <h2 className="text-sm font-medium text-on-surface">Reflection</h2>
         <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Wins
-          </label>
+          <label className="text-xs text-on-surface-variant">Wins</label>
           <textarea
-            className="w-full bg-surface-container-lowest rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface text-sm resize-none min-h-[88px]"
+            className="w-full px-3 py-2 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm resize-none min-h-[88px]"
             placeholder="What went well this week?"
             value={wins}
             onChange={(e) => setWins(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Blockers
-          </label>
+          <label className="text-xs text-on-surface-variant">Blockers</label>
           <textarea
-            className="w-full bg-surface-container-lowest rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface text-sm resize-none min-h-[88px]"
+            className="w-full px-3 py-2 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm resize-none min-h-[88px]"
             placeholder="What got in the way?"
             value={blockers}
             onChange={(e) => setBlockers(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Next Period Goals
+          <label className="text-xs text-on-surface-variant">
+            Next period goals
           </label>
           <textarea
-            className="w-full bg-surface-container-lowest rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface text-sm resize-none min-h-[88px]"
+            className="w-full px-3 py-2 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm resize-none min-h-[88px]"
             placeholder="What will you focus on next week?"
             value={nextPeriodGoals}
             onChange={(e) => setNextPeriodGoals(e.target.value)}
           />
         </div>
-      </section>
+      </Panel>
 
-      <button
+      <Button
         onClick={save}
         disabled={saving}
-        className="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 disabled:opacity-50 uppercase tracking-wider"
+        className="w-full h-10"
       >
-        {saving ? "Saving…" : "Save Weekly Review"}
-      </button>
+        {saving ? "Saving…" : "Save weekly review"}
+      </Button>
     </main>
   );
 }

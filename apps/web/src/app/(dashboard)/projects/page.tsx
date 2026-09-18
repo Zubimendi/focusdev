@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Button } from "@/components/ui/button";
 
 interface ProjectSummary {
   id: string;
@@ -97,46 +100,33 @@ export default function ProjectsPage() {
       : 0;
 
   return (
-    <main className="max-w-6xl mx-auto px-8 py-12 flex flex-col gap-12">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded w-fit">
-            Developer Workspace
-          </label>
-          <h1 className="text-4xl font-black text-on-surface tracking-tight">
-            Project Focus
-          </h1>
-          <p className="text-on-surface-variant max-w-lg">
-            Track deep work across your projects and see where your engineering
-            energy goes each week.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-6 py-3 bg-primary hover:opacity-90 text-on-primary font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center gap-2 group"
-        >
-          <span className="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform">
-            add
-          </span>
-          New Project
-        </button>
-      </header>
+    <main className="max-w-6xl mx-auto px-6 py-8 lg:px-10 w-full flex flex-col gap-8">
+      <PageHeader
+        title="Projects"
+        description="Track deep work across your projects and see where your engineering energy goes each week."
+        actions={
+          <Button type="button" onClick={() => setShowCreate(true)}>
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            New project
+          </Button>
+        }
+      />
 
       {showCreate && (
         <form
           onSubmit={handleCreate}
-          className="bg-surface-container-low p-6 rounded-2xl border border-white/5 flex flex-col gap-4"
+          className="bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)] p-5 flex flex-col gap-4"
         >
-          <h2 className="text-lg font-bold text-on-surface">Create Project</h2>
+          <h2 className="text-sm font-medium text-on-surface">Create project</h2>
           <input
-            className="w-full bg-surface-container-lowest rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface"
+            className="w-full h-10 px-3 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm"
             placeholder="Project name"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             autoFocus
           />
           <textarea
-            className="w-full bg-surface-container-lowest rounded-lg py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface resize-none"
+            className="w-full px-3 py-2 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm resize-none"
             placeholder="Description (optional)"
             rows={2}
             value={form.description}
@@ -145,120 +135,110 @@ export default function ProjectsPage() {
             }
           />
           <div className="flex items-center gap-3">
-            <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-              Color
-            </label>
+            <label className="text-xs text-on-surface-variant">Color</label>
             <input
               type="color"
               value={form.color}
               onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-              className="w-10 h-10 rounded cursor-pointer bg-transparent border-0"
+              className="w-9 h-9 rounded-md cursor-pointer bg-transparent border border-[var(--border)]"
             />
           </div>
-          <div className="flex gap-3 justify-end">
-            <button
+          <div className="flex gap-2 justify-end">
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setShowCreate(false)}
-              className="px-4 py-2 text-sm font-bold text-on-surface-variant hover:text-on-surface"
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={creating}
-              className="px-5 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm disabled:opacity-50"
-            >
-              {creating ? "Creating…" : "Create"}
-            </button>
+            </Button>
+            <Button type="submit" size="sm" loading={creating} disabled={creating}>
+              Create
+            </Button>
           </div>
         </form>
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-56 bg-surface-container-low rounded-2xl"
+              className="h-48 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]"
             />
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="py-20 flex flex-col items-center justify-center border-2 border-dashed border-outline-variant/20 rounded-2xl gap-4">
-          <span className="material-symbols-outlined text-5xl text-outline-variant">
+        <Panel className="py-16 flex flex-col items-center justify-center gap-4 border-dashed">
+          <span className="material-symbols-outlined text-4xl text-on-surface-variant">
             folder_open
           </span>
-          <p className="text-on-surface-variant font-medium">
+          <p className="text-sm text-on-surface-variant">
             No projects yet. Create one to start tracking.
           </p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-5 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm"
-          >
-            New Project
-          </button>
-        </div>
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            New project
+          </Button>
+        </Panel>
       ) : (
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="bg-surface-container-low rounded-2xl p-6 border border-white/5 hover:bg-surface-container-high transition-all group flex flex-col gap-6"
+              className="bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)] p-5 hover:bg-surface-container-low transition-colors group flex flex-col gap-4"
             >
               <div className="flex items-center justify-between">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg shadow-black/20"
+                  className="w-10 h-10 rounded-md flex items-center justify-center shrink-0"
                   style={{ backgroundColor: project.color }}
                 >
-                  <span className="material-symbols-outlined text-white">
+                  <span className="material-symbols-outlined text-white text-[20px]">
                     folder
                   </span>
                 </div>
-                <div
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                <span
+                  className={`text-xs font-medium px-2 py-0.5 rounded-md border border-[var(--border)] ${
                     project.status === "active"
-                      ? "bg-secondary/10 text-secondary"
-                      : "bg-surface-container-highest text-on-surface-variant"
+                      ? "text-secondary bg-secondary/5"
+                      : "text-on-surface-variant bg-surface-container"
                   }`}
                 >
                   {project.status}
-                </div>
+                </span>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <h3 className="text-lg font-bold text-on-surface group-hover:text-primary transition-colors">
+              <div className="flex flex-col gap-1 min-w-0">
+                <h3 className="text-sm font-medium text-on-surface group-hover:text-primary transition-colors truncate">
                   {project.name}
                 </h3>
                 {(project.githubRepoFullName || project.githubRepo) && (
-                  <p className="text-xs font-mono text-on-surface-variant flex items-center gap-1.5 opacity-60">
-                    <span className="material-symbols-outlined text-sm">
+                  <p className="text-xs font-mono text-on-surface-variant flex items-center gap-1 truncate">
+                    <span className="material-symbols-outlined text-sm shrink-0">
                       link
                     </span>
                     {project.githubRepoFullName || project.githubRepo}
                   </p>
                 )}
                 {project.description && (
-                  <p className="text-sm text-on-surface-variant line-clamp-2 mt-1">
+                  <p className="text-xs text-on-surface-variant line-clamp-2">
                     {project.description}
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                    Focus This Week
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-on-surface-variant">
+                    Focus this week
                   </span>
-                  <span className="text-xl font-mono font-bold text-on-surface">
+                  <span className="text-lg font-mono font-medium text-on-surface">
                     {formatFocusTime(project.focusMinutes || 0)}
                   </span>
                 </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                    Tasks
-                  </span>
-                  <span className="text-sm font-mono font-bold text-on-surface">
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-xs text-on-surface-variant">Tasks</span>
+                  <span className="text-sm font-mono font-medium text-on-surface">
                     {project.taskCounts?.done || 0}/
                     {project.taskCounts?.total || 0}
                   </span>
@@ -268,49 +248,44 @@ export default function ProjectsPage() {
           ))}
 
           <button
+            type="button"
             onClick={() => setShowCreate(true)}
-            className="bg-surface-container-low/40 rounded-2xl p-6 border-2 border-dashed border-white/5 hover:border-primary/20 hover:bg-surface-container-low transition-all flex flex-col items-center justify-center gap-4 text-on-surface-variant group h-full min-h-[220px]"
+            className="bg-surface-container-lowest rounded-[var(--radius-md)] p-5 border border-dashed border-[var(--border)] hover:bg-surface-container-low hover:border-primary/30 transition-colors flex flex-col items-center justify-center gap-3 text-on-surface-variant min-h-[180px]"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary transition-colors">
-              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary transition-colors">
-                add
-              </span>
+            <div className="w-10 h-10 rounded-md bg-surface-container-high border border-[var(--border)] flex items-center justify-center group-hover:bg-primary transition-colors">
+              <span className="material-symbols-outlined text-[20px]">add</span>
             </div>
-            <span className="text-xs font-bold uppercase tracking-widest">
-              Add Project
-            </span>
+            <span className="text-xs font-medium">Add project</span>
           </button>
         </section>
       )}
 
       {topProject && totalWeek > 0 && (
-        <section className="bg-gradient-to-br from-primary-container/30 to-primary/5 p-8 rounded-3xl border border-primary/10 flex flex-col lg:flex-row items-center gap-8 shadow-2xl">
-          <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20">
-            <span className="material-symbols-outlined text-4xl text-primary">
+        <Panel className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+          <div className="w-10 h-10 rounded-md bg-primary/10 border border-[var(--border)] flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-primary text-[20px]">
               insights
             </span>
           </div>
-          <div className="flex-1 flex flex-col gap-2 text-center lg:text-left">
-            <h2 className="text-2xl font-bold text-on-surface tracking-tight">
-              Engineering Analysis
+          <div className="flex-1 flex flex-col gap-1 min-w-0">
+            <h2 className="font-headline text-base text-on-surface tracking-tight">
+              Focus breakdown
             </h2>
-            <p className="text-on-surface-variant max-w-xl">
+            <p className="text-sm text-on-surface-variant max-w-xl">
               You&apos;ve spent{" "}
-              <span className="text-primary font-bold">{topShare}%</span> of
+              <span className="text-primary font-medium">{topShare}%</span> of
               your focus time this week on{" "}
-              <span className="text-on-surface font-semibold underline decoration-primary/50 underline-offset-4">
-                {topProject.name}
-              </span>
+              <span className="text-on-surface font-medium">{topProject.name}</span>
               .
             </p>
           </div>
           <Link
             href={`/projects/${topProject.id}`}
-            className="px-6 py-2 bg-on-secondary-container-fixed text-primary font-bold rounded-lg border border-primary/20 hover:bg-primary/5 transition-all text-sm uppercase tracking-wider"
+            className="inline-flex items-center justify-center rounded-md font-medium transition-colors h-9 px-4 text-sm bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-[var(--border)] shrink-0"
           >
-            View Detail
+            View detail
           </Link>
-        </section>
+        </Panel>
       )}
     </main>
   );

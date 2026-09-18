@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import { connectToDatabase } from "@focus/db";
 import { UserModel } from "@focus/db/models";
-import bcrypt from "bcryptjs";
+import { findUserForLogin } from "@/lib/find-user-for-login";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -18,22 +18,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing credentials");
         }
 
-        await connectToDatabase();
+        const user = await findUserForLogin(credentials.email, credentials.password);
 
-        const user = await UserModel.findOne({ email: credentials.email }).select("+password");
-
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials");
-        }
-
-        const isCorrectPassword = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isCorrectPassword) {
+        if (!user) {
           throw new Error("Invalid credentials");
         }
 
         return {
-          id: user._id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name,
         };
@@ -68,18 +60,26 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
       }
       if (account?.provider === "github") {
         token.githubAccessToken = account.access_token;
+      }
+      // Support session.update({ name }) from Settings Profile
+      if (trigger === "update" && session?.name !== undefined) {
+        token.name = session.name;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.name = (token.name as string) || session.user.name;
+        session.user.email = (token.email as string) || session.user.email;
         session.user.githubAccessToken = token.githubAccessToken as string;
       }
       return session;

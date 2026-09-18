@@ -5,14 +5,16 @@ import { UserModel } from "@focus/db/models";
 import { RegisterSchema } from "@focus/shared";
 
 export async function POST(req: Request) {
+  const started = Date.now();
   try {
     const body = await req.json();
-    
-    // Validate input using shared schema
+    console.log(`[auth/register] ← request email=${body?.email ?? "(missing)"}`);
+
     const validation = RegisterSchema.safeParse(body);
     if (!validation.success) {
+      console.log(`[auth/register] ✕ 400 invalid input`, validation.error.flatten());
       return NextResponse.json(
-        { error: "Invalid input", details: validation.error.format() },
+        { error: "Invalid input. Check name, email, and password (min 8 chars).", details: validation.error.format() },
         { status: 400 }
       );
     }
@@ -21,20 +23,19 @@ export async function POST(req: Request) {
     const normalizedEmail = email.toLowerCase().trim();
 
     await connectToDatabase();
+    console.log(`[auth/register] mongo connected (${Date.now() - started}ms)`);
 
-    // Check if user already exists
     const existingUser = await UserModel.findOne({ email: normalizedEmail });
     if (existingUser) {
+      console.log(`[auth/register] ✕ 409 email already exists: ${normalizedEmail}`);
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
       );
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user — wrapped in try/catch for E11000 race condition failsafe
     try {
       const user = await UserModel.create({
         email: normalizedEmail,
@@ -42,13 +43,21 @@ export async function POST(req: Request) {
         password: hashedPassword,
       });
 
+      console.log(
+        `[auth/register] ✓ 201 created userId=${user._id} (${Date.now() - started}ms)`
+      );
       return NextResponse.json(
         { message: "User registered successfully", userId: user._id },
         { status: 201 }
       );
     } catch (createError: unknown) {
-      // MongoDB duplicate key error (race condition failsafe)
-      if (createError && typeof createError === 'object' && 'code' in createError && createError.code === 11000) {
+      if (
+        createError &&
+        typeof createError === "object" &&
+        "code" in createError &&
+        createError.code === 11000
+      ) {
+        console.log(`[auth/register] ✕ 409 duplicate key: ${normalizedEmail}`);
         return NextResponse.json(
           { error: "An account with this email already exists" },
           { status: 409 }
@@ -57,11 +66,10 @@ export async function POST(req: Request) {
       throw createError;
     }
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Registration error:", error.message);
-    }
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[auth/register] ✕ 500 ${message}`);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", detail: message },
       { status: 500 }
     );
   }

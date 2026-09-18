@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Panel } from "@/components/ui/panel";
+import { Button } from "@/components/ui/button";
 
 interface Task {
   id: string;
@@ -154,10 +156,10 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <main className="max-w-5xl mx-auto px-8 py-12 animate-pulse flex flex-col gap-8">
-        <div className="h-10 w-48 bg-surface-container-low rounded-xl" />
-        <div className="h-40 bg-surface-container-low rounded-2xl" />
-        <div className="h-64 bg-surface-container-low rounded-2xl" />
+      <main className="max-w-5xl mx-auto px-6 py-8 lg:px-10 animate-pulse flex flex-col gap-8">
+        <div className="h-10 w-48 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
+        <div className="h-40 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
+        <div className="h-64 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
       </main>
     );
   }
@@ -165,7 +167,7 @@ export default function ProjectDetailPage() {
   if (!project) return null;
 
   return (
-    <main className="max-w-5xl mx-auto px-8 py-12 flex flex-col gap-10">
+    <main className="max-w-5xl mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8 w-full">
       <div className="flex items-center gap-2 text-sm text-on-surface-variant">
         <Link href="/projects" className="hover:text-primary transition-colors">
           Projects
@@ -177,7 +179,7 @@ export default function ProjectDetailPage() {
       <header className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex items-start gap-4">
           <div
-            className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg shrink-0"
+            className="w-12 h-12 rounded-md flex items-center justify-center shrink-0 border border-[var(--border)]"
             style={{ backgroundColor: project.color }}
           >
             <span className="material-symbols-outlined text-white text-2xl">
@@ -186,7 +188,7 @@ export default function ProjectDetailPage() {
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-black text-on-surface tracking-tight">
+              <h1 className="font-headline text-2xl text-on-surface tracking-tight">
                 {project.name}
               </h1>
               <select
@@ -194,7 +196,7 @@ export default function ProjectDetailPage() {
                 onChange={(e) =>
                   updateStatus(e.target.value as ProjectDetail["status"])
                 }
-                className="bg-surface-container-high text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full outline-none text-on-surface"
+                className="h-8 px-2 rounded-md bg-surface border border-[var(--border)] text-xs font-medium outline-none text-on-surface capitalize"
               >
                 <option value="active">Active</option>
                 <option value="paused">Paused</option>
@@ -214,14 +216,10 @@ export default function ProjectDetailPage() {
             )}
           </div>
         </div>
-        <button
-          onClick={startFocus}
-          disabled={startingFocus}
-          className="px-6 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50"
-        >
-          <span className="material-symbols-outlined">bolt</span>
-          {startingFocus ? "Starting…" : "Start Focus"}
-        </button>
+        <Button onClick={startFocus} disabled={startingFocus}>
+          <span className="material-symbols-outlined text-[18px]">bolt</span>
+          {startingFocus ? "Starting…" : "Start focus"}
+        </Button>
       </header>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -246,37 +244,29 @@ export default function ProjectDetailPage() {
             value: String(project.taskCounts?.done || 0),
           },
         ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-surface-container-low p-5 rounded-xl"
-          >
-            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">
-              {stat.label}
-            </p>
-            <p className="text-2xl font-mono font-bold text-on-surface">
+          <Panel key={stat.label} className="!p-4">
+            <p className="text-xs text-on-surface-variant mb-1">{stat.label}</p>
+            <p className="text-xl font-mono font-medium text-on-surface">
               {stat.value}
             </p>
-          </div>
+          </Panel>
         ))}
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section className="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-4">
-          <h2 className="text-xl font-bold text-on-surface">Tasks</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Panel className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-on-surface">Tasks</h2>
           <div className="flex gap-2">
             <input
-              className="flex-1 bg-surface-container-lowest rounded-lg py-2.5 px-4 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface text-sm"
+              className="flex-1 h-9 px-3 rounded-md bg-surface border border-[var(--border)] outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-on-surface text-sm"
               placeholder="Add a task…"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createTask()}
             />
-            <button
-              onClick={createTask}
-              className="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm"
-            >
+            <Button type="button" size="sm" onClick={createTask}>
               Add
-            </button>
+            </Button>
           </div>
           <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
             {tasks.length === 0 ? (
@@ -314,17 +304,17 @@ export default function ProjectDetailPage() {
                   >
                     {task.title}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                  <span className="text-xs text-on-surface-variant capitalize">
                     {task.priority}
                   </span>
                 </button>
               ))
             )}
           </div>
-        </section>
+        </Panel>
 
-        <section className="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-4">
-          <h2 className="text-xl font-bold text-on-surface">Goals</h2>
+        <Panel className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-on-surface">Goals</h2>
           <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
             {goals.length === 0 ? (
               <p className="text-sm text-on-surface-variant py-6 text-center">
@@ -335,14 +325,14 @@ export default function ProjectDetailPage() {
               goals.map((goal) => (
                 <div
                   key={goal.id}
-                  className="p-4 rounded-xl bg-surface-container-highest/40 flex flex-col gap-1"
+                  className="p-4 rounded-md border border-[var(--border)] bg-surface-container-low flex flex-col gap-1"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="font-bold text-on-surface text-sm">
                       {goal.title}
                     </h3>
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
+                      className={`text-xs font-medium px-2 py-0.5 rounded-md ${
                         goal.status === "met"
                           ? "bg-secondary/20 text-secondary"
                           : goal.status === "failed"
@@ -369,7 +359,7 @@ export default function ProjectDetailPage() {
           >
             Score goals in Weekly Review →
           </Link>
-        </section>
+        </Panel>
       </div>
     </main>
   );

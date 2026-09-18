@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Button } from "@/components/ui/button";
 
 interface Task {
   _id: string;
@@ -130,168 +133,182 @@ export default function TimerPage() {
   const remainingTasks = tasks.slice(1);
 
   return (
-    <main className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center p-12 relative overflow-hidden">
-      {/* Top Controls / Settings */}
-      <div className="absolute top-8 right-8 flex items-center gap-4">
-        <div className="flex items-center bg-surface-container-low rounded-full px-4 py-2 text-on-surface-variant text-sm font-medium">
-          <span className={`w-2 h-2 rounded-full mr-2 ${isActive ? 'bg-secondary animate-pulse' : 'bg-outline-variant'}`}></span>
-          {isActive ? "Deep Focus Active" : "Ready to Focus"}
-        </div>
-        <button className="p-3 bg-surface-container-high rounded-full text-on-surface hover:bg-surface-bright transition-colors">
-          <span className="material-symbols-outlined">settings</span>
-        </button>
-      </div>
+    <main className="max-w-4xl mx-auto px-6 py-8 lg:px-10 w-full flex flex-col gap-8">
+      <PageHeader
+        title="Timer"
+        description="25-minute Pomodoro with synced focus sessions."
+        actions={
+          <div className="flex items-center gap-2 text-sm text-on-surface-variant border border-[var(--border)] rounded-md px-3 py-1.5 bg-surface-container-lowest">
+            <span
+              className={`w-2 h-2 rounded-full ${isActive ? "bg-secondary" : "bg-outline-variant"}`}
+            />
+            {isActive ? "Session active" : "Ready"}
+          </div>
+        }
+      />
 
-      {/* Timer Core Section */}
-      <section className="w-full max-w-4xl flex flex-col items-center text-center">
-        <div className="relative w-96 h-96 flex items-center justify-center mb-16">
-          {/* Circular Track */}
-          <svg className="absolute inset-0 w-full h-full">
-            <circle className="text-surface-container-high" cx="192" cy="192" fill="transparent" r="140" stroke="currentColor" strokeWidth="4"></circle>
-            <circle 
-              className="text-primary" 
-              cx="192" cy="192" fill="transparent" r="140" 
-              stroke="url(#timerGradient)" 
-              strokeLinecap="round" 
-              strokeWidth="12"
+      <section className="flex flex-col items-center">
+        <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center mb-8">
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 384 384">
+            <circle
+              className="text-surface-container-high"
+              cx="192"
+              cy="192"
+              r="140"
+              fill="transparent"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <circle
+              className="text-primary"
+              cx="192"
+              cy="192"
+              r="140"
+              fill="transparent"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="4"
               strokeDasharray="880"
               strokeDashoffset={880 - progress}
-              style={{ transform: 'rotate(-90deg)', transformOrigin: '192px 192px', transition: 'stroke-dashoffset 1s linear' }}
-            ></circle>
-            <defs>
-              <linearGradient id="timerGradient" x1="0%" x2="100%" y1="0%" y2="100%">
-                <stop offset="0%" stopColor="#7eb8a8"></stop>
-                <stop offset="100%" stopColor="#2d6a5e"></stop>
-              </linearGradient>
-            </defs>
+              style={{
+                transform: "rotate(-90deg)",
+                transformOrigin: "192px 192px",
+                transition: "stroke-dashoffset 1s linear",
+              }}
+            />
           </svg>
-          
-          {/* Timer Digits */}
           <div className="z-10 flex flex-col items-center">
-            <span className="text-8xl font-mono font-bold tracking-tighter text-on-surface">
+            <span className="text-5xl sm:text-6xl font-mono font-medium tracking-tight text-on-surface">
               {formatTime(seconds)}
             </span>
-            <div className="flex flex-col items-center gap-1 mt-2">
-              <span className="text-xs font-bold text-primary uppercase tracking-[0.3em] font-mono">
-                {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-              </span>
-              <span className="text-[10px] font-label uppercase tracking-[0.2em] text-on-surface-variant/60">Pomodoro Session</span>
-            </div>
+            <span className="text-xs text-on-surface-variant mt-2">
+              {new Date().toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+              · Pomodoro
+            </span>
           </div>
-          
-          {/* Ambient Glow Behind Timer */}
-          <div className={`absolute inset-0 rounded-full -z-10 transition-all duration-1000 ${isActive ? 'bg-primary/10 blur-[100px]' : 'bg-primary/5 blur-[100px]'}`}></div>
         </div>
 
-        {/* Timer Actions */}
-        <div className="flex items-center gap-8 mb-24">
-          <button onClick={() => { setSeconds(1500); setIsActive(false); setSessionId(null); }} className="group flex flex-col items-center gap-2">
-            <div className="w-14 h-14 rounded-full bg-surface-container-low border border-outline-variant/10 flex items-center justify-center group-hover:bg-surface-container-high transition-colors">
-              <span className="material-symbols-outlined text-on-surface-variant">refresh</span>
-            </div>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Reset</span>
-          </button>
-          
-          <button 
-            onClick={toggleTimer}
-            className={`w-24 h-24 rounded-full flex items-center justify-center text-on-primary shadow-[0_0_40px_rgba(128,131,255,0.3)] hover:scale-105 active:scale-95 transition-all ${
-              isActive 
-                ? 'bg-gradient-to-br from-error to-error-container' 
-                : 'bg-gradient-to-br from-primary to-primary-container'
-            }`}
+        <div className="flex items-center gap-4 mb-10">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setSeconds(1500);
+              setIsActive(false);
+              setSessionId(null);
+            }}
           >
-            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+            Reset
+          </Button>
+          <Button
+            type="button"
+            variant={isActive ? "danger" : "primary"}
+            size="lg"
+            className="!h-11 !px-6"
+            onClick={toggleTimer}
+          >
+            <span
+              className="material-symbols-outlined text-[22px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
               {isActive ? "stop" : "play_arrow"}
             </span>
-          </button>
-          
-          <button className="group flex flex-col items-center gap-2">
-            <div className="w-14 h-14 rounded-full bg-surface-container-low border border-outline-variant/10 flex items-center justify-center group-hover:bg-surface-container-high transition-colors">
-              <span className="material-symbols-outlined text-on-surface-variant">coffee</span>
-            </div>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Break</span>
-          </button>
+            {isActive ? "Stop" : "Start"}
+          </Button>
+          <Button type="button" variant="ghost" size="sm">
+            Break
+          </Button>
         </div>
 
-        {/* "Next Up" Section - Now with real API data */}
-        <div className="w-full grid grid-cols-12 gap-6">
-          <div className="col-span-12 flex items-center justify-between mb-2">
-            <h2 className="text-xl font-black tracking-tight text-on-surface">Next Up</h2>
-            <span className="text-xs font-mono text-primary">{tasks.length} Tasks Remaining</span>
+        <div className="w-full flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-headline text-base text-on-surface">Next up</h2>
+            <span className="text-xs text-on-surface-variant">
+              {tasks.length} remaining
+            </span>
           </div>
-          
+
           {loading ? (
-            <>
-              <div className="col-span-12 md:col-span-7 h-24 bg-surface-container-low rounded-2xl animate-pulse" />
-              <div className="col-span-12 md:col-span-5 h-24 bg-surface-container-lowest rounded-2xl animate-pulse" />
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div className="col-span-12 md:col-span-7 h-20 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)] animate-pulse" />
+              <div className="col-span-12 md:col-span-5 h-20 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)] animate-pulse" />
+            </div>
           ) : currentTask ? (
-            <>
-              {/* Active Task Card */}
-              <div className="col-span-12 md:col-span-7 bg-surface-container-low p-6 rounded-2xl flex items-center gap-6 group hover:bg-surface-container transition-all">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                  <span className="material-symbols-outlined text-primary">terminal</span>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <Panel className="col-span-12 md:col-span-7 !p-4 flex items-center gap-4 group">
+                <div className="w-9 h-9 rounded-md bg-primary/10 border border-[var(--border)] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-primary text-[20px]">
+                    terminal
+                  </span>
                 </div>
-                <div className="text-left flex-1">
-                  <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Current Focus</p>
-                  <h3 className="text-lg font-bold text-on-surface">{currentTask.title}</h3>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="text-xs text-on-surface-variant mb-0.5">
+                    Current focus
+                  </p>
+                  <h3 className="text-sm font-medium text-on-surface truncate">
+                    {currentTask.title}
+                  </h3>
                   {currentTask.description && (
-                    <p className="text-sm text-on-surface-variant">{currentTask.description}</p>
+                    <p className="text-xs text-on-surface-variant line-clamp-1">
+                      {currentTask.description}
+                    </p>
                   )}
                 </div>
-                <button 
+                <button
+                  type="button"
                   onClick={() => completeTask(currentTask)}
-                  className="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all"
+                  className="w-9 h-9 rounded-md border border-[var(--border)] flex items-center justify-center hover:bg-primary hover:border-primary hover:text-on-primary transition-colors shrink-0"
+                  aria-label="Complete task"
                 >
-                  <span className="material-symbols-outlined text-transparent group-hover:text-on-primary text-sm" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
+                  <span className="material-symbols-outlined text-[18px]">
+                    check
+                  </span>
                 </button>
-              </div>
-
-              {/* Secondary Task */}
+              </Panel>
               {remainingTasks[0] && (
-                <div className="col-span-12 md:col-span-5 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/5 flex items-center justify-between group hover:bg-surface-container-low transition-all">
-                  <div className="text-left">
-                    <h4 className="font-bold text-on-surface">{remainingTasks[0].title}</h4>
+                <Panel className="col-span-12 md:col-span-5 !p-4 flex items-center justify-between">
+                  <div className="text-left min-w-0">
+                    <h4 className="text-sm font-medium text-on-surface truncate">
+                      {remainingTasks[0].title}
+                    </h4>
                     {remainingTasks[0].description && (
-                      <p className="text-xs text-on-surface-variant">{remainingTasks[0].description}</p>
+                      <p className="text-xs text-on-surface-variant line-clamp-1">
+                        {remainingTasks[0].description}
+                      </p>
                     )}
                   </div>
-                  <span className="material-symbols-outlined text-on-surface-variant/40">drag_indicator</span>
-                </div>
+                </Panel>
               )}
-            </>
-          ) : (
-            <div className="col-span-12 bg-surface-container-low p-8 rounded-2xl text-center">
-              <p className="text-on-surface-variant">All tasks completed! Create more from the dashboard.</p>
             </div>
+          ) : (
+            <Panel className="text-center py-8">
+              <p className="text-sm text-on-surface-variant">
+                All tasks completed. Create more from the dashboard.
+              </p>
+            </Panel>
           )}
 
-          {/* Small Task Meta Cards */}
-          <div className="col-span-6 md:col-span-3 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 flex flex-col items-center justify-center text-center">
-            <span className="text-2xl font-mono font-bold text-secondary mb-1">12</span>
-            <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-widest">Day Streak</span>
-          </div>
-          <div className="col-span-6 md:col-span-3 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 flex flex-col items-center justify-center text-center">
-            <span className="text-2xl font-mono font-bold text-tertiary mb-1">{String(tasks.length).padStart(2, "0")}</span>
-            <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-widest">Tasks Left</span>
-          </div>
-
-          {/* Quick Action Card */}
-          <div className="col-span-12 md:col-span-6 bg-surface-container-highest/50 backdrop-blur-xl p-5 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-surface-container-highest transition-all">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-surface-bright flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-surface">add</span>
-              </div>
-              <span className="font-bold text-on-surface">Add a quick task...</span>
-            </div>
-            <kbd className="px-2 py-1 bg-surface-container rounded font-mono text-[10px] text-on-surface-variant">CMD + N</kbd>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Panel className="!p-4 text-center">
+              <span className="text-xl font-mono font-medium text-on-surface">
+                12
+              </span>
+              <p className="text-xs text-on-surface-variant mt-1">Day streak</p>
+            </Panel>
+            <Panel className="!p-4 text-center">
+              <span className="text-xl font-mono font-medium text-on-surface">
+                {String(tasks.length).padStart(2, "0")}
+              </span>
+              <p className="text-xs text-on-surface-variant mt-1">Tasks left</p>
+            </Panel>
           </div>
         </div>
       </section>
-
-      {/* Dynamic Background Elements */}
-      <div className="fixed top-1/4 -left-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="fixed bottom-1/4 -right-20 w-96 h-96 bg-secondary/5 blur-[120px] rounded-full pointer-events-none"></div>
     </main>
   );
 }

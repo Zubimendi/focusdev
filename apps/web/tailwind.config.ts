@@ -59,10 +59,14 @@ const config: Config = {
         "surface-variant": "var(--surface-variant)"
       },
       fontFamily: {
-        "headline": ["var(--font-inter)", "sans-serif"],
-        "body": ["var(--font-inter)", "sans-serif"],
-        "label": ["var(--font-inter)", "sans-serif"],
+        "headline": ["var(--font-fraunces)", "Georgia", "serif"],
+        "body": ["var(--font-outfit)", "system-ui", "sans-serif"],
+        "label": ["var(--font-outfit)", "system-ui", "sans-serif"],
         "mono": ["var(--font-jetbrains-mono)", "monospace"]
+      },
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

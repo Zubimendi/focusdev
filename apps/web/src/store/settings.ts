@@ -13,7 +13,7 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      theme: 'dark',
+      theme: 'light',
       timerDuration: 25,
       notificationSound: 'Zen Chime',
       setTheme: (theme) => set({ theme }),

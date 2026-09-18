@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* FocusDev brand palette — aligned with landing (stone + teal + charcoal) */
+/* FocusDev brand palette — landing stone + teal + charcoal */
 :root {
   --background: #eef1f0;
   --foreground: #1c2421;
@@ -43,6 +43,12 @@
   --inverse-surface: #1c2421;
   --inverse-on-surface: #eef1f0;
   --inverse-primary: #7eb8a8;
+
+  /* Density tokens */
+  --border: color-mix(in srgb, var(--outline-variant) 70%, transparent);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --sidebar-width: 232px;
 }
 
 .dark {
@@ -85,12 +91,14 @@
   --inverse-surface: #eef1f0;
   --inverse-on-surface: #1c2421;
   --inverse-primary: #2d6a5e;
+
+  --border: color-mix(in srgb, var(--outline-variant) 80%, transparent);
 }
 
 body {
   color: var(--on-surface);
   background: var(--background);
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 @layer utilities {
@@ -100,12 +108,6 @@ body {
   .dot-grid {
     background-image: radial-gradient(circle, var(--outline-variant) 1px, transparent 1px);
     background-size: 24px 24px;
-    opacity: 0.2;
-  }
-  .glass-panel {
-    background: var(--surface-container);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--outline-variant);
   }
 }
 

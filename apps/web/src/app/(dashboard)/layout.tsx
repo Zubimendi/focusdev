@@ -31,61 +31,79 @@ export default function DashboardLayout({
   }
 
   if (status === "loading") {
-    return <div className="flex h-screen items-center justify-center bg-background text-on-surface">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-on-surface-variant text-sm">
+        Loading…
+      </div>
+    );
   }
+
+  const initial = (user?.name || user?.email || "U").charAt(0).toUpperCase();
 
   return (
     <div className="min-h-screen bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container flex overflow-hidden">
-      {/* Mobile overlay */}
       {!isFocusedTask && isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 dark:bg-black/50 z-40 md:hidden backdrop-blur-sm" 
+        <div
+          className="fixed inset-0 bg-black/25 z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-      
+
       {!isFocusedTask && (
-        <SideNavBar 
-          isOpen={isMobileMenuOpen} 
-          onClose={() => setIsMobileMenuOpen(false)} 
+        <SideNavBar
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      <div className={`${!isFocusedTask ? 'md:ml-64' : ''} flex flex-col min-h-screen w-full flex-1 overflow-x-hidden`}>
-        {/* TopNavBar Replacement (Suppressed in Focused Tasks) */}
+      <div
+        className={`${
+          !isFocusedTask ? "md:ml-[var(--sidebar-width)]" : ""
+        } flex flex-col min-h-screen w-full flex-1 overflow-x-hidden`}
+      >
         {!isFocusedTask && (
-          <header className="bg-background/80 backdrop-blur-md sticky top-0 z-30">
-            <div className="flex justify-between items-center w-full px-4 md:px-8 h-16 max-w-[1920px] mx-auto">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className="md:hidden p-2 -ml-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-lg active:scale-95"
+          <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-sm border-b border-[var(--border)]">
+            <div className="flex justify-between items-center w-full px-4 md:px-6 h-12">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-1.5 -ml-1 text-on-surface-variant hover:bg-surface-container transition-colors rounded-md"
+                aria-label="Open menu"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  menu
+                </span>
+              </button>
+              <div className="hidden md:block" />
+              <div className="flex items-center gap-2 ml-auto">
+                <Link
+                  href="/settings"
+                  className="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-md"
+                  aria-label="Settings"
                 >
-                  <span className="material-symbols-outlined">menu</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <button className="p-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-lg active:scale-95">
-                  <span className="material-symbols-outlined">notifications</span>
-                </button>
-                <Link href="/settings" className="p-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-lg active:scale-95">
-                  <span className="material-symbols-outlined">settings</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    settings
+                  </span>
                 </Link>
-                <div className="flex items-center gap-3 ml-2">
-                  <div className="ring-2 ring-primary/20 rounded-full p-0.5">
-                    <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden relative">
-                      {user?.image ? (
-                        <Image src={user.image} alt="User Avatar" fill className="object-cover" />
-                      ) : (
-                        <span className="text-xs font-bold text-primary">{user?.name?.[0] || 'U'}</span>
-                      )}
-                    </div>
+                <div className="flex items-center gap-2 pl-1">
+                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center overflow-hidden relative">
+                    {user?.image ? (
+                      <Image
+                        src={user.image}
+                        alt=""
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span className="text-[11px] font-medium text-primary">
+                        {initial}
+                      </span>
+                    )}
                   </div>
-                  <button 
+                  <button
                     onClick={() => signOut()}
-                    className="text-xs font-bold text-on-surface-variant hover:text-error transition-colors uppercase tracking-widest"
+                    className="text-xs font-medium text-on-surface-variant hover:text-error transition-colors"
                   >
-                    Logout
+                    Log out
                   </button>
                 </div>
               </div>

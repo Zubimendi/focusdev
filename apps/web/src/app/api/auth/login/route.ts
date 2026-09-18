@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { connectToDatabase } from "@focus/db";
-import { UserModel } from "@focus/db/models";
 import { LoginSchema } from "@focus/shared";
 import jwt from "jsonwebtoken";
+import { findUserForLogin } from "@/lib/find-user-for-login";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -13,8 +11,7 @@ if (!JWT_SECRET) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // Validate input using shared schema
+
     const validation = LoginSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
@@ -24,32 +21,17 @@ export async function POST(req: Request) {
     }
 
     const { email, password } = validation.data;
-    const normalizedEmail = email.toLowerCase().trim();
+    const user = await findUserForLogin(email, password);
 
-    await connectToDatabase();
-
-    // Find user and include password
-    const user = await UserModel.findOne({ email: normalizedEmail }).select("+password");
-    if (!user || !user.password) {
+    if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    // Verify password
-    const isCorrectPassword = await bcrypt.compare(password, user.password);
-    
-    if (!isCorrectPassword) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
-      );
-    }
-
-    // Generate JWT for mobile/client use
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user.id, email: user.email },
       JWT_SECRET!,
       { expiresIn: "7d" }
     );
@@ -57,7 +39,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         user: {
-          id: user._id,
+          id: user.id,
           email: user.email,
           name: user.name,
         },
@@ -75,4 +57,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

@@ -1,6 +1,8 @@
-"use client"
+"use client";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { Panel } from "@/components/ui/panel";
 
 interface Task {
   _id: string;
@@ -40,91 +42,95 @@ export default function DailyChecklist() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
-        setTasks(prev =>
-          prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t)
+        setTasks((prev) =>
+          prev.map((t) =>
+            t._id === task._id ? { ...t, status: newStatus } : t
+          )
         );
-        if (newStatus === "done") toast.success(`Completed: ${task.title}`);
+        if (newStatus === "done") toast.success(`Done: ${task.title}`);
       }
     } catch {
       toast.error("Failed to update task");
     }
   };
 
-  const completedCount = tasks.filter(t => t.status === "done").length;
-  const progressPercent = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
+  const completedCount = tasks.filter((t) => t.status === "done").length;
+  const progressPercent =
+    tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
   return (
-    <aside className="w-full md:w-80 flex flex-col gap-6 order-3">
-      <section className="bg-surface-container-low rounded-xl p-6 shadow-none flex flex-col gap-6 overflow-hidden relative">
+    <aside className="w-full md:w-72 flex flex-col gap-4 order-3">
+      <Panel className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold tracking-wider text-on-surface-variant uppercase">Daily Checklist</h2>
-          <span className="material-symbols-outlined text-secondary">task_alt</span>
+          <h2 className="text-sm font-medium text-on-surface">Today</h2>
+          <span className="text-xs text-on-surface-variant font-mono">
+            {completedCount}/{tasks.length}
+          </span>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           {loading ? (
-            <div className="flex flex-col gap-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-12 bg-surface-container-high rounded-lg animate-pulse" />
+            <div className="flex flex-col gap-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-9 bg-surface-container rounded animate-pulse"
+                />
               ))}
             </div>
           ) : tasks.length > 0 ? (
             tasks.map((task) => (
-              <label 
-                key={task._id} 
+              <button
+                key={task._id}
+                type="button"
                 onClick={() => toggleTask(task)}
-                className={`flex items-center gap-4 p-3 rounded-lg hover:bg-surface-container-high transition-all cursor-pointer group ${task.status === "done" ? 'bg-surface-container-high/50' : ''}`}
+                className={`flex items-center gap-3 px-2 py-2 rounded-md hover:bg-surface-container transition-colors text-left w-full ${
+                  task.status === "done" ? "opacity-60" : ""
+                }`}
               >
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                  task.status === "done" ? 'border-primary/40 bg-primary/20' : 'border-outline-variant/30 group-hover:border-outline-variant'
-                }`}>
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                    task.status === "done"
+                      ? "border-primary bg-primary/15"
+                      : "border-outline-variant"
+                  }`}
+                >
                   {task.status === "done" && (
-                    <span className="material-symbols-outlined text-[16px] text-primary" style={{ fontVariationSettings: "'FILL' 0, 'wght' 700" }}>check</span>
+                    <span
+                      className="material-symbols-outlined text-[12px] text-primary"
+                      style={{ fontVariationSettings: "'wght' 700" }}
+                    >
+                      check
+                    </span>
                   )}
                 </div>
-                <div className="flex flex-col flex-1">
-                  <span className={`text-sm font-medium transition-all ${
-                    task.status === "done" ? 'text-on-surface line-through opacity-50' : 'text-on-surface'
-                  }`}>
-                    {task.title}
-                  </span>
-                  <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                    task.priority === 'high' ? 'text-error' : task.priority === 'medium' ? 'text-tertiary' : 'text-outline'
-                  }`}>
-                    {task.priority}
-                  </span>
-                </div>
-              </label>
+                <span
+                  className={`text-sm flex-1 truncate ${
+                    task.status === "done"
+                      ? "line-through text-on-surface-variant"
+                      : "text-on-surface"
+                  }`}
+                >
+                  {task.title}
+                </span>
+              </button>
             ))
           ) : (
-            <p className="text-sm text-on-surface-variant text-center py-4">No tasks yet. Create one to get started!</p>
+            <p className="text-sm text-on-surface-variant py-2">
+              No tasks yet.
+            </p>
           )}
         </div>
 
-        <div className="mt-4 pt-6 border-t border-outline-variant/10">
-          <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4">Focus Quality ({Math.round(progressPercent)}%)</p>
-          <div className="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-secondary rounded-full transition-all duration-500"
+        <div className="pt-3 border-t border-[var(--border)]">
+          <div className="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
-            ></div>
-          </div>
-          <p className="mt-2 text-[10px] text-on-surface-variant text-right italic">
-            {progressPercent === 100 ? "Ascended state reached! 🚀" : `${completedCount}/${tasks.length} tasks completed`}
-          </p>
-        </div>
-      </section>
-
-      {/* Quick Tip Card */}
-      <section className="bg-gradient-to-br from-surface-container-low to-surface-container-high p-6 rounded-xl border border-primary/10">
-        <div className="flex gap-3 items-start">
-          <span className="material-symbols-outlined text-primary">lightbulb</span>
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-bold text-on-surface uppercase tracking-widest">Developer Pro-Tip</p>
-            <p className="text-sm text-on-surface-variant leading-relaxed">Turn off Slack notifications during your next Pomodoro to reach 2x depth.</p>
+            />
           </div>
         </div>
-      </section>
+      </Panel>
     </aside>
   );
 }

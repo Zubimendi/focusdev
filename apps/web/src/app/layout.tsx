@@ -1,18 +1,30 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google"; // Using Next.js Google Fonts
+import type { CSSProperties } from "react";
+import { Outfit, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import NextAuthSessionProvider from "@/components/auth/session-provider";
+import { Toaster } from "sonner";
+import ClientThemeProvider from "@/components/theme-provider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+});
 
 export const metadata: Metadata = {
   title: "FocusDev",
-  description: "Boost your productivity with monolithic clarity",
+  description: "Personal daily project management for focused builders",
 };
-
-import { Toaster } from 'sonner';
-import ClientThemeProvider from "@/components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -22,33 +34,46 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
                 const settings = JSON.parse(localStorage.getItem('focusdev-settings'));
-                const theme = settings?.state?.theme || 'dark';
+                const theme = settings?.state?.theme || 'light';
                 document.documentElement.classList.add(theme);
-              } catch (e) {}
+              } catch (e) {
+                document.documentElement.classList.add('light');
+              }
             `,
           }}
         />
       </head>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-body bg-surface text-on-surface antialiased`}>
+      <body
+        className={`${outfit.variable} ${fraunces.variable} ${jetbrainsMono.variable} font-body bg-surface text-on-surface antialiased`}
+        style={
+          {
+            "--font-landing-display": "var(--font-fraunces)",
+            "--font-landing-sans": "var(--font-outfit)",
+          } as CSSProperties
+        }
+      >
         <NextAuthSessionProvider>
           <ClientThemeProvider>
             {children}
-            <Toaster 
-              position="bottom-right" 
-              richColors 
-              theme="system" 
+            <Toaster
+              position="bottom-right"
+              richColors
+              theme="system"
               toastOptions={{
                 style: {
-                  background: 'var(--surface-container-low)',
-                  borderColor: 'var(--outline-variant)',
-                  color: 'var(--on-surface)',
-                }
+                  background: "var(--surface-container-lowest)",
+                  borderColor: "var(--border)",
+                  color: "var(--on-surface)",
+                },
               }}
             />
           </ClientThemeProvider>

@@ -174,27 +174,27 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="max-w-[1920px] mx-auto px-8 py-12 flex flex-col lg:flex-row gap-8">
-      <div className="flex-1 flex flex-col gap-8 order-1 md:order-2">
+    <main className="max-w-[1400px] mx-auto px-6 py-8 flex flex-col lg:flex-row gap-6">
+      <div className="flex-1 flex flex-col gap-5 order-1 md:order-2 min-w-0">
         {reviewDue && (
           <Link
             href="/reviews/week"
-            className="bg-secondary/10 border border-secondary/20 rounded-xl px-5 py-4 flex items-center justify-between gap-4 hover:bg-secondary/15 transition-colors"
+            className="border border-[var(--border)] bg-surface-container-lowest rounded-md px-4 py-3 flex items-center justify-between gap-4 hover:bg-surface-container-low transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-secondary">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="material-symbols-outlined text-primary text-[20px]">
                 rate_review
               </span>
-              <div>
-                <p className="font-bold text-on-surface text-sm">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-on-surface">
                   Weekly review ready
                 </p>
-                <p className="text-xs text-on-surface-variant">
-                  Close out this week with metrics, OKRs, and a short reflection.
+                <p className="text-xs text-on-surface-variant truncate">
+                  Close the week with metrics and a short reflection.
                 </p>
               </div>
             </div>
-            <span className="text-xs font-bold uppercase tracking-widest text-secondary">
+            <span className="text-xs font-medium text-primary shrink-0">
               Review →
             </span>
           </Link>
@@ -202,33 +202,28 @@ export default function DashboardPage() {
 
         <FocusTimer />
 
-        <section className="bg-surface-container-low p-8 rounded-xl flex flex-col gap-6">
-          <div className="flex flex-col gap-4">
-            <label className="text-sm font-bold text-on-surface-variant flex items-center gap-2 uppercase tracking-widest">
-              <span className="material-symbols-outlined text-sm">target</span>
-              Active Mission
-            </label>
-            <div className="relative">
-              <input
-                className="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-4 px-6 text-xl placeholder:text-on-surface-variant/40 font-medium transition-all outline-none text-on-surface"
-                placeholder="What are you working on?"
-                type="text"
-                value={stats.taskTitle}
-                onChange={(e) =>
-                  setStats((prev) => ({ ...prev, taskTitle: e.target.value }))
-                }
-                onKeyDown={(e) => e.key === "Enter" && handleCreateTask()}
-              />
-            </div>
-          </div>
+        <section className="bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)] p-5 flex flex-col gap-4">
+          <label className="text-xs font-medium text-on-surface-variant">
+            Active mission
+          </label>
+          <input
+            className="w-full h-10 px-3 rounded-md bg-surface border border-[var(--border)] text-sm text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            placeholder="What are you working on?"
+            type="text"
+            value={stats.taskTitle}
+            onChange={(e) =>
+              setStats((prev) => ({ ...prev, taskTitle: e.target.value }))
+            }
+            onKeyDown={(e) => e.key === "Enter" && handleCreateTask()}
+          />
           {projects.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setStats((prev) => ({ ...prev, projectId: "" }))}
-                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                   !stats.projectId
-                    ? "bg-secondary/10 text-secondary border border-secondary/20"
-                    : "bg-surface-container-high text-on-surface-variant border border-outline-variant/10 hover:text-on-surface"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-surface-container text-on-surface-variant hover:text-on-surface"
                 }`}
               >
                 No project
@@ -239,10 +234,10 @@ export default function DashboardPage() {
                   onClick={() =>
                     setStats((prev) => ({ ...prev, projectId: p.id }))
                   }
-                  className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors border ${
+                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                     stats.projectId === p.id
-                      ? "border-transparent text-white"
-                      : "bg-surface-container-high text-on-surface-variant border-outline-variant/10 hover:text-on-surface"
+                      ? "text-white"
+                      : "bg-surface-container text-on-surface-variant hover:text-on-surface"
                   }`}
                   style={
                     stats.projectId === p.id
@@ -257,65 +252,66 @@ export default function DashboardPage() {
           )}
           <button
             onClick={handleCreateTask}
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm shadow-lg shadow-primary/10 hover:scale-[1.01] active:scale-[0.99] transition-all uppercase tracking-wider"
+            className="h-9 rounded-md bg-primary text-on-primary text-sm font-medium hover:opacity-90 transition-opacity"
           >
-            Create Task
+            Create task
           </button>
         </section>
 
-        {/* Today by project */}
         {projects.length > 0 && (
-          <section className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-4">
+          <section className="bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)] p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold tracking-wider text-on-surface-variant uppercase">
-                This Week by Project
+              <h2 className="text-sm font-medium text-on-surface">
+                This week by project
               </h2>
               <Link
                 href="/projects"
-                className="text-xs font-bold text-primary hover:underline"
+                className="text-xs font-medium text-primary hover:underline"
               >
                 All projects
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
               {projects.slice(0, 4).map((p) => (
                 <Link
                   key={p.id}
                   href={`/projects/${p.id}`}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-high transition-colors"
+                  className="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-surface-container transition-colors"
                 >
                   <div
-                    className="w-3 h-3 rounded-full shrink-0"
+                    className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: p.color }}
                   />
-                  <span className="text-sm font-medium text-on-surface flex-1 truncate">
+                  <span className="text-sm text-on-surface flex-1 truncate">
                     {p.name}
                   </span>
-                  <span className="text-xs font-mono font-bold text-on-surface-variant">
+                  <span className="text-xs font-mono text-on-surface-variant">
                     {formatFocusTime(p.focusMinutes || 0)}
                   </span>
                 </Link>
               ))}
             </div>
             {openTasks.length > 0 && (
-              <div className="border-t border-outline-variant/10 pt-4 flex flex-col gap-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+              <div className="border-t border-[var(--border)] pt-3 flex flex-col gap-1">
+                <p className="text-xs text-on-surface-variant mb-1">
                   Open tasks
                 </p>
                 {openTasks.slice(0, 5).map((t) => {
-                  const proj = projectName(t.projectId ? String(t.projectId) : undefined);
+                  const proj = projectName(
+                    t.projectId ? String(t.projectId) : undefined
+                  );
                   return (
                     <div
                       key={t.id}
-                      className="flex items-center gap-2 text-sm text-on-surface"
+                      className="flex items-center gap-2 text-sm text-on-surface px-1"
                     >
-                      <span className="material-symbols-outlined text-sm text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
                         check_box_outline_blank
                       </span>
                       <span className="flex-1 truncate">{t.title}</span>
                       {proj && (
                         <span
-                          className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white shrink-0"
+                          className="text-[10px] font-medium px-1.5 py-0.5 rounded text-white shrink-0"
                           style={{ backgroundColor: proj.color }}
                         >
                           {proj.name}
@@ -329,52 +325,48 @@ export default function DashboardPage() {
           </section>
         )}
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
-              Sessions Today
-            </span>
-            <div className="flex items-baseline gap-2">
-              {loading ? (
-                <div className="h-9 w-12 bg-surface-container-high rounded animate-pulse" />
-              ) : (
-                <span className="text-3xl font-mono font-bold text-on-surface">
-                  {stats.sessionsToday}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
-              Focus Time
-            </span>
-            <div className="flex items-baseline gap-2">
-              {loading ? (
-                <div className="h-9 w-20 bg-surface-container-high rounded animate-pulse" />
-              ) : (
-                <span className="text-3xl font-mono font-bold text-on-surface">
-                  {formatFocusTime(stats.focusMinutesToday)}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="bg-surface-container-low p-6 rounded-xl flex flex-col gap-1 group hover:bg-surface-container-high transition-colors">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
-              Current Streak
-            </span>
-            <div className="flex items-baseline gap-2">
-              {loading ? (
-                <div className="h-9 w-16 bg-surface-container-high rounded animate-pulse" />
-              ) : (
-                <>
-                  <span className="text-3xl font-mono font-bold text-primary">
-                    {calculateStreak(allSessions)} days
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            {
+              label: "Sessions today",
+              value: loading ? null : String(stats.sessionsToday),
+            },
+            {
+              label: "Focus time",
+              value: loading
+                ? null
+                : formatFocusTime(stats.focusMinutesToday),
+            },
+            {
+              label: "Streak",
+              value: loading
+                ? null
+                : `${calculateStreak(allSessions)}d`,
+              accent: true,
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)] p-4"
+            >
+              <span className="text-xs text-on-surface-variant">
+                {stat.label}
+              </span>
+              <div className="mt-1">
+                {stat.value === null ? (
+                  <div className="h-7 w-12 bg-surface-container rounded animate-pulse" />
+                ) : (
+                  <span
+                    className={`text-2xl font-mono font-medium ${
+                      stat.accent ? "text-primary" : "text-on-surface"
+                    }`}
+                  >
+                    {stat.value}
                   </span>
-                  <span className="text-lg">🔥</span>
-                </>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          ))}
         </section>
       </div>
 

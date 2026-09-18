@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Button } from "@/components/ui/button";
 
 interface Task {
   _id: string;
@@ -139,44 +142,34 @@ export default function ChecklistsPage() {
   };
 
   return (
-    <main className="max-w-[1400px] mx-auto p-12">
-      {/* Header Section with Progress */}
-      <header className="mb-12 flex flex-col gap-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <span className="text-secondary font-mono text-sm tracking-widest uppercase mb-2 block">Developer Execution</span>
-            <h2 className="text-5xl font-extrabold tracking-tighter text-on-surface">Checklists</h2>
-          </div>
-          <div className="text-right">
-            <p className="text-outline text-sm font-mono mb-1">DAILY COMPLETION</p>
-            {loading ? (
-              <div className="h-12 w-16 bg-surface-container-high rounded animate-pulse" />
-            ) : (
-              <p className="text-4xl font-mono text-secondary font-bold">{progressPercent}%</p>
-            )}
-          </div>
-        </div>
-        
-        {/* Global Progress Bar */}
-        <div className="h-4 w-full bg-surface-container-lowest rounded-full overflow-hidden relative">
-          <div className="absolute inset-0 bg-secondary/5 blur-md"></div>
-          <div 
-            className="h-full bg-gradient-to-r from-secondary-container to-secondary rounded-full relative shadow-[0_0_15px_rgba(78,222,163,0.3)] transition-all duration-1000" 
-            style={{ width: `${progressPercent}%` }}
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.1)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.1)_50%,rgba(255,255,255,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px]"></div>
-          </div>
-        </div>
-      </header>
+    <main className="max-w-[1400px] mx-auto px-6 py-8 lg:px-10 w-full">
+      <PageHeader
+        title="Checklists"
+        description="Tasks, goals, and daily completion."
+        actions={
+          loading ? (
+            <div className="h-9 w-14 bg-surface-container-high rounded-md animate-pulse border border-[var(--border)]" />
+          ) : (
+            <span className="text-2xl font-mono font-medium text-on-surface">
+              {progressPercent}%
+            </span>
+          )
+        }
+      />
 
-      {/* Bento Grid Layout for Checklist Sections */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Weekly Goals Sidebar (Matching Mobile) */}
-        <section className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-surface-container-low p-8 rounded-xl shadow-xl border-l-4 border-primary">
-            <div className="flex items-center gap-4 mb-6">
-              <span className="material-symbols-outlined text-primary">target</span>
-              <h3 className="text-xl font-bold text-on-surface">Weekly Focus</h3>
+      <div className="h-2 w-full bg-surface-container-low rounded-md overflow-hidden border border-[var(--border)] mb-8">
+        <div
+          className="h-full bg-secondary transition-all duration-500"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+
+      <div className="grid grid-cols-12 gap-4">
+        <section className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+          <Panel>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-primary text-[20px]">target</span>
+              <h3 className="text-sm font-medium text-on-surface">Weekly focus</h3>
             </div>
             
             <div className="space-y-4">
@@ -193,11 +186,10 @@ export default function ChecklistsPage() {
                 ))
               )}
             </div>
-          </div>
+          </Panel>
 
-          {/* Quick Add Form */}
-          <div className="bg-surface-container-low p-8 rounded-xl shadow-xl">
-             <h3 className="text-xl font-bold text-on-surface mb-6">Initiate Task</h3>
+          <Panel>
+             <h3 className="text-sm font-medium text-on-surface mb-4">New task</h3>
              <div className="space-y-4">
                 <input
                   className="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface placeholder:text-outline focus:border-primary/50 focus:outline-none transition-all"
@@ -214,19 +206,20 @@ export default function ChecklistsPage() {
                 />
 
                 <div>
-                  <label className="text-[10px] font-bold text-outline tracking-widest block mb-2">PRIORITY</label>
+                  <label className="text-xs text-on-surface-variant block mb-2">Priority</label>
                   <div className="flex gap-2">
                     {(["low", "medium", "high"] as const).map(p => (
                       <button
                         key={p}
+                        type="button"
                         onClick={() => setNewTask({ ...newTask, priority: p })}
-                        className={`flex-1 py-2 text-[10px] font-bold rounded-md border transition-all ${
+                        className={`flex-1 py-1.5 text-xs font-medium rounded-md border transition-colors capitalize ${
                           newTask.priority === p 
-                          ? "bg-primary/20 border-primary text-primary" 
-                          : "bg-surface-container border-outline-variant/30 text-outline hover:border-primary/30"
+                          ? "bg-primary/10 border-primary text-primary" 
+                          : "bg-surface border-[var(--border)] text-on-surface-variant hover:text-on-surface"
                         }`}
                       >
-                        {p.toUpperCase()}
+                        {p}
                       </button>
                     ))}
                   </div>
@@ -234,9 +227,9 @@ export default function ChecklistsPage() {
 
                 {projects.length > 0 && (
                   <div>
-                    <label className="text-[10px] font-bold text-outline tracking-widest block mb-2">PROJECT</label>
+                    <label className="text-xs text-on-surface-variant block mb-2">Project</label>
                     <select
-                      className="w-full px-4 py-2 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface text-sm focus:border-primary/50 focus:outline-none appearance-none"
+                      className="w-full h-9 px-3 rounded-md bg-surface border border-[var(--border)] text-on-surface text-sm focus:border-primary focus:outline-none appearance-none"
                       value={newTask.projectId}
                       onChange={(e) => setNewTask({ ...newTask, projectId: e.target.value })}
                     >
@@ -248,26 +241,24 @@ export default function ChecklistsPage() {
                   </div>
                 )}
 
-                <button 
+                <Button 
+                  type="button"
                   onClick={createTask}
                   disabled={!newTask.title.trim()}
-                  className="w-full py-4 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:shadow-none mt-4"
+                  className="w-full mt-4"
                 >
-                  DEPLOY OBJECTIVE
-                </button>
+                  Add task
+                </Button>
              </div>
-          </div>
+          </Panel>
         </section>
 
-        {/* Active Tasks Section */}
-        <section className="col-span-12 lg:col-span-8 bg-surface-container-low p-8 rounded-xl shadow-xl relative overflow-hidden">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <span className="material-symbols-outlined text-primary">wb_sunny</span>
-              </div>
-              <h3 className="text-2xl font-bold tracking-tight text-on-surface">Active Missions</h3>
-              <span className="text-xs font-mono text-outline bg-surface-container-high px-2 py-1 rounded-full">{todoTasks.length + inProgressTasks.length} remaining</span>
+        <Panel className="col-span-12 lg:col-span-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">wb_sunny</span>
+              <h3 className="text-sm font-medium text-on-surface">Active tasks</h3>
+              <span className="text-xs text-on-surface-variant">{todoTasks.length + inProgressTasks.length} remaining</span>
             </div>
           </div>
           
@@ -280,7 +271,7 @@ export default function ChecklistsPage() {
               [...inProgressTasks, ...todoTasks].map((task) => {
                 const style = getPriorityStyle(task.priority);
                 return (
-                  <div key={task._id} className={`group flex items-center gap-4 p-5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all border-l-4 translate-x-0 hover:translate-x-2 border-transparent shadow-sm hover:shadow-md`}>
+                  <div key={task._id} className="group flex items-center gap-4 p-3 rounded-md border border-[var(--border)] bg-surface-container-low hover:bg-surface-container transition-colors">
                     <button 
                       onClick={() => toggleTask(task)}
                       className="w-6 h-6 border-2 border-outline rounded-full flex items-center justify-center hover:bg-secondary hover:border-secondary transition-all"
@@ -290,7 +281,7 @@ export default function ChecklistsPage() {
                       <p className="font-bold text-on-surface">{task.title}</p>
                       {task.description && <p className="text-xs text-outline line-clamp-1 mt-0.5">{task.description}</p>}
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${style.bg} ${style.color}`}>
+                    <span className={`px-2 py-0.5 rounded-md text-xs font-medium capitalize ${style.bg} ${style.color}`}>
                       {task.priority}
                     </span>
                     <button 
@@ -303,25 +294,21 @@ export default function ChecklistsPage() {
                 );
               })
             ) : (
-              <div className="py-20 text-center border-2 border-dashed border-outline-variant/30 rounded-xl">
-                <p className="text-outline font-medium">All systems clear. Initiate a new mission.</p>
+              <div className="py-16 text-center border border-dashed border-[var(--border)] rounded-[var(--radius-md)]">
+                <p className="text-sm text-on-surface-variant">No active tasks. Add one above.</p>
               </div>
             )}
           </div>
-        </section>
+        </Panel>
 
-        {/* Completed + Stats Section */}
-        <section className="col-span-12 lg:col-span-5 flex flex-col gap-8">
-          {/* Completed Tasks */}
-          <div className="bg-surface-container-low p-8 rounded-xl shadow-xl border-t-4 border-secondary">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-secondary/10 rounded-lg">
-                  <span className="material-symbols-outlined text-secondary">check_circle</span>
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight text-on-surface">Completed</h3>
+        <section className="col-span-12 lg:col-span-5 flex flex-col gap-4">
+          <Panel>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                <h3 className="text-sm font-medium text-on-surface">Completed</h3>
               </div>
-              <span className="text-xs font-mono text-secondary">{doneTasks.length} done</span>
+              <span className="text-xs text-on-surface-variant">{doneTasks.length} done</span>
             </div>
             
             <div className="space-y-4 max-h-64 overflow-y-auto">
@@ -345,47 +332,43 @@ export default function ChecklistsPage() {
                 <p className="text-sm text-on-surface-variant text-center py-4">No completed tasks yet</p>
               )}
             </div>
-          </div>
+          </Panel>
 
-          {/* Stats Visual */}
-          <div className="bg-gradient-to-br from-primary/10 to-transparent p-8 rounded-xl border border-primary/20 backdrop-blur-sm">
-            <h4 className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-4">Task Summary</h4>
+          <Panel>
+            <h4 className="text-xs text-on-surface-variant mb-4">Task summary</h4>
             <div className="grid grid-cols-3 gap-4">
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-mono font-bold text-on-surface">{todoTasks.length}</span>
-                <span className="text-[10px] text-outline uppercase tracking-widest">To Do</span>
+                <span className="text-xl font-mono font-medium text-on-surface">{todoTasks.length}</span>
+                <span className="text-xs text-on-surface-variant">To do</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-mono font-bold text-primary">{inProgressTasks.length}</span>
-                <span className="text-[10px] text-outline uppercase tracking-widest">Active</span>
+                <span className="text-xl font-mono font-medium text-primary">{inProgressTasks.length}</span>
+                <span className="text-xs text-on-surface-variant">Active</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-mono font-bold text-secondary">{doneTasks.length}</span>
-                <span className="text-[10px] text-outline uppercase tracking-widest">Done</span>
+                <span className="text-xl font-mono font-medium text-secondary">{doneTasks.length}</span>
+                <span className="text-xs text-on-surface-variant">Done</span>
               </div>
             </div>
-          </div>
+          </Panel>
         </section>
 
-        {/* High Priority Section */}
         {highPriorityTasks.length > 0 && (
-          <section className="col-span-12 bg-surface-container-low p-8 rounded-xl shadow-xl">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-error/10 rounded-lg">
-                  <span className="material-symbols-outlined text-error">bolt</span>
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight text-on-surface">Priority Queue</h3>
+          <Panel className="col-span-12">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-error text-[20px]">bolt</span>
+                <h3 className="text-sm font-medium text-on-surface">High priority</h3>
               </div>
-              <span className="text-xs font-mono text-error">{highPriorityTasks.length} urgent</span>
+              <span className="text-xs text-on-surface-variant">{highPriorityTasks.length} urgent</span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {highPriorityTasks.map((task) => (
-                <div key={task._id} className="bg-surface-container p-5 rounded-lg border border-transparent hover:border-error/20 transition-all group cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-error-container text-error">
-                      High Priority
+                <div key={task._id} className="p-4 rounded-md border border-[var(--border)] bg-surface-container-low hover:bg-surface-container transition-colors group">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-error-container text-error">
+                      High
                     </span>
                   </div>
                   <div className="flex gap-4">
@@ -398,19 +381,20 @@ export default function ChecklistsPage() {
                 </div>
               ))}
             </div>
-          </section>
+          </Panel>
         )}
       </div>
 
-      {/* Contextual FAB */}
       <button 
+        type="button"
         onClick={() => {
           const input = document.querySelector<HTMLInputElement>('input[placeholder="Task Title"]');
           input?.focus();
         }}
-        className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-primary-container text-on-primary-container shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-50"
+        className="fixed bottom-8 right-8 w-11 h-11 rounded-md bg-primary text-on-primary border border-[var(--border)] flex items-center justify-center hover:opacity-90 transition-opacity z-50"
+        aria-label="Add task"
       >
-        <span className="material-symbols-outlined text-3xl">add_task</span>
+        <span className="material-symbols-outlined text-[22px]">add_task</span>
       </button>
     </main>
   );

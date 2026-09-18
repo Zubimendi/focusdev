@@ -1,72 +1,61 @@
 "use client";
 
 import React from "react";
+import FocusLogo from "@/components/brand/focus-logo";
 
 export default function AuthHero() {
   return (
-    <section className="hidden lg:flex flex-col w-7/12 bg-surface-container-lowest relative overflow-hidden items-center justify-center px-20 dot-grid">
-      {/* Glow Accents */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-secondary/5 blur-[120px] rounded-full"></div>
-      
-      <div className="relative z-10 w-full max-w-3xl">
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-6xl font-black tracking-tighter text-on-surface">
-              Build in public.<br />
-              <span className="text-primary">Stay in focus.</span>
-            </h1>
-            <p className="text-on-surface-variant text-lg font-medium max-w-md">
-              The high-performance environment for modern developers to ship faster with monolithic clarity.
-            </p>
+    <section className="hidden lg:flex flex-col w-7/12 bg-[#e8ecea] relative overflow-hidden items-center justify-center px-16 xl:px-24">
+      <div
+        className="absolute inset-0 opacity-[0.35] pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, #c5ceca 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      />
+      <div className="relative z-10 w-full max-w-lg space-y-8">
+        <div className="text-primary">
+          <FocusLogo size={40} className="text-primary text-2xl" />
+        </div>
+        <div className="space-y-3">
+          <h1
+            className="text-4xl xl:text-5xl tracking-tight text-[#1c2421] leading-[1.15]"
+            style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
+          >
+            Build with calm.
+            <br />
+            <span className="text-[#2d6a5e]">Stay in focus.</span>
+          </h1>
+          <p className="text-[#4a5550] text-base max-w-md leading-relaxed">
+            Track projects, run deep work sessions, and close the week with a
+            clear review — one workspace for personal shipping.
+          </p>
+        </div>
+
+        <div className="mt-10 border border-[#c5ceca] bg-[#f7faf8] rounded-lg p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-medium text-[#4a5550]">
+              Focus session
+            </span>
+            <span className="text-[11px] font-mono text-[#2d6a5e]">
+              In progress
+            </span>
           </div>
-
-          <div className="relative mt-12 h-[450px]">
-            {/* Main Card */}
-            <div className="absolute top-0 left-0 w-full h-full bg-surface-container-high rounded-xl p-8 shadow-2xl overflow-hidden border border-outline-variant/10">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-error/40"></div>
-                  <div className="w-3 h-3 rounded-full bg-tertiary/40"></div>
-                  <div className="w-3 h-3 rounded-full bg-secondary/40"></div>
-                </div>
-                <div className="h-6 w-32 bg-surface-container rounded-full"></div>
-              </div>
-              
-              <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-8 space-y-4">
-                  <div className="h-32 w-full bg-surface-container-lowest rounded-lg dot-grid"></div>
-                  <div className="h-4 w-3/4 bg-surface-container rounded-full"></div>
-                  <div className="h-4 w-1/2 bg-surface-container rounded-full"></div>
-                </div>
-                <div className="col-span-4 space-y-4">
-                  <div className="h-16 w-full bg-primary/20 rounded-lg"></div>
-                  <div className="h-16 w-full bg-surface-container rounded-lg"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating Stat Overlay */}
-            <div className="absolute -bottom-6 -right-6 glass-panel p-6 rounded-xl shadow-2xl border border-outline-variant/20 w-64">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="material-symbols-outlined text-secondary">timer</span>
-                <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Focus Session</span>
-              </div>
-              <div className="text-4xl font-mono font-bold text-on-surface">
-                42:15
-              </div>
-              <div className="mt-4 h-1.5 w-full bg-surface-container-low rounded-full overflow-hidden">
-                <div className="h-full bg-secondary w-2/3 shadow-[0_0_12px_rgba(78,222,163,0.4)]"></div>
-              </div>
-            </div>
-
-            {/* Floating Checklist Item */}
-            <div className="absolute -top-10 -left-10 glass-panel p-4 rounded-lg shadow-xl border border-outline-variant/20 flex items-center gap-4">
-              <div className="w-6 h-6 rounded bg-secondary flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-secondary text-sm" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
-              </div>
-              <span className="text-sm font-medium text-on-surface">Deploy production build</span>
-            </div>
+          <div className="font-mono text-3xl font-medium text-[#1c2421] tracking-tight">
+            42:15
+          </div>
+          <div className="mt-4 h-1 w-full bg-[#e2e7e5] rounded-full overflow-hidden">
+            <div className="h-full bg-[#2d6a5e] w-2/3 rounded-full" />
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-sm text-[#1c2421]">
+            <span
+              className="material-symbols-outlined text-[#2d6a5e] text-[18px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              check_circle
+            </span>
+            Ship projects hub
           </div>
         </div>
       </div>
