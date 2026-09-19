@@ -126,10 +126,14 @@ export async function syncGithubGoalContributions(
   const updatedGoalIds = new Set<string>();
 
   for (const project of projects) {
-    const repo = project.githubRepoFullName!;
+    const repo =
+      typeof project.githubRepoFullName === "string"
+        ? project.githubRepoFullName
+        : "";
+    if (!repo) continue;
     const encoded = repo
       .split("/")
-      .map((p) => encodeURIComponent(p))
+      .map((part: string) => encodeURIComponent(part))
       .join("/");
 
     const commitsRes = await githubFetch<GhCommit[]>(
@@ -211,7 +215,7 @@ export async function syncGithubGoalContributions(
     }
   }
 
-  result.goalsUpdated = [...updatedGoalIds];
+  result.goalsUpdated = Array.from(updatedGoalIds);
 
   if (result.newContributions > 0) {
     await createNotification({
