@@ -21,6 +21,7 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
     { name: "Stats", href: "/stats", icon: "bar_chart" },
     { name: "Projects", href: "/projects", icon: "folder_open" },
     { name: "Weekly Review", href: "/reviews/week", icon: "rate_review" },
+    { name: "Monthly Review", href: "/reviews/month", icon: "calendar_month" },
   ];
 
   const isActive = (href: string) => {
@@ -61,7 +62,9 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
                   ? "nav-projects"
                   : item.href === "/reviews/week"
                     ? "nav-reviews"
-                    : undefined
+                    : item.href === "/reviews/month"
+                      ? "nav-reviews-month"
+                      : undefined
               }
               className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors ${
                 active

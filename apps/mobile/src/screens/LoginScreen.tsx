@@ -126,7 +126,7 @@ export default function LoginScreen({ navigation }: any) {
                     <Mail color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.onSurface }]}
-                      placeholder="architect@focus.dev"
+                      placeholder="you@email.com"
                       placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                       value={email}
                       onChangeText={setEmail}

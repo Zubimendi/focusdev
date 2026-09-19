@@ -10,6 +10,8 @@ export interface IUserPreferences {
   notifyGoalUpdates?: boolean;
   notifyHabitDue?: boolean;
   notifySecurity?: boolean;
+  /** When false, stats skip chart payloads (heatmap, bars, GitHub activity). */
+  showCharts?: boolean;
 }
 
 export interface IUserDocument extends Document {
@@ -64,6 +66,7 @@ const UserSchema = new Schema<IUserDocument>(
       notifyGoalUpdates: { type: Boolean, default: true },
       notifyHabitDue: { type: Boolean, default: true },
       notifySecurity: { type: Boolean, default: true },
+      showCharts: { type: Boolean, default: true },
     },
     lastLoginAt: { type: Date },
   },

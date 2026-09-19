@@ -42,7 +42,7 @@ export default function DashboardPage() {
   >([]);
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [openTasks, setOpenTasks] = useState<OpenTask[]>([]);
-  const [reviewDue, setReviewDue] = useState(false);
+  const [reviewDue, setReviewDue] = useState<"week" | "month" | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -103,17 +103,29 @@ export default function DashboardPage() {
 
         // Prompt if previous week has no saved reflection
         try {
-          const listRes = await fetch("/api/reviews?periodType=week");
-          if (listRes.ok) {
-            const listData = await listRes.json();
-            const reviews = listData.reviews || [];
-            const now = new Date();
-            const day = now.getDay();
-            const isLateWeek = day === 0 || day >= 5;
-            const latest = reviews[0];
-            const hasReflection = latest?.wins || latest?.blockers;
-            if (isLateWeek && !hasReflection) setReviewDue(true);
+          const now = new Date();
+          const day = now.getDay();
+          const isLateWeek = day === 0 || day >= 5;
+          const isLateMonth = now.getDate() >= 25;
+          let due: "week" | "month" | null = null;
+
+          if (isLateWeek) {
+            const weekRes = await fetch("/api/reviews?periodType=week");
+            if (weekRes.ok) {
+              const listData = await weekRes.json();
+              const latest = (listData.reviews || [])[0];
+              if (!(latest?.wins || latest?.blockers)) due = "week";
+            }
           }
+          if (!due && isLateMonth) {
+            const monthRes = await fetch("/api/reviews?periodType=month");
+            if (monthRes.ok) {
+              const listData = await monthRes.json();
+              const latest = (listData.reviews || [])[0];
+              if (!(latest?.wins || latest?.blockers)) due = "month";
+            }
+          }
+          setReviewDue(due);
         } catch {
           /* ignore */
         }
@@ -179,7 +191,7 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col gap-5 order-1 md:order-2 min-w-0">
         {reviewDue && (
           <Link
-            href="/reviews/week"
+            href={reviewDue === "month" ? "/reviews/month" : "/reviews/week"}
             className="border border-[var(--border)] bg-surface-container-lowest rounded-md px-4 py-3 flex items-center justify-between gap-4 hover:bg-surface-container-low transition-colors"
           >
             <div className="flex items-center gap-3 min-w-0">
@@ -188,10 +200,13 @@ export default function DashboardPage() {
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-on-surface">
-                  Weekly review ready
+                  {reviewDue === "month"
+                    ? "Monthly review ready"
+                    : "Weekly review ready"}
                 </p>
                 <p className="text-xs text-on-surface-variant truncate">
-                  Close the week with metrics and a short reflection.
+                  Close the {reviewDue === "month" ? "month" : "week"} with
+                  metrics and a short reflection.
                 </p>
               </div>
             </div>

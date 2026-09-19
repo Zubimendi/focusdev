@@ -112,6 +112,7 @@ export async function PATCH(req: Request) {
         "notifyGoalUpdates",
         "notifyHabitDue",
         "notifySecurity",
+        "showCharts",
       ];
       const patchPrefs: Partial<IUserPreferences> = {};
       for (const key of allowed) {

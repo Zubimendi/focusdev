@@ -131,7 +131,7 @@ export default function AppNavigator() {
             <Stack.Screen name="Main" component={MainTabs} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
-            <Stack.Screen name="WeeklyReview" component={WeeklyReviewScreen} />
+            <Stack.Screen name="PeriodReview" component={WeeklyReviewScreen} />
             <Stack.Screen name="Notes" component={NotesScreen} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
           </>

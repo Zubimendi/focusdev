@@ -67,8 +67,8 @@ function getPreviousRangeBounds(range: Range, now = new Date()) {
 
 function formatChange(current: number, previous: number, asPercent = true) {
   if (previous === 0) {
-    if (current === 0) return "0";
-    return asPercent ? "+100%" : `+${current}`;
+    if (current === 0) return "—";
+    return "new";
   }
   if (asPercent) {
     const pct = Math.round(((current - previous) / previous) * 100);
@@ -97,11 +97,12 @@ export async function GET(req: Request) {
     const range: Range =
       rangeParam === "month" || rangeParam === "year" ? rangeParam : "week";
     const projectId = searchParams.get("projectId") || undefined;
+    const includeCharts = searchParams.get("charts") !== "0";
 
     const now = new Date();
     const { start, end } = getRangeBounds(range, now);
     const prev = getPreviousRangeBounds(range, now);
-    const heatmapStart = subDays(startOfDay(now), 49);
+    const heatmapStart = includeCharts ? subDays(startOfDay(now), 49) : start;
 
     const sessionFilter: Record<string, unknown> = {
       userId: user.id,
@@ -120,13 +121,15 @@ export async function GET(req: Request) {
       return t >= prev.start && t <= prev.end;
     });
 
-    const heatmap = Array.from({ length: 50 }).map((_, i) => {
-      const date = subDays(startOfDay(now), 49 - i);
-      const daySessions = sessions.filter((s) =>
-        isSameDay(new Date(s.startTime), date)
-      );
-      return Math.min(daySessions.length, 4);
-    });
+    const heatmap = includeCharts
+      ? Array.from({ length: 50 }).map((_, i) => {
+          const date = subDays(startOfDay(now), 49 - i);
+          const daySessions = sessions.filter((s) =>
+            isSameDay(new Date(s.startTime), date)
+          );
+          return Math.min(daySessions.length, 4);
+        })
+      : [];
 
     const dayCount =
       range === "week" ? 7 : range === "month" ? differenceInCalendarDays(end, start) + 1 : 14;
@@ -137,8 +140,9 @@ export async function GET(req: Request) {
       height: string;
       minutes: number;
       color: string;
-    }[];
+    }[] = [];
 
+    if (includeCharts) {
     if (range === "year") {
       last7Days = Array.from({ length: 12 }).map((_, i) => {
         const monthDate = new Date(now.getFullYear(), i, 1);
@@ -196,6 +200,7 @@ export async function GET(req: Request) {
                 : "bg-primary/40",
         };
       });
+    }
     }
 
     const totalFocusMinutes = rangeSessions.reduce(
@@ -321,19 +326,23 @@ export async function GET(req: Request) {
       .sort((a, b) => b.focusMinutes - a.focusMinutes);
 
     const peakHours = (() => {
+      if (!includeCharts || rangeSessions.length === 0) return undefined;
       const hourBuckets = Array.from({ length: 24 }, () => 0);
       for (const s of rangeSessions) {
         hourBuckets[new Date(s.startTime).getHours()] += sessionMinutes(s);
       }
-      let peakStart = 10;
+      let peakStart = 0;
       let peakSum = 0;
+      let found = false;
       for (let h = 0; h <= 20; h++) {
         const sum = hourBuckets[h] + hourBuckets[h + 1] + hourBuckets[h + 2] + hourBuckets[h + 3];
         if (sum > peakSum) {
           peakSum = sum;
           peakStart = h;
+          found = true;
         }
       }
+      if (!found || peakSum === 0) return undefined;
       const fmt = (h: number) => {
         const ampm = h >= 12 ? "PM" : "AM";
         const hr = h % 12 || 12;
@@ -351,9 +360,10 @@ export async function GET(req: Request) {
       highlights: {
         bestDay: bestDayLabel,
         bestDayMinutes: Math.round(bestDayMinutes),
-        longestSession: formatMinutes(longestSessionMinutes),
+        longestSession:
+          longestSessionMinutes > 0 ? formatMinutes(longestSessionMinutes) : "—",
         longestSessionMinutes: Math.round(longestSessionMinutes),
-        focusScore,
+        focusScore: rangeSessions.length > 0 ? focusScore : undefined,
         peakHours,
       },
       summary: [
@@ -400,6 +410,7 @@ export async function GET(req: Request) {
         sessionsChange: formatChange(rangeSessions.length, prevSessions.length, false),
         tasksChange: formatChange(completedTasks, prevCompletedTasks, false),
       },
+      charts: includeCharts,
     });
   } catch (error) {
     console.error("Stats API error:", error);

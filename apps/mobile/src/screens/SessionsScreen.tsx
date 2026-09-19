@@ -5,6 +5,8 @@ import { Svg, Circle } from 'react-native-svg';
 import { Terminal, Calendar, Filter, Clock, Edit2, Bolt } from 'lucide-react-native';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { focusService } from '../services/focus';
+import { useAuthStore } from '../store/auth-store';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -40,6 +42,9 @@ function formatDuration(mins: number) {
 
 export default function SessionsScreen() {
   const { colors, isDark } = useAppTheme();
+  const navigation = useNavigation<any>();
+  const user = useAuthStore((s) => s.user);
+  const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase();
   const [days] = useState(getInitialDays);
   const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
   const [sessions, setSessions] = useState<any[]>([]);
@@ -82,11 +87,16 @@ export default function SessionsScreen() {
       <View style={[styles.header, { backgroundColor: colors.background }]}>
         <View style={styles.logoRow}>
           <Terminal color={colors.primary} size={24} />
-          <Text style={[styles.logoText, { color: colors.primary }]}>MONOLITH</Text>
+          <Text style={[styles.logoText, { color: colors.primary }]}>FocusDev</Text>
         </View>
-        <TouchableOpacity style={styles.profileBtn}>
+        <TouchableOpacity
+          style={styles.profileBtn}
+          onPress={() => navigation.navigate('Profile')}
+        >
           <Calendar color={colors.onSurfaceVariant} size={20} />
-          <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? '#2f3445' : '#e2e8f0' }]} />
+          <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? '#2f3445' : '#e2e8f0' }]}>
+            <Text style={{ color: colors.primary, fontFamily: 'Inter_700Bold', fontSize: 12 }}>{initial}</Text>
+          </View>
         </TouchableOpacity>
       </View>
 

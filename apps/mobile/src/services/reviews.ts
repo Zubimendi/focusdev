@@ -6,12 +6,14 @@ const getAuthHeaders = async () => {
   return { Authorization: `Bearer ${token}` };
 };
 
+export type PeriodType = 'week' | 'month';
+
 export const reviewsService = {
-  async getCurrentWeekly() {
+  async getCurrent(periodType: PeriodType = 'week') {
     const headers = await getAuthHeaders();
     const response = await api.get('/reviews', {
       headers,
-      params: { periodType: 'week', current: 'true' },
+      params: { periodType, current: 'true' },
     });
     return response.data as {
       review: {
@@ -29,7 +31,7 @@ export const reviewsService = {
         }>;
         wins?: string;
         blockers?: string;
-        nextFocus?: string;
+        nextPeriodGoals?: string;
       };
       goals: Array<{ id: string; title: string; status: string }>;
       period: { start: string; end: string };

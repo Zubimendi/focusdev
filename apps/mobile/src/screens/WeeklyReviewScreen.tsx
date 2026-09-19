@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Calendar, Target } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAppTheme } from '../hooks/useAppTheme';
-import { reviewsService } from '../services/reviews';
+import { reviewsService, type PeriodType } from '../services/reviews';
 
 function formatMinutes(m: number) {
   const h = Math.floor(m / 60);
@@ -21,16 +21,20 @@ function formatMinutes(m: number) {
   return min > 0 ? `${h}h ${min}m` : `${h}h`;
 }
 
-export default function WeeklyReviewScreen() {
-  const navigation = useNavigation();
-  const { colors, isDark } = useAppTheme();
+export default function PeriodReviewScreen() {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const periodType: PeriodType = route.params?.periodType === 'month' ? 'month' : 'week';
+  const isMonth = periodType === 'month';
+  const title = isMonth ? 'Monthly review' : 'Weekly review';
+  const { colors } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [data, setData] = useState<Awaited<ReturnType<typeof reviewsService.getCurrentWeekly>> | null>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof reviewsService.getCurrent>> | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const res = await reviewsService.getCurrentWeekly();
+      const res = await reviewsService.getCurrent(periodType);
       setData(res);
     } catch {
       setData(null);
@@ -38,9 +42,10 @@ export default function WeeklyReviewScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [periodType]);
 
   useEffect(() => {
+    setLoading(true);
     load();
   }, [load]);
 
@@ -52,14 +57,24 @@ export default function WeeklyReviewScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <ArrowLeft size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.onSurface }]}>Weekly review</Text>
-        <View style={{ width: 32 }} />
+        <Text style={[styles.title, { color: colors.onSurface }]}>{title}</Text>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.replace('PeriodReview', { periodType: isMonth ? 'week' : 'month' })
+          }
+        >
+          <Text style={[styles.switchLink, { color: colors.primary }]}>
+            {isMonth ? 'Week' : 'Month'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
         <ActivityIndicator style={{ marginTop: 40 }} color={colors.primary} />
       ) : !review ? (
-        <Text style={[styles.empty, { color: colors.onSurfaceVariant }]}>Couldn’t load this week’s review.</Text>
+        <Text style={[styles.empty, { color: colors.onSurfaceVariant }]}>
+          Couldn’t load this {isMonth ? 'month' : 'week'}’s review.
+        </Text>
       ) : (
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -72,7 +87,9 @@ export default function WeeklyReviewScreen() {
             <Text style={[styles.periodText, { color: colors.onSurfaceVariant }]}>
               {data?.period?.start
                 ? `${new Date(data.period.start).toLocaleDateString()} – ${new Date(data.period.end).toLocaleDateString()}`
-                : 'This week'}
+                : isMonth
+                  ? 'This month'
+                  : 'This week'}
             </Text>
           </View>
 
@@ -136,6 +153,7 @@ const styles = StyleSheet.create({
   },
   back: { padding: 4 },
   title: { fontSize: 20, fontFamily: 'Inter_900Black' },
+  switchLink: { fontSize: 13, fontFamily: 'Inter_700Bold' },
   scroll: { paddingHorizontal: 24, paddingBottom: 40 },
   empty: { textAlign: 'center', marginTop: 40, fontFamily: 'Inter_500Medium' },
   periodRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, marginBottom: 20 },

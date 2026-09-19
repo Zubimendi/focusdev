@@ -193,12 +193,18 @@ export const authService = {
     return SecureStore.getItemAsync("auth_token");
   },
 
-  async getMe(): Promise<{ user: AuthResponse["user"] }> {
+  async getMe(): Promise<{ user: AuthResponse["user"] & { preferences?: Record<string, unknown>; twoFactorEnabled?: boolean } }> {
     const headers = await authHeaders();
     const token = await SecureStore.getItemAsync("auth_token");
     if (!token) throw new Error("Not signed in");
 
     const response = await api.get("/auth/me", { headers });
+    return response.data;
+  },
+
+  async updatePreferences(preferences: Record<string, unknown>) {
+    const headers = await authHeaders();
+    const response = await api.patch("/auth/me", { preferences }, { headers });
     return response.data;
   },
 };

@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const timerDuration = useSettingsStore(state => state.timerDuration);
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [allSessions, setAllSessions] = useState<any[]>([]);
-  const [tags, setTags] = useState<string[]>(['Coding', 'Learning', 'Building']);
+  const [tags, setTags] = useState<string[]>([]);
   const [timerSeconds, setTimerSeconds] = useState(timerDuration * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -79,11 +79,10 @@ export default function HomeScreen() {
       
       const dynamicTags = [
         ...new Set([
-          ...(pRes.projects?.map((p: any) => p.name) || []),
-          ...(gRes.goals?.map((g: any) => g.title) || []),
-          'Coding', 'Learning', 'Building'
-        ])
-      ].slice(0, 8);
+          ...(pRes.projects?.map((p: { name?: string }) => p.name).filter(Boolean) || []),
+          ...(gRes.goals?.map((g: { title?: string }) => g.title).filter(Boolean) || []),
+        ]),
+      ].slice(0, 8) as string[];
       setTags(dynamicTags);
     } catch (error) {
       console.error('Failed to fetch data', error);
@@ -154,7 +153,7 @@ export default function HomeScreen() {
             <View style={[styles.header, { backgroundColor: colors.background }]}>
               <View style={styles.logoRow}>
                 <Terminal color={colors.primary} size={24} />
-                <Text style={[styles.headerTitle, { color: colors.primary }]}>MONOLITH</Text>
+                <Text style={[styles.headerTitle, { color: colors.primary }]}>FocusDev</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 12 }}>
                 <TouchableOpacity
@@ -179,11 +178,22 @@ export default function HomeScreen() {
             >
               <View style={styles.welcomeSection}>
                 <View>
-                  <Text style={[styles.welcomeLabel, { color: colors.onSurfaceVariant }]}>GOOD MORNING, DEVELOPER</Text>
-                  <Text style={[styles.welcomeTitle, { color: colors.onSurface }]}>{user?.name?.split(' ')[0] || 'Member'}</Text>
+                  <Text style={[styles.welcomeLabel, { color: colors.onSurfaceVariant }]}>
+                    {(() => {
+                      const h = new Date().getHours();
+                      if (h < 12) return 'GOOD MORNING';
+                      if (h < 18) return 'GOOD AFTERNOON';
+                      return 'GOOD EVENING';
+                    })()}
+                  </Text>
+                  <Text style={[styles.welcomeTitle, { color: colors.onSurface }]}>
+                    {user?.name?.split(' ')[0] || 'Welcome'}
+                  </Text>
                 </View>
                 <View style={[styles.streakBadge, { backgroundColor: isDark ? 'rgba(255, 185, 95, 0.1)' : '#ffedd5', borderColor: isDark ? 'rgba(255, 185, 95, 0.2)' : '#fed7aa' }]}>
-                  <Text style={[styles.streakText, { color: isDark ? '#ffb95f' : '#ea580c' }]}>{calculateStreak(allSessions)} DAY STREAK 🔥</Text>
+                  <Text style={[styles.streakText, { color: isDark ? '#ffb95f' : '#ea580c' }]}>
+                    {calculateStreak(allSessions)} day streak
+                  </Text>
                 </View>
               </View>
 
@@ -228,6 +238,7 @@ export default function HomeScreen() {
                   onChangeText={setTaskTitle}
                   editable={!isActive}
                 />
+                {tags.length > 0 && (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagStrip}>
                   {tags.map((tag) => (
                     <TouchableOpacity key={tag} style={[styles.tag, { backgroundColor: isDark ? '#232a3d' : '#f1f5f9' }]} onPress={() => !isActive && setTaskTitle(tag)}>
@@ -235,6 +246,7 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
+                )}
 
                 <View style={styles.buttonRow}>
                   <TouchableOpacity 
@@ -266,9 +278,13 @@ export default function HomeScreen() {
                   <FileText size={16} color={colors.primary} />
                   <Text style={[styles.quickLinkText, { color: colors.onSurface }]}>Notes</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.surface }]} onPress={() => navigation.navigate('WeeklyReview')}>
+                <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.surface }]} onPress={() => navigation.navigate('PeriodReview', { periodType: 'week' })}>
                   <CalendarDays size={16} color={colors.primary} />
                   <Text style={[styles.quickLinkText, { color: colors.onSurface }]}>Weekly review</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.surface }]} onPress={() => navigation.navigate('PeriodReview', { periodType: 'month' })}>
+                  <CalendarDays size={16} color={colors.primary} />
+                  <Text style={[styles.quickLinkText, { color: colors.onSurface }]}>Monthly</Text>
                 </TouchableOpacity>
               </View>
 

@@ -39,6 +39,8 @@ export default function SettingsPage() {
     setTimerDuration,
     notificationSound,
     setNotificationSound,
+    showCharts,
+    setShowCharts,
   } = useSettingsStore();
 
   const [activeTab, setActiveTab] = useState<string>("Profile");
@@ -92,6 +94,7 @@ export default function SettingsPage() {
       if (typeof p.timerDuration === "number") setTimerDuration(p.timerDuration);
       if (typeof p.notificationSound === "string")
         setNotificationSound(p.notificationSound);
+      if (typeof p.showCharts === "boolean") setShowCharts(p.showCharts);
       setNotifPrefs({
         notifyReviewDue: p.notifyReviewDue !== false,
         notifyStreakRisk: p.notifyStreakRisk !== false,
@@ -102,7 +105,7 @@ export default function SettingsPage() {
     } catch {
       /* ignore */
     }
-  }, [setTheme, setTimerDuration, setNotificationSound]);
+  }, [setTheme, setTimerDuration, setNotificationSound, setShowCharts]);
 
   useEffect(() => {
     if (session?.user) {
@@ -157,6 +160,7 @@ export default function SettingsPage() {
             theme,
             timerDuration: localTimer,
             notificationSound,
+            showCharts,
           },
         }),
       });
@@ -619,6 +623,40 @@ export default function SettingsPage() {
               </select>
             </div>
 
+            <div className="space-y-3">
+              <label className="text-xs font-medium text-on-surface-variant">
+                Performance charts
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showCharts}
+                onClick={() => setShowCharts(!showCharts)}
+                className={`flex items-center justify-between w-full h-11 px-3 rounded-md border border-[var(--border)] bg-surface-container-lowest text-left`}
+              >
+                <span className="text-sm text-on-surface">
+                  {showCharts
+                    ? "On — Stats loads charts and GitHub activity"
+                    : "Off — Stats shows numbers only (faster)"}
+                </span>
+                <span
+                  className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${
+                    showCharts ? "bg-primary" : "bg-surface-container-high"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                      showCharts ? "left-4" : "left-0.5"
+                    }`}
+                  />
+                </span>
+              </button>
+              <p className="text-xs text-on-surface-variant">
+                Turn off to skip heatmap, trend charts, and GitHub activity
+                fetches on Stats.
+              </p>
+            </div>
+
             <Button onClick={savePreferences} loading={savingPrefs}>
               Save preferences
             </Button>
@@ -630,8 +668,8 @@ export default function SettingsPage() {
         <Panel>
           {notifToggle(
             "notifyReviewDue",
-            "Weekly review reminders",
-            "Nudge when it is time to close the week."
+            "Weekly & monthly review reminders",
+            "Nudge when it is time to close the week or month."
           )}
           {notifToggle(
             "notifyStreakRisk",

@@ -108,7 +108,7 @@ export default function RegisterForm() {
           label="Full name"
           id="name"
           type="text"
-          placeholder="Jane Doe"
+          placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -116,7 +116,7 @@ export default function RegisterForm() {
           label="Email"
           id="email"
           type="email"
-          placeholder="you@company.com"
+          placeholder="you@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

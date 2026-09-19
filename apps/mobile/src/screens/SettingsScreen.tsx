@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Moon, Sun, Clock, Bell, Shield, Lock } from "lucide-react-native";
+import { ArrowLeft, Moon, Sun, Clock, Bell, Shield, Lock, BarChart3 } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useSettingsStore } from "../store/settings-store";
@@ -28,11 +28,32 @@ export default function SettingsScreen() {
     setTimerDuration,
     notificationSound,
     setNotificationSound,
+    showCharts,
+    setShowCharts,
   } = useSettingsStore();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+
+  useEffect(() => {
+    authService
+      .getMe()
+      .then((res) => {
+        const p = (res.user as { preferences?: { showCharts?: boolean } })?.preferences;
+        if (typeof p?.showCharts === "boolean") setShowCharts(p.showCharts);
+      })
+      .catch(() => undefined);
+  }, [setShowCharts]);
+
+  const toggleCharts = async (next: boolean) => {
+    setShowCharts(next);
+    try {
+      await authService.updatePreferences({ showCharts: next });
+    } catch {
+      /* local preference still applies */
+    }
+  };
 
   const handleChangePassword = async () => {
     setChangingPassword(true);
@@ -140,6 +161,26 @@ export default function SettingsScreen() {
                 )}
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Performance</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => toggleCharts(!showCharts)}
+            >
+              <BarChart3 size={20} color={showCharts ? colors.primary : colors.onSurfaceVariant} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowText, { color: colors.onSurface }]}>
+                  Stats charts {showCharts ? "on" : "off"}
+                </Text>
+                <Text style={[styles.securityNote, { paddingHorizontal: 0, paddingBottom: 0, paddingTop: 4 }]}>
+                  When off, Stats skips heatmap and trend fetches.
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 

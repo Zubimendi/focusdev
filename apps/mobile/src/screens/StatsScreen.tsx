@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Timer, BarChart4, TrendingUp, Award, Star, CheckCircle } from 'lucide-react-native';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { focusService } from '../services/focus';
+import { useSettingsStore } from '../store/settings-store';
 import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
@@ -19,6 +20,7 @@ function heatmapLevel(val: number, isDark: boolean) {
 export default function StatsScreen() {
   const { colors, isDark } = useAppTheme();
   const navigation = useNavigation<any>();
+  const showCharts = useSettingsStore((s) => s.showCharts);
   const [range, setRange] = useState<'week' | 'month'>('week');
   const [data, setData] = useState<StatsPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ export default function StatsScreen() {
 
   const load = useCallback(async () => {
     try {
-      const stats = await focusService.getStats(range);
+      const stats = await focusService.getStats(range, showCharts);
       setData(stats);
     } catch {
       setData(null);
@@ -34,14 +36,15 @@ export default function StatsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [range]);
+  }, [range, showCharts]);
 
   useEffect(() => {
     setLoading(true);
     load();
   }, [load]);
 
-  const summary = data?.summary ?? [];
+  const summary: Array<{ label: string; value: string; change?: string }> =
+    data?.summary ?? [];
   const icons = [Timer, BarChart4, CheckCircle, TrendingUp];
 
   const heatmapRows = 7;
@@ -59,14 +62,25 @@ export default function StatsScreen() {
     }
   }
 
-  const barData = data?.last7Days ?? [];
-  const byProject = data?.byProject ?? [];
-  const totalProjectMinutes = byProject.reduce((a, p) => a + (p.focusMinutes || 0), 0) || 1;
-  const allocation = byProject.slice(0, 5).map((p) => ({
-    label: p.name,
-    pct: `${Math.round(((p.focusMinutes || 0) / totalProjectMinutes) * 100)}%`,
-    color: p.color || colors.primary,
-  }));
+  const barData: Array<{ day: string; height: string; minutes?: number }> =
+    data?.last7Days ?? [];
+  const byProject: Array<{
+    name: string;
+    color?: string;
+    focusMinutes?: number;
+  }> = data?.byProject ?? [];
+  const totalProjectMinutes =
+    byProject.reduce(
+      (a: number, p: { focusMinutes?: number }) => a + (p.focusMinutes || 0),
+      0
+    ) || 1;
+  const allocation = byProject.slice(0, 5).map(
+    (p: { name: string; color?: string; focusMinutes?: number }) => ({
+      label: p.name,
+      pct: `${Math.round(((p.focusMinutes || 0) / totalProjectMinutes) * 100)}%`,
+      color: p.color || colors.primary,
+    })
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -82,9 +96,14 @@ export default function StatsScreen() {
             <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>PERFORMANCE HUB</Text>
             <Text style={[styles.title, { color: colors.onSurface }]}>Your Progress</Text>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('WeeklyReview')}>
-            <Text style={[styles.reviewLink, { color: colors.primary }]}>Weekly review →</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => navigation.navigate('PeriodReview', { periodType: 'week' })}>
+              <Text style={[styles.reviewLink, { color: colors.primary }]}>Week</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('PeriodReview', { periodType: 'month' })}>
+              <Text style={[styles.reviewLink, { color: colors.primary }]}>Month</Text>
+            </TouchableOpacity>
+          </View>
           <View style={[styles.rangeToggle, { backgroundColor: colors.surface }]}>
             <TouchableOpacity 
               onPress={() => setRange('week')}
@@ -106,7 +125,11 @@ export default function StatsScreen() {
         ) : (
           <>
             <View style={styles.statGrid}>
-              {summary.map((s, i) => {
+              {summary.length === 0 ? (
+                <Text style={{ color: colors.onSurfaceVariant, fontFamily: 'Inter_500Medium', paddingVertical: 24 }}>
+                  No performance data yet. Start a focus session to begin tracking.
+                </Text>
+              ) : summary.map((s, i) => {
                 const Icon = icons[i] || Timer;
                 const valueColor = s.label === 'Current Streak' ? '#ffb95f' : undefined;
                 return (
@@ -115,7 +138,7 @@ export default function StatsScreen() {
                     <View>
                       <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{s.label.toUpperCase()}</Text>
                       <Text style={[styles.statValue, { color: colors.onSurface }, valueColor ? { color: valueColor } : {}]}>{s.value}</Text>
-                      {!!s.change && (
+                      {!!s.change && s.change !== '—' && (
                         <Text style={[styles.statChange, { color: colors.onSurfaceVariant }]}>{s.change}</Text>
                       )}
                     </View>
@@ -124,6 +147,13 @@ export default function StatsScreen() {
               })}
             </View>
 
+            {!showCharts && (
+              <Text style={{ color: colors.onSurfaceVariant, fontSize: 12, fontFamily: 'Inter_500Medium', marginTop: 16 }}>
+                Charts are off. Enable them in Settings to load trends.
+              </Text>
+            )}
+
+            {showCharts && heatmapGrid.length > 0 && data?.heatmap?.some((v: number) => v > 0) && (
             <View style={[styles.heatmapSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
               <View style={styles.sectionTitleRow}>
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Activity Density</Text>
@@ -146,7 +176,9 @@ export default function StatsScreen() {
                 </View>
               </ScrollView>
             </View>
+            )}
 
+            {showCharts && barData.some((b: { minutes?: number }) => (b.minutes || 0) > 0) && (
             <View style={[styles.intensitySection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
               <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Daily Intensity</Text>
               <View style={styles.chartContainer}>
@@ -158,8 +190,9 @@ export default function StatsScreen() {
                 ))}
               </View>
             </View>
+            )}
 
-            {allocation.length > 0 && (
+            {showCharts && allocation.length > 0 && (
               <View style={[styles.allocationSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Focus by project</Text>
                 <View style={[styles.allocationBar, { backgroundColor: colors.background }]}>
@@ -181,6 +214,7 @@ export default function StatsScreen() {
               </View>
             )}
 
+            {showCharts && (
             <View style={styles.highlightsGrid}>
               <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.1)' : '#ecfdf5' }]}>
                 <View style={styles.highlightIcon}>
@@ -205,6 +239,7 @@ export default function StatsScreen() {
                 </View>
               </View>
             </View>
+            )}
           </>
         )}
       </ScrollView>

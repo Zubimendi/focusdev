@@ -30,11 +30,16 @@ const STEPS: {
     body: "Reflect on wins and blockers once a week to stay aligned.",
     target: '[data-tour="nav-reviews"]',
   },
-  {
-    title: "Goal-linked GitHub commits",
-    body: "Link a repo on a project, add a goal tag, then commit with [fd:tag] so pushes count toward that goal.",
-    target: '[data-tour="nav-projects"]',
-  },
+    {
+      title: "Goal-linked GitHub commits",
+      body: "Link a repo on a project, add a goal tag, then commit with [fd:tag] so pushes count toward that goal.",
+      target: '[data-tour="nav-projects"]',
+    },
+    {
+      title: "Weekly and monthly reviews",
+      body: "Close each week and month with real metrics and a short reflection — your personal PMS.",
+      target: '[data-tour="nav-reviews"]',
+    },
   {
     title: "Secure your account",
     body: "2FA is optional — set it up anytime in Settings when you want extra protection.",

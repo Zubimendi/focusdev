@@ -90,8 +90,8 @@ export default function GoalsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>DEVELOPER EXECUTION</Text>
-            <Text style={[styles.title, { color: colors.onSurface }]}>Checklists 🔥</Text>
+            <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>TASKS & GOALS</Text>
+            <Text style={[styles.title, { color: colors.onSurface }]}>Checklists</Text>
           </View>
           <View style={styles.percentageContainer}>
             <Text style={[styles.pctText, { color: colors.primary }]}>{pct}%</Text>
@@ -117,7 +117,20 @@ export default function GoalsScreen() {
               <View key={goal.id || i} style={[styles.goalCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                 <Text style={[styles.goalTitle, { color: colors.onSurface }]}>{goal.title}</Text>
                 <View style={[styles.goalProgressContainer, { backgroundColor: colors.outlineVariant }]}>
-                  <View style={[styles.goalProgressBar, { width: goal.status === 'met' ? '100%' : '30%', backgroundColor: colors.primary }]} />
+                  <View
+                    style={[
+                      styles.goalProgressBar,
+                      {
+                        width:
+                          goal.status === "met"
+                            ? "100%"
+                            : goal.targetValue
+                              ? `${Math.min(100, Math.round(((goal.currentValue || 0) / goal.targetValue) * 100))}%`
+                              : "0%",
+                        backgroundColor: colors.primary,
+                      },
+                    ]}
+                  />
                 </View>
               </View>
             ))}

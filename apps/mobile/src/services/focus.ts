@@ -31,11 +31,11 @@ export const focusService = {
     return { sessions };
   },
 
-  async getStats(range: 'week' | 'month' | 'year' = 'week') {
+  async getStats(range: 'week' | 'month' | 'year' = 'week', charts = true) {
     const headers = await getAuthHeaders();
     const response = await api.get('/focus/stats', {
       headers,
-      params: { range },
+      params: { range, charts: charts ? '1' : '0' },
     });
     return response.data;
   },

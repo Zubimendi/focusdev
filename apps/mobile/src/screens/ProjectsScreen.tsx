@@ -108,7 +108,7 @@ export default function ProjectsScreen() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={[styles.label, { color: colors.primary }]}>DEVELOPER WORKSPACE</Text>
+            <Text style={[styles.label, { color: colors.primary }]}>WORKSPACE</Text>
             <Text style={[styles.title, { color: colors.onSurface }]}>Project Focus</Text>
           </View>
           <TouchableOpacity

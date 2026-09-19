@@ -76,6 +76,7 @@ export const UserPreferencesSchema = z.object({
   notifyGoalUpdates: z.boolean().optional(),
   notifyHabitDue: z.boolean().optional(),
   notifySecurity: z.boolean().optional(),
+  showCharts: z.boolean().optional(),
 });
 
 export type UserPreferences = z.infer<typeof UserPreferencesSchema>;

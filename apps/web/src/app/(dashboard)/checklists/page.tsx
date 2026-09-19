@@ -25,8 +25,11 @@ interface Project {
 
 interface Goal {
   _id: string;
+  id?: string;
   title: string;
   status: string;
+  targetValue?: number;
+  currentValue?: number;
 }
 
 export default function ChecklistsPage() {
@@ -176,14 +179,31 @@ export default function ChecklistsPage() {
               {goals.length === 0 ? (
                 <p className="text-sm text-outline italic">No active goals. Set direction in the Projects hub.</p>
               ) : (
-                goals.map(goal => (
-                  <div key={goal._id} className="p-4 bg-surface-container rounded-lg border border-outline-variant/20">
+                goals.map((goal) => {
+                  const pct =
+                    goal.status === "met"
+                      ? 100
+                      : goal.targetValue
+                        ? Math.min(
+                            100,
+                            Math.round(
+                              ((goal.currentValue || 0) / goal.targetValue) *
+                                100
+                            )
+                          )
+                        : 0;
+                  return (
+                  <div key={goal._id || goal.id} className="p-4 bg-surface-container rounded-lg border border-outline-variant/20">
                     <p className="text-sm font-bold text-on-surface mb-2">{goal.title}</p>
                     <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-[30%]"></div>
+                      <div
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </Panel>
