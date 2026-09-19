@@ -14,7 +14,10 @@ export async function POST(req: Request) {
     if (!validation.success) {
       console.log(`[auth/register] ✕ 400 invalid input`, validation.error.flatten());
       return NextResponse.json(
-        { error: "Invalid input. Check name, email, and password (min 8 chars).", details: validation.error.format() },
+        {
+          error:
+            "Invalid input. Use a strong password (10+ chars with upper, lower, number, special).",
+        },
         { status: 400 }
       );
     }

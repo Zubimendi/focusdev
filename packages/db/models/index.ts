@@ -4,3 +4,7 @@ export * from "./focus-session";
 export * from "./project";
 export * from "./goal";
 export * from "./review";
+export * from "./notification";
+export * from "./note";
+export * from "./habit";
+export * from "./git-contribution";

@@ -26,8 +26,17 @@ export const focusService = {
     const response = await api.get('/focus/sessions', { headers });
     const sessions = (response.data.sessions || []).map((s: any) => ({
       ...s,
-      id: s._id || s.id
+      id: s._id || s.id,
     }));
     return { sessions };
-  }
+  },
+
+  async getStats(range: 'week' | 'month' | 'year' = 'week') {
+    const headers = await getAuthHeaders();
+    const response = await api.get('/focus/stats', {
+      headers,
+      params: { range },
+    });
+    return response.data;
+  },
 };

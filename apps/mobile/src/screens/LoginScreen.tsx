@@ -16,7 +16,11 @@ export default function LoginScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const login = useAuthStore((state: any) => state.login);
+  const verify2FA = useAuthStore((state: any) => state.verify2FA);
   const isLoading = useAuthStore((state: any) => state.isLoading);
+  const [needs2FA, setNeeds2FA] = useState(false);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [totpCode, setTotpCode] = useState('');
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -28,8 +32,38 @@ export default function LoginScreen({ navigation }: any) {
       return;
     }
 
+    if (needs2FA) {
+      if (totpCode.length !== 6 || !pendingToken) {
+        Toast.show({
+          type: 'error',
+          text1: 'Verification code',
+          text2: 'Enter the 6-digit code from your authenticator app.',
+        });
+        return;
+      }
+      try {
+        await verify2FA(pendingToken, totpCode);
+        Toast.show({ type: 'success', text1: 'Welcome back', text2: 'You’re signed in.' });
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'Invalid verification code.';
+        Toast.show({ type: 'error', text1: 'Verification failed', text2: message });
+      }
+      return;
+    }
+
     try {
-      await login({ email: email.trim().toLowerCase(), password });
+      const result = await login({ email: email.trim().toLowerCase(), password });
+      if (result.requires2FA && result.pendingToken) {
+        setNeeds2FA(true);
+        setPendingToken(result.pendingToken);
+        Toast.show({
+          type: 'success',
+          text1: 'Two-factor auth',
+          text2: 'Enter the code from your authenticator app.',
+        });
+        return;
+      }
       Toast.show({
         type: 'success',
         text1: 'Welcome back',
@@ -75,8 +109,14 @@ export default function LoginScreen({ navigation }: any) {
                 <View style={[styles.logoContainer, { backgroundColor: colors.surface, borderColor: isDark ? colors.primary + '33' : colors.outlineVariant }]}>
                   <Terminal color={colors.primary} size={32} strokeWidth={2.5} />
                 </View>
-                <Text style={[styles.title, { color: colors.onSurface }]}>Welcome back</Text>
-                <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Resume your deep work sessions.</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]}>
+                  {needs2FA ? 'Verify it’s you' : 'Welcome back'}
+                </Text>
+                <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+                  {needs2FA
+                    ? 'Enter the 6-digit code from your authenticator app.'
+                    : 'Resume your deep work sessions.'}
+                </Text>
               </View>
 
               <View style={styles.form}>
@@ -96,33 +136,65 @@ export default function LoginScreen({ navigation }: any) {
                   </View>
                 </View>
 
-                <View style={styles.inputWrapper}>
-                  <Text style={[styles.inputLabel, { color: colors.primary }]}>PASSWORD</Text>
-                  <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-                    <Lock color={colors.primary} size={18} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: colors.onSurface }]}
-                      placeholder="••••••••"
-                      placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                    />
-                    <TouchableOpacity 
-                      onPress={() => setShowPassword(!showPassword)}
-                      style={styles.eyeIcon}
+                {!needs2FA && (
+                  <View style={styles.inputWrapper}>
+                    <Text style={[styles.inputLabel, { color: colors.primary }]}>PASSWORD</Text>
+                    <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                      <Lock color={colors.primary} size={18} style={styles.inputIcon} />
+                      <TextInput
+                        style={[styles.input, { color: colors.onSurface }]}
+                        placeholder="••••••••"
+                        placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                      />
+                      <TouchableOpacity 
+                        onPress={() => setShowPassword(!showPassword)}
+                        style={styles.eyeIcon}
+                      >
+                        {showPassword ? (
+                          <EyeOff color={colors.onSurfaceVariant} size={20} />
+                        ) : (
+                          <Eye color={colors.onSurfaceVariant} size={20} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.forgotPassword}
+                      onPress={() => navigation.navigate('ForgotPassword')}
                     >
-                      {showPassword ? (
-                        <EyeOff color={colors.onSurfaceVariant} size={20} />
-                      ) : (
-                        <Eye color={colors.onSurfaceVariant} size={20} />
-                      )}
+                      <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>Forgot Password?</Text>
                     </TouchableOpacity>
                   </View>
-                  <TouchableOpacity style={styles.forgotPassword}>
-                    <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>Forgot Password?</Text>
-                  </TouchableOpacity>
-                </View>
+                )}
+
+                {needs2FA && (
+                  <View style={styles.inputWrapper}>
+                    <Text style={[styles.inputLabel, { color: colors.primary }]}>AUTHENTICATOR CODE</Text>
+                    <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                      <TextInput
+                        style={[styles.input, { color: colors.onSurface, letterSpacing: 4 }]}
+                        placeholder="000000"
+                        placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+                        value={totpCode}
+                        onChangeText={(t) => setTotpCode(t.replace(/\D/g, '').slice(0, 6))}
+                        keyboardType="number-pad"
+                        maxLength={6}
+                      />
+                    </View>
+                    <TouchableOpacity
+                      style={styles.forgotPassword}
+                      onPress={() => {
+                        setNeeds2FA(false);
+                        setPendingToken(null);
+                        setTotpCode('');
+                      }}
+                    >
+                      <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>Use a different account</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
                 <TouchableOpacity 
                   activeOpacity={0.85} 
@@ -137,7 +209,7 @@ export default function LoginScreen({ navigation }: any) {
                     style={styles.button}
                   >
                     <Text style={[styles.buttonText, { color: '#ffffff' }]}>
-                      {isLoading ? 'Verifying...' : 'Authenticate'}
+                      {isLoading ? 'Verifying...' : needs2FA ? 'Verify code' : 'Authenticate'}
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>

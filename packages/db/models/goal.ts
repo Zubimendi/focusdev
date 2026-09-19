@@ -12,6 +12,9 @@ export interface IGoal extends Document {
   targetValue?: number;
   currentValue?: number;
   unit?: string;
+  isNorthStar?: boolean;
+  /** Short slug used in commit messages: [fd:commitTag] */
+  commitTag?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +32,8 @@ const GoalSchema = new Schema<IGoal>(
     targetValue: { type: Number },
     currentValue: { type: Number },
     unit: { type: String },
+    isNorthStar: { type: Boolean, default: false },
+    commitTag: { type: String, trim: true, lowercase: true },
   },
   { timestamps: true }
 );
@@ -36,5 +41,6 @@ const GoalSchema = new Schema<IGoal>(
 GoalSchema.index({ userId: 1 });
 GoalSchema.index({ projectId: 1 });
 GoalSchema.index({ userId: 1, periodType: 1, periodStart: 1 });
+GoalSchema.index({ userId: 1, commitTag: 1 });
 
 export const GoalModel = mongoose.models.Goal || mongoose.model<IGoal>("Goal", GoalSchema);

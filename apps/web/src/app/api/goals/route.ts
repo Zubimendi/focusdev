@@ -3,6 +3,10 @@ import { connectToDatabase } from "@focus/db";
 import { GoalModel } from "@focus/db/models";
 import { GoalSchema } from "@focus/shared";
 import { getAuthenticatedUser } from "@/lib/auth-middleware";
+import {
+  slugifyCommitTag,
+  uniqueCommitTag,
+} from "@/lib/github-goal-tags";
 
 export async function GET(req: Request) {
   try {
@@ -43,11 +47,30 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
     const data = validation.data;
+
+    const existingTags = (
+      await GoalModel.find({ userId: user.id, commitTag: { $exists: true } }).select(
+        "commitTag"
+      )
+    )
+      .map((g) => g.commitTag)
+      .filter(Boolean) as string[];
+
+    const rawTag =
+      data.commitTag ||
+      (data.projectId ? slugifyCommitTag(data.title) : undefined);
+    const commitTag = rawTag
+      ? uniqueCommitTag(rawTag, existingTags)
+      : undefined;
+
     const goal = await GoalModel.create({
       ...data,
+      commitTag,
       userId: user.id,
       targetDate: data.targetDate ? new Date(data.targetDate) : undefined,
       periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
+      unit: data.unit || (commitTag ? "commits" : undefined),
+      currentValue: data.currentValue ?? 0,
     });
 
     return NextResponse.json(

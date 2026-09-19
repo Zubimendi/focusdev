@@ -31,6 +31,11 @@ export const GoalSchema = z.object({
   targetValue: z.number().optional(),
   currentValue: z.number().optional(),
   unit: z.string().optional(),
+  /** Short slug for commit messages: [fd:commitTag] */
+  commitTag: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9-]{0,47}$/, "Use lowercase letters, numbers, and hyphens")
+    .optional(),
 });
 
 export const ReviewReflectionSchema = z.object({

@@ -42,6 +42,11 @@ interface StatsData {
   heatmap?: number[];
   highlights?: StatsHighlights;
   byProject?: ProjectBreakdown[];
+  weekOverWeek?: {
+    focusMinutesChange?: string;
+    sessionsChange?: string;
+    tasksChange?: string;
+  };
 }
 
 interface DevActivity {
@@ -51,6 +56,8 @@ interface DevActivity {
   message: string;
   timestamp: string;
   count?: number;
+  commitTag?: string;
+  attributed?: boolean;
 }
 
 export default function StatsPage() {
@@ -125,6 +132,23 @@ export default function StatsPage() {
           </div>
         }
       />
+
+      {data?.weekOverWeek && (
+        <Panel className="flex flex-wrap gap-6 text-sm">
+          <div>
+            <p className="text-xs text-on-surface-variant mb-0.5">vs prior period</p>
+            <p className="font-medium text-on-surface">Focus {data.weekOverWeek.focusMinutesChange}</p>
+          </div>
+          <div>
+            <p className="text-xs text-on-surface-variant mb-0.5">Sessions</p>
+            <p className="font-medium text-on-surface">{data.weekOverWeek.sessionsChange}</p>
+          </div>
+          <div>
+            <p className="text-xs text-on-surface-variant mb-0.5">Tasks done</p>
+            <p className="font-medium text-on-surface">{data.weekOverWeek.tasksChange}</p>
+          </div>
+        </Panel>
+      )}
 
       <section className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${loading ? "opacity-60" : ""}`}>
         {stats.map((s, i) => (
@@ -328,7 +352,7 @@ export default function StatsPage() {
             Latest dev activity
           </h2>
           <p className="text-xs text-on-surface-variant mt-1">
-            Recent commits and pull requests from linked repositories
+            Recent commits and PRs — tags like [fd:goal] attribute work to project goals
           </p>
         </div>
 
@@ -355,8 +379,14 @@ export default function StatsPage() {
                     <h4 className="font-bold text-on-surface group-hover:text-primary transition-colors">
                       {act.message}
                     </h4>
-                    <p className="text-xs text-on-surface-variant font-mono">
-                      {act.repo}
+                    <p className="text-xs text-on-surface-variant font-mono flex flex-wrap gap-x-2 gap-y-1 mt-0.5">
+                      <span>{act.repo}</span>
+                      {act.commitTag && (
+                        <span className="text-primary">[fd:{act.commitTag}]</span>
+                      )}
+                      {act.attributed && (
+                        <span className="text-secondary font-sans">attributed</span>
+                      )}
                     </p>
                   </div>
                 </div>

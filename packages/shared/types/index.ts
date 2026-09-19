@@ -68,6 +68,25 @@ export interface Goal {
   targetValue?: number;
   currentValue?: number;
   unit?: string;
+  isNorthStar?: boolean;
+  /** Short slug used in commit messages: [fd:commitTag] */
+  commitTag?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GitContribution {
+  id: string;
+  userId: string;
+  projectId: string;
+  goalId: string;
+  repoFullName: string;
+  sha: string;
+  message: string;
+  htmlUrl?: string;
+  committedAt: string;
+  source: "push" | "pull_request";
+  commitTag: string;
   createdAt: string;
   updatedAt: string;
 }

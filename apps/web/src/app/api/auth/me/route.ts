@@ -2,11 +2,32 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-utils";
 import { connectToDatabase } from "@focus/db";
 import { UserModel } from "@focus/db/models";
+import type { IUserPreferences } from "@focus/db/models/user";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET environment variable is required");
+}
+
+function serializeUser(user: {
+  _id: { toString(): string };
+  email: string;
+  name?: string;
+  image?: string;
+  onboardingCompletedAt?: Date;
+  preferences?: IUserPreferences;
+  twoFactorEnabled?: boolean;
+}) {
+  return {
+    id: user._id.toString(),
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    onboardingCompletedAt: user.onboardingCompletedAt ?? null,
+    preferences: user.preferences ?? {},
+    twoFactorEnabled: Boolean(user.twoFactorEnabled),
+  };
 }
 
 async function resolveUserId(req: Request): Promise<string | null> {
@@ -31,27 +52,18 @@ async function resolveUserId(req: Request): Promise<string | null> {
 
 export async function GET(req: Request) {
   try {
-    const sessionUser = await getCurrentUser();
-    if (sessionUser) {
-      return NextResponse.json({ user: sessionUser }, { status: 200 });
+    const userId = await resolveUserId(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const authHeader = req.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET!) as { id: string };
-        await connectToDatabase();
-        const user = await UserModel.findById(decoded.id).select("-password");
-        if (user) {
-          return NextResponse.json({ user }, { status: 200 });
-        }
-      } catch (err) {
-        console.error("JWT verify failed:", err);
-      }
+    await connectToDatabase();
+    const user = await UserModel.findById(userId).select("-password");
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ user: serializeUser(user) }, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Me API error:", error.message);
@@ -71,10 +83,50 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const name = typeof body?.name === "string" ? body.name.trim() : "";
-    if (!name || name.length > 100) {
+    const update: Record<string, unknown> = {};
+
+    if (typeof body?.name === "string") {
+      const name = body.name.trim();
+      if (!name || name.length > 100) {
+        return NextResponse.json(
+          { error: "Name is required (1–100 characters)" },
+          { status: 400 }
+        );
+      }
+      update.name = name;
+    }
+
+    if (body?.onboardingCompleted === true) {
+      update.onboardingCompletedAt = new Date();
+    }
+
+    if (body?.preferences && typeof body.preferences === "object") {
+      const prefs = body.preferences as Record<string, unknown>;
+      const allowed: (keyof IUserPreferences)[] = [
+        "theme",
+        "timerDuration",
+        "notificationSound",
+        "weekStartsOn",
+        "notifyReviewDue",
+        "notifyStreakRisk",
+        "notifyGoalUpdates",
+        "notifyHabitDue",
+        "notifySecurity",
+      ];
+      const patchPrefs: Partial<IUserPreferences> = {};
+      for (const key of allowed) {
+        if (prefs[key] !== undefined) {
+          (patchPrefs as Record<string, unknown>)[key] = prefs[key];
+        }
+      }
+      for (const [key, value] of Object.entries(patchPrefs)) {
+        update[`preferences.${key}`] = value;
+      }
+    }
+
+    if (Object.keys(update).length === 0) {
       return NextResponse.json(
-        { error: "Name is required (1–100 characters)" },
+        { error: "No valid fields to update" },
         { status: 400 }
       );
     }
@@ -82,7 +134,7 @@ export async function PATCH(req: Request) {
     await connectToDatabase();
     const user = await UserModel.findByIdAndUpdate(
       userId,
-      { name },
+      { $set: update },
       { new: true }
     ).select("-password");
 
@@ -90,17 +142,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(
-      {
-        user: {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        },
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ user: serializeUser(user) }, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Profile update error:", error.message);

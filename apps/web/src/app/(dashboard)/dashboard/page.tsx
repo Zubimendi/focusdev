@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import FocusTimer from "@/components/dashboard/focus-timer";
 import DailyChecklist from "@/components/dashboard/daily-checklist";
+import HabitsToday from "@/components/dashboard/habits-today";
 import { toast } from "sonner";
 import { calculateStreak } from "@/lib/streak";
 
@@ -201,6 +202,8 @@ export default function DashboardPage() {
         )}
 
         <FocusTimer />
+
+        <HabitsToday />
 
         <section className="bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)] p-5 flex flex-col gap-4">
           <label className="text-xs font-medium text-on-surface-variant">

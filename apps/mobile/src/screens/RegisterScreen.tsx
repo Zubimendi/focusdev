@@ -57,10 +57,17 @@ export default function RegisterScreen({ navigation }: any) {
       return;
     }
 
-    if (password.length < 8) {
-      const message = "Use at least 8 characters for your password.";
+    const strong =
+      password.length >= 10 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^A-Za-z0-9]/.test(password);
+    if (!strong) {
+      const message =
+        "Use 10+ characters with uppercase, lowercase, a number, and a special character.";
       setStatus({ kind: "error", message });
-      Toast.show({ type: "error", text1: "Password too short", text2: message });
+      Toast.show({ type: "error", text1: "Password requirements", text2: message });
       return;
     }
 
@@ -273,7 +280,7 @@ export default function RegisterScreen({ navigation }: any) {
                     <Lock color={colors.primary} size={18} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.onSurface }]}
-                      placeholder="At least 8 characters"
+                      placeholder="10+ chars, mixed case, number, symbol"
                       placeholderTextColor={
                         isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"
                       }
@@ -294,6 +301,9 @@ export default function RegisterScreen({ navigation }: any) {
                       )}
                     </TouchableOpacity>
                   </View>
+                  <Text style={[styles.passwordHint, { color: colors.onSurfaceVariant }]}>
+                    At least 10 characters with uppercase, lowercase, a number, and a special character.
+                  </Text>
                 </View>
 
                 <TouchableOpacity
@@ -440,6 +450,12 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
   },
   eyeIcon: { padding: 8, marginRight: -4 },
+  passwordHint: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+    marginLeft: 4,
+  },
   buttonWrapper: {
     marginTop: 8,
     shadowColor: "#2d6a5e",

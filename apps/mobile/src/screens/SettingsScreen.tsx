@@ -1,14 +1,26 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Moon, Sun, Clock, Bell } from "lucide-react-native";
+import { ArrowLeft, Moon, Sun, Clock, Bell, Shield, Lock } from "lucide-react-native";
+import Toast from "react-native-toast-message";
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useSettingsStore } from "../store/settings-store";
 import { useNavigation } from "@react-navigation/native";
+import { authService } from "../services/auth";
+import { useAuthStore } from "../store/auth-store";
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
   const { colors, isDark } = useAppTheme();
+  const user = useAuthStore((s) => s.user);
   const {
     theme,
     setTheme,
@@ -17,6 +29,25 @@ export default function SettingsScreen() {
     notificationSound,
     setNotificationSound,
   } = useSettingsStore();
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handleChangePassword = async () => {
+    setChangingPassword(true);
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      Toast.show({ type: "success", text1: "Password updated" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Couldn't update password.";
+      Toast.show({ type: "error", text1: "Update failed", text2: message });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -31,86 +62,139 @@ export default function SettingsScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Appearance</Text>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          <TouchableOpacity
-            style={[styles.row, theme === "dark" && { backgroundColor: isDark ? "#1c2235" : "#e2e8f0" }]}
-            onPress={() => setTheme("dark")}
-          >
-            <Moon size={20} color={theme === "dark" ? colors.primary : colors.onSurfaceVariant} />
-            <Text
-              style={[styles.rowText, { color: colors.onSurfaceVariant }, theme === "dark" && { color: colors.primary }]}
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Appearance</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity
+              style={[styles.row, theme === "dark" && { backgroundColor: isDark ? "#1c2235" : "#e2e8f0" }]}
+              onPress={() => setTheme("dark")}
             >
-              Dark Theme
-            </Text>
-          </TouchableOpacity>
-          <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
-          <TouchableOpacity
-            style={[styles.row, theme === "light" && { backgroundColor: isDark ? "#1c2235" : "#e2e8f0" }]}
-            onPress={() => setTheme("light")}
-          >
-            <Sun size={20} color={theme === "light" ? colors.primary : colors.onSurfaceVariant} />
-            <Text
-              style={[styles.rowText, { color: colors.onSurfaceVariant }, theme === "light" && { color: colors.primary }]}
-            >
-              Light Theme
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Pomodoro Config</Text>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          <View style={styles.row}>
-            <Clock size={20} color={colors.onSurfaceVariant} />
-            <Text style={[styles.rowText, { color: colors.onSurface }]}>Duration: {timerDuration}m</Text>
-          </View>
-          <View style={styles.durationButtons}>
-            {[15, 25, 45, 60].map((dur) => (
-              <TouchableOpacity
-                key={dur}
-                style={[
-                  styles.pill,
-                  { backgroundColor: colors.background },
-                  timerDuration === dur && { backgroundColor: colors.primary },
-                ]}
-                onPress={() => setTimerDuration(dur)}
+              <Moon size={20} color={theme === "dark" ? colors.primary : colors.onSurfaceVariant} />
+              <Text
+                style={[styles.rowText, { color: colors.onSurfaceVariant }, theme === "dark" && { color: colors.primary }]}
               >
-                <Text
-                  style={[
-                    styles.pillText,
-                    { color: colors.onSurfaceVariant },
-                    timerDuration === dur && { color: colors.onPrimary },
-                  ]}
-                >
-                  {dur}m
-                </Text>
-              </TouchableOpacity>
-            ))}
+                Dark Theme
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
+            <TouchableOpacity
+              style={[styles.row, theme === "light" && { backgroundColor: isDark ? "#1c2235" : "#e2e8f0" }]}
+              onPress={() => setTheme("light")}
+            >
+              <Sun size={20} color={theme === "light" ? colors.primary : colors.onSurfaceVariant} />
+              <Text
+                style={[styles.rowText, { color: colors.onSurfaceVariant }, theme === "light" && { color: colors.primary }]}
+              >
+                Light Theme
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Notifications</Text>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() =>
-              setNotificationSound(
-                notificationSound === "Zen Chime"
-                  ? "Digital Beep"
-                  : "Zen Chime",
-              )
-            }
-          >
-            <Bell size={20} color={colors.onSurfaceVariant} />
-            <Text style={[styles.rowText, { color: colors.onSurface }]}>Sound: {notificationSound}</Text>
-          </TouchableOpacity>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Security</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <View style={styles.row}>
+              <Shield size={20} color={colors.onSurfaceVariant} />
+              <Text style={[styles.rowText, { color: colors.onSurface, flex: 1 }]}>
+                Two-factor authentication
+              </Text>
+            </View>
+            <Text style={[styles.securityNote, { color: colors.onSurfaceVariant }]}>
+              {user?.twoFactorEnabled
+                ? "2FA is enabled on your account. Manage backup codes and setup in the FocusDev web app."
+                : "Enable two-factor authentication in the FocusDev web app under Settings → Security."}
+            </Text>
+            <View style={[styles.divider, { backgroundColor: colors.outlineVariant, marginLeft: 16 }]} />
+            <View style={styles.passwordBlock}>
+              <View style={styles.row}>
+                <Lock size={20} color={colors.onSurfaceVariant} />
+                <Text style={[styles.rowText, { color: colors.onSurface }]}>Change password</Text>
+              </View>
+              <TextInput
+                style={[styles.input, { color: colors.onSurface, borderColor: colors.outlineVariant, backgroundColor: colors.background }]}
+                placeholder="Current password"
+                placeholderTextColor={colors.onSurfaceVariant}
+                secureTextEntry
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+              />
+              <TextInput
+                style={[styles.input, { color: colors.onSurface, borderColor: colors.outlineVariant, backgroundColor: colors.background }]}
+                placeholder="New password (10+ with complexity)"
+                placeholderTextColor={colors.onSurfaceVariant}
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity
+                style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+                onPress={handleChangePassword}
+                disabled={changingPassword}
+              >
+                {changingPassword ? (
+                  <ActivityIndicator color={colors.onPrimary} />
+                ) : (
+                  <Text style={[styles.saveBtnText, { color: colors.onPrimary }]}>Update password</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Pomodoro Config</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <View style={styles.row}>
+              <Clock size={20} color={colors.onSurfaceVariant} />
+              <Text style={[styles.rowText, { color: colors.onSurface }]}>Duration: {timerDuration}m</Text>
+            </View>
+            <View style={styles.durationButtons}>
+              {[15, 25, 45, 60].map((dur) => (
+                <TouchableOpacity
+                  key={dur}
+                  style={[
+                    styles.pill,
+                    { backgroundColor: colors.background },
+                    timerDuration === dur && { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => setTimerDuration(dur)}
+                >
+                  <Text
+                    style={[
+                      styles.pillText,
+                      { color: colors.onSurfaceVariant },
+                      timerDuration === dur && { color: colors.onPrimary },
+                    ]}
+                  >
+                    {dur}m
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Notifications</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() =>
+                setNotificationSound(
+                  notificationSound === "Zen Chime"
+                    ? "Digital Beep"
+                    : "Zen Chime",
+                )
+              }
+            >
+              <Bell size={20} color={colors.onSurfaceVariant} />
+              <Text style={[styles.rowText, { color: colors.onSurface }]}>Sound: {notificationSound}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -126,7 +210,7 @@ const styles = StyleSheet.create({
   },
   backButton: { padding: 8, marginLeft: -8 },
   title: { fontSize: 20, fontFamily: "Inter_900Black", color: "#eef1f0" },
-  section: { marginTop: 32, paddingHorizontal: 24 },
+  section: { marginTop: 24, paddingHorizontal: 24 },
   sectionTitle: {
     fontSize: 13,
     fontFamily: "JetBrainsMono_400Regular",
@@ -134,11 +218,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textTransform: "uppercase",
   },
-  card: { backgroundColor: "#1c2421", borderRadius: 16, overflow: "hidden" },
+  card: { backgroundColor: "#1c2421", borderRadius: 16, overflow: "hidden", borderWidth: 1 },
   row: { flexDirection: "row", alignItems: "center", padding: 16, gap: 12 },
-  activeRow: { backgroundColor: "#1c2235" },
   rowText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#c7c4d7" },
-  activeText: { color: "#7eb8a8" },
   divider: { height: 1, backgroundColor: "#1f2438", marginLeft: 48 },
   durationButtons: {
     flexDirection: "row",
@@ -152,7 +234,27 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#1f2438",
   },
-  activePill: { backgroundColor: "#7eb8a8" },
   pillText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#c7c4d7" },
-  activePillText: { color: "#0f1614" },
+  securityNote: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  passwordBlock: { paddingBottom: 16, gap: 10 },
+  input: {
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    fontFamily: "Inter_500Medium",
+  },
+  saveBtn: {
+    marginHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  saveBtnText: { fontFamily: "Inter_800ExtraBold", fontSize: 15 },
 });

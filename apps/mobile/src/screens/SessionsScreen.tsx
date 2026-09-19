@@ -1,25 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Circle } from 'react-native-svg';
 import { Terminal, Calendar, Filter, Clock, Edit2, Bolt } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { focusService } from '../services/focus';
 
 const { width } = Dimensions.get('window');
-
-const sessions = [
-  { id: '1', title: 'Refactor Auth Middleware', type: 'Coding', duration: '45 min', time: '10:30 AM', color: '#2d6a5e' },
-  { id: '2', title: 'Architecture Whiteboarding', type: 'Building', duration: '25 min', time: '01:15 PM', color: '#4edea3' },
-  { id: '3', title: 'Post-mortem Review', type: 'Learning', duration: '15 min', time: '03:45 PM', color: '#ffb95f' },
-  { id: '4', title: 'Unit Test Suite Execution', type: 'Coding', duration: '15 min', time: '05:00 PM', color: '#2d6a5e' },
-];
 
 const getInitialDays = () => {
   const now = new Date();
   const currentDay = now.getDay();
   const diff = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
-  const monday = new Date(now.setDate(diff));
+  const monday = new Date(now);
+  monday.setDate(diff);
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return weekDays.map((day, i) => {
     const d = new Date(monday);
@@ -28,12 +22,55 @@ const getInitialDays = () => {
   });
 };
 
-const days = getInitialDays();
-const currentLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+function sessionMinutes(s: { duration?: number; startTime: string; endTime?: string }) {
+  if (typeof s.duration === 'number' && s.duration > 0) return s.duration;
+  if (s.endTime) {
+    return Math.max(0, (new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000);
+  }
+  return 0;
+}
+
+function formatDuration(mins: number) {
+  const m = Math.round(mins);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return r > 0 ? `${h}h ${r}m` : `${h}h`;
+}
 
 export default function SessionsScreen() {
   const { colors, isDark } = useAppTheme();
-  const progress = 0.75;
+  const [days] = useState(getInitialDays);
+  const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const currentLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  const load = useCallback(async () => {
+    try {
+      const { sessions: list } = await focusService.getSessions();
+      setSessions(list);
+    } catch {
+      setSessions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const daySessions = useMemo(
+    () =>
+      sessions.filter(
+        (s) => new Date(s.startTime).toDateString() === selectedDate
+      ),
+    [sessions, selectedDate]
+  );
+
+  const todayMinutes = daySessions.reduce((acc, s) => acc + sessionMinutes(s), 0);
+  const progress = Math.min(todayMinutes / 120, 1);
   const size = 64;
   const strokeWidth = 5;
   const radius = (size - strokeWidth) / 2;
@@ -78,29 +115,32 @@ export default function SessionsScreen() {
           {days.map((item, idx) => (
             <TouchableOpacity 
               key={idx} 
+              onPress={() => setSelectedDate(item.fullDate)}
               style={[
                 styles.dateCard, 
-                item.active ? { backgroundColor: colors.primary } : { backgroundColor: colors.surface, opacity: 0.6 }
+                selectedDate === item.fullDate
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: colors.surface, opacity: 0.6 }
               ]}
             >
-              <Text style={[styles.dateDay, { color: item.active ? colors.onPrimary : colors.onSurfaceVariant }]}>{item.day}</Text>
-              <Text style={[styles.dateDate, { color: item.active ? colors.onPrimary : colors.onSurface }]}>{item.date}</Text>
-              {item.active && <View style={[styles.activeDot, { backgroundColor: colors.onPrimary }]} />}
+              <Text style={[styles.dateDay, { color: selectedDate === item.fullDate ? colors.onPrimary : colors.onSurfaceVariant }]}>{item.day}</Text>
+              <Text style={[styles.dateDate, { color: selectedDate === item.fullDate ? colors.onPrimary : colors.onSurface }]}>{item.date}</Text>
+              {selectedDate === item.fullDate && <View style={[styles.activeDot, { backgroundColor: colors.onPrimary }]} />}
             </TouchableOpacity>
           ))}
         </ScrollView>
 
         <View style={[styles.summaryCard, { backgroundColor: isDark ? 'rgba(47, 52, 69, 0.7)' : 'rgba(255, 255, 255, 0.7)', borderColor: colors.outlineVariant }]}>
           <View style={styles.summaryInfo}>
-            <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>TODAY&apos;S PERFORMANCE</Text>
+            <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>DAY PERFORMANCE</Text>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.primary }]}>4</Text>
+                <Text style={[styles.statValue, { color: colors.primary }]}>{daySessions.length}</Text>
                 <Text style={[styles.statUnit, { color: colors.onSurfaceVariant }]}>sessions</Text>
               </View>
               <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.primary }]}>1h 40m</Text>
+                <Text style={[styles.statValue, { color: colors.primary }]}>{formatDuration(todayMinutes)}</Text>
                 <Text style={[styles.statUnit, { color: colors.onSurfaceVariant }]}>focus</Text>
               </View>
             </View>
@@ -134,30 +174,42 @@ export default function SessionsScreen() {
           </View>
         </View>
 
-        <View style={styles.sessionsList}>
-          {sessions.map((session) => (
-            <View key={session.id} style={[styles.sessionCard, { backgroundColor: colors.surface }]}>
-              <View style={[styles.cardSidebar, { backgroundColor: session.color }]} />
-              <View style={styles.cardContent}>
-                <View style={styles.cardInfo}>
-                  <Text style={[styles.sessionTitle, { color: colors.onSurface }]}>{session.title}</Text>
-                  <View style={styles.sessionTags}>
-                    <View style={[styles.tag, { backgroundColor: `${session.color}15` }]}>
-                      <Text style={[styles.tagText, { color: session.color }]}>{session.type}</Text>
-                    </View>
-                    <View style={styles.timeInfo}>
-                      <Clock size={12} color={colors.onSurfaceVariant} />
-                      <Text style={[styles.timeText, { color: colors.onSurfaceVariant }]}>{session.duration} · {session.time}</Text>
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginTop: 24 }} />
+        ) : (
+          <View style={styles.sessionsList}>
+            {daySessions.length === 0 ? (
+              <Text style={[styles.empty, { color: colors.onSurfaceVariant }]}>No sessions this day.</Text>
+            ) : (
+              daySessions.map((session) => {
+                const mins = sessionMinutes(session);
+                const time = new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const title = session.notes || 'Focus session';
+                return (
+                  <View key={session.id || session._id} style={[styles.sessionCard, { backgroundColor: colors.surface }]}>
+                    <View style={[styles.cardSidebar, { backgroundColor: colors.primary }]} />
+                    <View style={styles.cardContent}>
+                      <View style={styles.cardInfo}>
+                        <Text style={[styles.sessionTitle, { color: colors.onSurface }]}>{title}</Text>
+                        <View style={styles.sessionTags}>
+                          <View style={styles.timeInfo}>
+                            <Clock size={12} color={colors.onSurfaceVariant} />
+                            <Text style={[styles.timeText, { color: colors.onSurfaceVariant }]}>
+                              {formatDuration(mins)} · {time}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <TouchableOpacity style={[styles.editBtn, { backgroundColor: isDark ? 'rgba(47, 52, 69, 0.4)' : 'rgba(226, 232, 240, 0.4)' }]}>
+                        <Edit2 size={16} color={colors.onSurfaceVariant} />
+                      </TouchableOpacity>
                     </View>
                   </View>
-                </View>
-                <TouchableOpacity style={[styles.editBtn, { backgroundColor: isDark ? 'rgba(47, 52, 69, 0.4)' : 'rgba(226, 232, 240, 0.4)' }]}>
-                  <Edit2 size={16} color={colors.onSurfaceVariant} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
+                );
+              })
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -257,13 +309,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dateCardInactive: {
-    backgroundColor: '#1c2421',
-    opacity: 0.6,
-  },
-  dateCardActive: {
-    backgroundColor: '#2d6a5e',
-  },
   dateDay: {
     fontSize: 10,
     fontFamily: 'Inter_700Bold',
@@ -276,13 +321,9 @@ const styles = StyleSheet.create({
     color: '#eef1f0',
     marginTop: 4,
   },
-  textActive: {
-    color: '#0d0096',
-  },
   activeDot: {
     width: 4,
     height: 4,
-    backgroundColor: '#0d0096',
     borderRadius: 2,
     marginTop: 4,
   },
@@ -343,6 +384,7 @@ const styles = StyleSheet.create({
   sessionsList: {
     gap: 16,
   },
+  empty: { textAlign: 'center', fontFamily: 'Inter_500Medium', paddingVertical: 24 },
   sessionCard: {
     backgroundColor: '#1c2421',
     borderRadius: 16,
@@ -371,16 +413,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  tagText: {
-    fontSize: 10,
-    fontFamily: 'Inter_700Bold',
-    textTransform: 'uppercase',
   },
   timeInfo: {
     flexDirection: 'row',

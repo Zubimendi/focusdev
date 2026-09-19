@@ -15,6 +15,7 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
+    { name: "Notes", href: "/notes", icon: "sticky_note_2" },
     { name: "Checklists", href: "/checklists", icon: "fact_check" },
     { name: "Timer", href: "/timer", icon: "timer", fill: true },
     { name: "Stats", href: "/stats", icon: "bar_chart" },
@@ -55,6 +56,13 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
               key={item.name}
               href={item.href}
               onClick={onClose}
+              data-tour={
+                item.href === "/projects"
+                  ? "nav-projects"
+                  : item.href === "/reviews/week"
+                    ? "nav-reviews"
+                    : undefined
+              }
               className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors ${
                 active
                   ? "bg-primary/10 text-primary font-medium"
@@ -80,6 +88,7 @@ export default function SideNavBar({ isOpen = false, onClose }: SideNavBarProps)
         <Link
           href="/new-session"
           onClick={onClose}
+          data-tour="nav-start-focus"
           className="mx-0.5 mb-2 flex items-center justify-center gap-1.5 h-8 rounded-md bg-primary text-on-primary text-[13px] font-medium hover:opacity-90 transition-opacity"
         >
           <span

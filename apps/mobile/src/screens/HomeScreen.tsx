@@ -7,7 +7,8 @@ import { focusService } from '../services/focus';
 import { projectService } from '../services/project';
 import { goalService } from '../services/goal';
 import { type Task } from '@focus/shared';
-import { Terminal, Bell, Play, Square, FastForward, Clock, User as UserIcon } from 'lucide-react-native';
+import { Terminal, Bell, Play, Square, FastForward, Clock, User as UserIcon, Check, FileText, CalendarDays } from 'lucide-react-native';
+import { habitsService, type Habit } from '../services/habits';
 import { Svg, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [loading, setLoading] = useState(true);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const user = useAuthStore((state: any) => state.user);
   const { colors, isDark } = useAppTheme();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -64,12 +66,14 @@ export default function HomeScreen() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [tRes, sRes, pRes, gRes] = await Promise.all([
+      const [tRes, sRes, pRes, gRes, hRes] = await Promise.all([
         taskService.getTasks(),
         focusService.getSessions(),
         projectService.getProjects(),
-        goalService.getGoals()
+        goalService.getGoals(),
+        habitsService.list().catch(() => ({ habits: [] as Habit[], date: '' })),
       ]);
+      setHabits(hRes.habits || []);
       setRecentTasks(tRes.tasks?.slice(0, 3) || []);
       setAllSessions(sRes.sessions || []);
       
@@ -153,7 +157,10 @@ export default function HomeScreen() {
                 <Text style={[styles.headerTitle, { color: colors.primary }]}>MONOLITH</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 12 }}>
-                <TouchableOpacity style={[styles.iconBtn, { backgroundColor: colors.surface }]}>
+                <TouchableOpacity
+                  style={[styles.iconBtn, { backgroundColor: colors.surface }]}
+                  onPress={() => navigation.navigate('Notifications')}
+                >
                   <Bell color={colors.onSurfaceVariant} size={20} />
                 </TouchableOpacity>
                 <TouchableOpacity 
@@ -254,6 +261,54 @@ export default function HomeScreen() {
                 </View>
               </View>
 
+              <View style={styles.quickLinks}>
+                <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.surface }]} onPress={() => navigation.navigate('Notes')}>
+                  <FileText size={16} color={colors.primary} />
+                  <Text style={[styles.quickLinkText, { color: colors.onSurface }]}>Notes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.surface }]} onPress={() => navigation.navigate('WeeklyReview')}>
+                  <CalendarDays size={16} color={colors.primary} />
+                  <Text style={[styles.quickLinkText, { color: colors.onSurface }]}>Weekly review</Text>
+                </TouchableOpacity>
+              </View>
+
+              {habits.length > 0 && (
+                <>
+                  <View style={styles.sectionHeader}>
+                    <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Today&apos;s habits</Text>
+                  </View>
+                  <View style={styles.habitsList}>
+                    {habits.map((h) => {
+                      const done = h.todayValue >= h.targetPerPeriod;
+                      return (
+                        <TouchableOpacity
+                          key={h.id}
+                          style={[styles.habitCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
+                          onPress={async () => {
+                            try {
+                              await habitsService.checkIn(h.id);
+                              fetchData();
+                            } catch {
+                              Alert.alert('Error', 'Could not check in.');
+                            }
+                          }}
+                        >
+                          <View style={[styles.habitCheck, done && { backgroundColor: colors.primary }]}>
+                            {done && <Check size={14} color={colors.onPrimary} />}
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.habitTitle, { color: colors.onSurface }]}>{h.title}</Text>
+                            <Text style={[styles.habitMeta, { color: colors.onSurfaceVariant }]}>
+                              {h.todayValue}/{h.targetPerPeriod} {h.unit || 'today'}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </>
+              )}
+
               <View style={styles.sectionHeader}>
                 <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Recent Sessions</Text>
                 <TouchableOpacity onPress={fetchData}>
@@ -345,6 +400,14 @@ const styles = StyleSheet.create({
   startBtnText: { color: '#fff', fontSize: 14, fontFamily: 'Inter_800ExtraBold' },
   skipBtn: { flex: 1, height: 56, backgroundColor: '#232a3d', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   skipBtnText: { color: '#c7c4d7', fontSize: 10, fontFamily: 'Inter_800ExtraBold' },
+  quickLinks: { flexDirection: 'row', gap: 10, marginTop: 32 },
+  quickLink: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderRadius: 14 },
+  quickLinkText: { fontSize: 13, fontFamily: 'Inter_700Bold' },
+  habitsList: { gap: 10, marginBottom: 8 },
+  habitCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 1 },
+  habitCheck: { width: 28, height: 28, borderRadius: 8, borderWidth: 2, borderColor: '#7eb8a8', alignItems: 'center', justifyContent: 'center' },
+  habitTitle: { fontSize: 15, fontFamily: 'Inter_700Bold' },
+  habitMeta: { fontSize: 12, fontFamily: 'Inter_500Medium', marginTop: 2 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 48, marginBottom: 20 },
   sectionTitle: { fontSize: 20, fontFamily: 'Inter_800ExtraBold', color: '#eef1f0' },
   viewAll: { fontSize: 12, fontFamily: 'Inter_600SemiBold', color: '#7eb8a8' },

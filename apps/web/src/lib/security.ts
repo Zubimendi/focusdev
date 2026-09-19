@@ -1,13 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Simple in-memory rate limiting (for demonstration, use Redis in production)
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 100;
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const MAX_REQUESTS = 120;
+const AUTH_WINDOW = 15 * 60 * 1000;
+const AUTH_MAX = 20;
+
 const ipRequests = new Map<string, { count: number; lastReset: number }>();
+const authBuckets = new Map<string, { count: number; lastReset: number }>();
+
+function clientIp(request: Request | NextRequest): string {
+  if ("ip" in request && request.ip) return request.ip;
+  const fwd = request.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim();
+  return "unknown";
+}
 
 export function rateLimit(request: NextRequest) {
-  const ip = request.ip || "unknown";
+  const ip = clientIp(request);
   const now = Date.now();
   const userData = ipRequests.get(ip) || { count: 0, lastReset: now };
 
@@ -27,9 +37,40 @@ export function rateLimit(request: NextRequest) {
   return null;
 }
 
+/** Stricter limit for auth-sensitive endpoints */
+export function authRateLimit(request: Request, bucket: string) {
+  const ip = clientIp(request);
+  const key = `${bucket}:${ip}`;
+  const now = Date.now();
+  const data = authBuckets.get(key) || { count: 0, lastReset: now };
+
+  if (now - data.lastReset > AUTH_WINDOW) {
+    data.count = 1;
+    data.lastReset = now;
+  } else {
+    data.count++;
+  }
+  authBuckets.set(key, data);
+
+  if (data.count > AUTH_MAX) {
+    return NextResponse.json(
+      { error: "Too many attempts. Try again later." },
+      { status: 429 }
+    );
+  }
+  return null;
+}
+
 export function corsHeaders(request: NextRequest, response: NextResponse) {
-  response.headers.set("Access-Control-Allow-Origin", "*"); // Customize this!
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  const origin = request.headers.get("origin") || "*";
+  response.headers.set("Access-Control-Allow-Origin", origin);
+  response.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+  response.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
   return response;
 }

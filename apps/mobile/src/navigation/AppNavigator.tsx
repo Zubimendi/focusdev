@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, ActivityIndicator, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -10,6 +10,8 @@ import { useAuthStore } from '../store/auth-store';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SessionsScreen from '../screens/SessionsScreen';
 import GoalsScreen from '../screens/GoalsScreen';
@@ -17,6 +19,9 @@ import StatsScreen from '../screens/StatsScreen';
 import ProjectsScreen from '../screens/ProjectsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import WeeklyReviewScreen from '../screens/WeeklyReviewScreen';
+import NotesScreen from '../screens/NotesScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -75,10 +80,15 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
-  const token = useAuthStore((state: any) => state.token);
+  const token = useAuthStore((state) => state.token);
+  const isBootstrapping = useAuthStore((state) => state.isBootstrapping);
+  const restoreSession = useAuthStore((state) => state.restoreSession);
   const { colors, isDark } = useAppTheme();
 
-  // Build a React Navigation theme that matches our app theme
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
   const navTheme = {
     dark: isDark,
     colors: {
@@ -97,6 +107,17 @@ export default function AppNavigator() {
     }
   };
 
+  if (isBootstrapping) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 16, color: colors.onSurfaceVariant, fontFamily: 'Inter_600SemiBold' }}>
+          Loading…
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer theme={navTheme}>
       <Stack.Navigator
@@ -110,12 +131,17 @@ export default function AppNavigator() {
             <Stack.Screen name="Main" component={MainTabs} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="WeeklyReview" component={WeeklyReviewScreen} />
+            <Stack.Screen name="Notes" component={NotesScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
           </>
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
           </>
         )}
       </Stack.Navigator>

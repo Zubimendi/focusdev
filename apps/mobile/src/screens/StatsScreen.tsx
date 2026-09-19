@@ -1,66 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Terminal, Download, Share2, Timer, Code, Calendar, BarChart4, TrendingUp, Award, Star } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-
+import { Timer, BarChart4, TrendingUp, Award, Star, CheckCircle } from 'lucide-react-native';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { focusService } from '../services/focus';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
-const heatmapData = [
-  [0,40,100,0,60,80,100],
-  [20,0,40,100,80,40,0],
-  [100,100,80,40,100,60,20],
-  [40,0,40,100,20,80,60],
-  [20,60,100,0,80,40,100],
-];
+type StatsPayload = Awaited<ReturnType<typeof focusService.getStats>>;
 
-const stats = [
-  { icon: ClockIcon, label: "Focus Hours", value: "38.5h", color: "#7eb8a8" },
-  { icon: TimerIcon, label: "Sessions", value: "24", color: "#7eb8a8" },
-  { icon: CodeIcon, label: "LeetCode Solved", value: "14", color: "#7eb8a8" },
-  { icon: FlameIcon, label: "Streak Days", value: "12", color: "#ffb95f", valueColor: "#ffb95f" },
-];
-
-const barData = [
-  { day: "M", height: "60%", color: "rgba(129, 140, 248, 0.4)" },
-  { day: "T", height: "80%", color: "#4edea3" },
-  { day: "W", height: "40%", color: "#7eb8a8" },
-  { day: "T", height: "70%", color: "#ffb4ab" },
-  { day: "F", height: "30%", color: "rgba(78, 222, 163, 0.6)" },
-  { day: "S", height: "20%", color: "rgba(129, 140, 248, 0.8)" },
-  { day: "S", height: "50%", color: "rgba(129, 140, 248, 0.3)" },
-];
-
-const allocation = [
-  { label: "Coding", pct: "70%", color: "#7eb8a8" },
-  { label: "Learning", pct: "20%", color: "#4edea3" },
-  { label: "Building", pct: "10%", color: "#ffb4ab" },
-];
-
-// Re-using icons with custom names for the stats mapping
-function ClockIcon(props: any) { return <Timer {...props} />; }
-function TimerIcon(props: any) { return <BarChart4 {...props} />; }
-function CodeIcon(props: any) { return <Code {...props} />; }
-function FlameIcon(props: any) { return <TrendingUp {...props} />; }
+function heatmapLevel(val: number, isDark: boolean) {
+  if (val === 0) return isDark ? 'rgba(47, 52, 69, 0.6)' : '#f1f5f9';
+  const opacity = isDark ? 0.25 + val * 0.2 : 0.35 + val * 0.15;
+  return `rgba(78, 222, 163, ${Math.min(opacity, 1)})`;
+}
 
 export default function StatsScreen() {
   const { colors, isDark } = useAppTheme();
+  const navigation = useNavigation<any>();
   const [range, setRange] = useState<'week' | 'month'>('week');
+  const [data, setData] = useState<StatsPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const stats = await focusService.getStats(range);
+      setData(stats);
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [range]);
+
+  useEffect(() => {
+    setLoading(true);
+    load();
+  }, [load]);
+
+  const summary = data?.summary ?? [];
+  const icons = [Timer, BarChart4, CheckCircle, TrendingUp];
+
+  const heatmapRows = 7;
+  const heatmapCols = data?.heatmap?.length
+    ? Math.ceil(data.heatmap.length / heatmapRows)
+    : 0;
+  const heatmapGrid: number[][] = [];
+  if (data?.heatmap) {
+    for (let c = 0; c < heatmapCols; c++) {
+      const col: number[] = [];
+      for (let r = 0; r < heatmapRows; r++) {
+        col.push(data.heatmap[c * heatmapRows + r] ?? 0);
+      }
+      heatmapGrid.push(col);
+    }
+  }
+
+  const barData = data?.last7Days ?? [];
+  const byProject = data?.byProject ?? [];
+  const totalProjectMinutes = byProject.reduce((a, p) => a + (p.focusMinutes || 0), 0) || 1;
+  const allocation = byProject.slice(0, 5).map((p) => ({
+    label: p.name,
+    pct: `${Math.round(((p.focusMinutes || 0) / totalProjectMinutes) * 100)}%`,
+    color: p.color || colors.primary,
+  }));
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.primary} />
+        }
       >
-        {/* Header & Toggle */}
         <View style={styles.header}>
           <View>
             <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>PERFORMANCE HUB</Text>
             <Text style={[styles.title, { color: colors.onSurface }]}>Your Progress</Text>
           </View>
+          <TouchableOpacity onPress={() => navigation.navigate('WeeklyReview')}>
+            <Text style={[styles.reviewLink, { color: colors.primary }]}>Weekly review →</Text>
+          </TouchableOpacity>
           <View style={[styles.rangeToggle, { backgroundColor: colors.surface }]}>
             <TouchableOpacity 
               onPress={() => setRange('week')}
@@ -77,100 +101,112 @@ export default function StatsScreen() {
           </View>
         </View>
 
-        {/* Stat Bento Grid */}
-        <View style={styles.statGrid}>
-          {stats.map((s, i) => (
-            <View key={i} style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-              <s.icon size={20} color={isDark ? s.color : colors.primary} />
-              <View>
-                <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{s.label.toUpperCase()}</Text>
-                <Text style={[styles.statValue, { color: colors.onSurface }, s.valueColor ? { color: s.valueColor } : {}]}>{s.value}</Text>
-              </View>
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginVertical: 40 }} />
+        ) : (
+          <>
+            <View style={styles.statGrid}>
+              {summary.map((s, i) => {
+                const Icon = icons[i] || Timer;
+                const valueColor = s.label === 'Current Streak' ? '#ffb95f' : undefined;
+                return (
+                  <View key={s.label} style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                    <Icon size={20} color={isDark ? colors.primary : colors.primary} />
+                    <View>
+                      <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{s.label.toUpperCase()}</Text>
+                      <Text style={[styles.statValue, { color: colors.onSurface }, valueColor ? { color: valueColor } : {}]}>{s.value}</Text>
+                      {!!s.change && (
+                        <Text style={[styles.statChange, { color: colors.onSurfaceVariant }]}>{s.change}</Text>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
             </View>
-          ))}
-        </View>
 
-        {/* Activity Heatmap */}
-        <View style={[styles.heatmapSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          <View style={styles.sectionTitleRow}>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Activity Density</Text>
-            <View style={[styles.periodBadge, { backgroundColor: colors.background }]}>
-              <Text style={[styles.periodText, { color: colors.onSurfaceVariant }]}>LAST 30 DAYS</Text>
-            </View>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.heatmapContainer}>
-            <View style={styles.heatmap}>
-              {heatmapData.map((col, ci) => (
-                <View key={ci} style={styles.heatmapColumn}>
-                  {col.map((val, ri) => (
-                    <View 
-                      key={ri} 
-                      style={[
-                        styles.heatmapSquare, 
-                        { backgroundColor: val === 0 ? (isDark ? 'rgba(47, 52, 69, 0.6)' : '#f1f5f9') : `rgba(78, 222, 163, ${isDark ? val/100 : 0.4 + val/200})` }
-                      ]} 
-                    />
+            <View style={[styles.heatmapSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+              <View style={styles.sectionTitleRow}>
+                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Activity Density</Text>
+                <View style={[styles.periodBadge, { backgroundColor: colors.background }]}>
+                  <Text style={[styles.periodText, { color: colors.onSurfaceVariant }]}>LAST 50 DAYS</Text>
+                </View>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.heatmapContainer}>
+                <View style={styles.heatmap}>
+                  {heatmapGrid.map((col, ci) => (
+                    <View key={ci} style={styles.heatmapColumn}>
+                      {col.map((val, ri) => (
+                        <View 
+                          key={ri} 
+                          style={[styles.heatmapSquare, { backgroundColor: heatmapLevel(val, isDark) }]} 
+                        />
+                      ))}
+                    </View>
                   ))}
                 </View>
-              ))}
+              </ScrollView>
             </View>
-          </ScrollView>
-        </View>
 
-        {/* Daily Intensity Bar Chart */}
-        <View style={[styles.intensitySection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Daily Intensity</Text>
-          <View style={styles.chartContainer}>
-            {barData.map((b, i) => (
-              <View key={i} style={styles.barItem}>
-                <View style={[styles.bar, { height: b.height as any, backgroundColor: isDark ? b.color : colors.primary + '80' }]} />
-                <Text style={[styles.barLabel, { color: colors.onSurfaceVariant }]}>{b.day}</Text>
+            <View style={[styles.intensitySection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Daily Intensity</Text>
+              <View style={styles.chartContainer}>
+                {barData.map((b, i) => (
+                  <View key={i} style={styles.barItem}>
+                    <View style={[styles.bar, { height: b.height as `${number}%`, backgroundColor: isDark ? colors.primary : colors.primary + '80' }]} />
+                    <Text style={[styles.barLabel, { color: colors.onSurfaceVariant }]}>{b.day}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </View>
+            </View>
 
-        {/* Focus Allocation */}
-        <View style={[styles.allocationSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Focus Allocation</Text>
-          <View style={[styles.allocationBar, { backgroundColor: colors.background }]}>
-            {allocation.map((a, i) =>                <View key={i} style={[styles.allocationSegment, { width: a.pct as any, backgroundColor: a.color }]} />
-            )}
-          </View>
-          <View style={styles.allocationList}>
-            {allocation.map((a, i) => (
-              <View key={i} style={styles.allocationItem}>
-                <View style={styles.allocationLeft}>
-                  <View style={[styles.dot, { backgroundColor: a.color }]} />
-                  <Text style={[styles.allocationText, { color: colors.onSurfaceVariant }]}>{a.label}</Text>
+            {allocation.length > 0 && (
+              <View style={[styles.allocationSection, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Focus by project</Text>
+                <View style={[styles.allocationBar, { backgroundColor: colors.background }]}>
+                  {allocation.map((a, i) => (
+                    <View key={i} style={[styles.allocationSegment, { width: a.pct as `${number}%`, backgroundColor: a.color }]} />
+                  ))}
                 </View>
-                <Text style={[styles.allocationPct, { color: colors.onSurface }]}>{a.pct}</Text>
+                <View style={styles.allocationList}>
+                  {allocation.map((a, i) => (
+                    <View key={i} style={styles.allocationItem}>
+                      <View style={styles.allocationLeft}>
+                        <View style={[styles.dot, { backgroundColor: a.color }]} />
+                        <Text style={[styles.allocationText, { color: colors.onSurfaceVariant }]}>{a.label}</Text>
+                      </View>
+                      <Text style={[styles.allocationPct, { color: colors.onSurface }]}>{a.pct}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-            ))}
-          </View>
-        </View>
+            )}
 
-        {/* Highlights */}
-        <View style={styles.highlightsGrid}>
-          <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.1)' : '#ecfdf5' }]}>
-            <View style={styles.highlightIcon}>
-              <Award size={24} color="#4edea3" fill={isDark ? "rgba(78, 222, 163, 0.4)" : "rgba(78, 222, 163, 0.2)"} />
+            <View style={styles.highlightsGrid}>
+              <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(78, 222, 163, 0.1)' : '#ecfdf5' }]}>
+                <View style={styles.highlightIcon}>
+                  <Award size={24} color="#4edea3" fill={isDark ? "rgba(78, 222, 163, 0.4)" : "rgba(78, 222, 163, 0.2)"} />
+                </View>
+                <View>
+                  <Text style={[styles.highlightLabel, { color: colors.onSurfaceVariant }]}>BEST DAY</Text>
+                  <Text style={[styles.highlightValue, { color: colors.onSurface }]}>
+                    {data?.highlights?.bestDay ?? '—'}
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(126, 184, 168, 0.15)' : '#eef2ff' }]}>
+                <View style={styles.highlightIcon}>
+                  <Star size={24} color={colors.primary} fill={isDark ? "rgba(129, 140, 248, 0.4)" : colors.primary + '30'} />
+                </View>
+                <View>
+                  <Text style={[styles.highlightLabel, { color: colors.onSurfaceVariant }]}>FOCUS SCORE</Text>
+                  <Text style={[styles.highlightValue, { color: colors.onSurface }]}>
+                    {data?.highlights?.focusScore != null ? `${data.highlights.focusScore}%` : '—'}
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View>
-              <Text style={[styles.highlightLabel, { color: colors.onSurfaceVariant }]}>BEST DAY</Text>
-              <Text style={[styles.highlightValue, { color: colors.onSurface }]}>Tuesday</Text>
-            </View>
-          </View>
-          <View style={[styles.highlightCard, { backgroundColor: isDark ? 'rgba(126, 184, 168, 0.15)' : '#eef2ff' }]}>
-            <View style={styles.highlightIcon}>
-              <Star size={24} color={colors.primary} fill={isDark ? "rgba(129, 140, 248, 0.4)" : colors.primary + '30'} />
-            </View>
-            <View>
-              <Text style={[styles.highlightLabel, { color: colors.onSurfaceVariant }]}>BEST WEEK</Text>
-              <Text style={[styles.highlightValue, { color: colors.onSurface }]}>Week 12</Text>
-            </View>
-          </View>
-        </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -182,8 +218,9 @@ const styles = StyleSheet.create({
   header: { 
     marginTop: 20,
     marginBottom: 40,
-    gap: 20
+    gap: 12
   },
+  reviewLink: { fontSize: 13, fontFamily: 'Inter_700Bold', alignSelf: 'flex-start' },
   label: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 2 },
   title: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#eef1f0', marginTop: 4 },
   rangeToggle: { 
@@ -191,12 +228,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#1c2421', 
     padding: 6, 
     borderRadius: 16,
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    marginTop: 8,
   },
   toggleBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
-  toggleBtnActive: { backgroundColor: '#232a3d' },
   toggleText: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#64748b' },
-  toggleTextActive: { color: '#eef1f0' },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: { 
@@ -210,6 +246,7 @@ const styles = StyleSheet.create({
   },
   statLabel: { fontSize: 9, fontFamily: 'Inter_800ExtraBold', color: '#c7c4d7', letterSpacing: 1 },
   statValue: { fontSize: 24, fontFamily: 'JetBrainsMono_700Bold', color: '#eef1f0' },
+  statChange: { fontSize: 11, fontFamily: 'Inter_600SemiBold', marginTop: 4 },
 
   heatmapSection: { marginTop: 40, backgroundColor: '#1c2421', padding: 24, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(70, 69, 84, 0.1)' },
   sectionTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },

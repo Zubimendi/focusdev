@@ -392,6 +392,14 @@ export async function GET(req: Request) {
         tasksDone: completedTasks,
         streak: currentStreak,
       },
+      weekOverWeek: {
+        focusMinutesDelta: Math.round(totalFocusMinutes - prevFocusMinutes),
+        sessionsDelta: rangeSessions.length - prevSessions.length,
+        tasksDoneDelta: completedTasks - prevCompletedTasks,
+        focusMinutesChange: formatChange(totalFocusMinutes, prevFocusMinutes, true),
+        sessionsChange: formatChange(rangeSessions.length, prevSessions.length, false),
+        tasksChange: formatChange(completedTasks, prevCompletedTasks, false),
+      },
     });
   } catch (error) {
     console.error("Stats API error:", error);

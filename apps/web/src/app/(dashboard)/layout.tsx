@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import SideNavBar from "@/components/dashboard/sidebar";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { ProductTour } from "@/components/onboarding/product-tour";
 
 interface SessionUser {
   id: string;
@@ -75,8 +77,10 @@ export default function DashboardLayout({
               </button>
               <div className="hidden md:block" />
               <div className="flex items-center gap-2 ml-auto">
+                <NotificationBell />
                 <Link
                   href="/settings"
+                  data-tour="nav-settings-header"
                   className="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-md"
                   aria-label="Settings"
                 >
@@ -112,6 +116,7 @@ export default function DashboardLayout({
         )}
 
         {children}
+        {!isFocusedTask && <ProductTour />}
       </div>
     </div>
   );

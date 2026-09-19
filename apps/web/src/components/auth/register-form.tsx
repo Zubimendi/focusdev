@@ -26,8 +26,16 @@ export default function RegisterForm() {
       toast.error("Invalid email address");
       return false;
     }
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    if (
+      password.length < 10 ||
+      !/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) ||
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
+      toast.error(
+        "Password needs 10+ chars with upper, lower, number, and special character"
+      );
       return false;
     }
     return true;
