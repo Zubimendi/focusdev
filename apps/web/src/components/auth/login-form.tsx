@@ -1,13 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import FocusLogo from "@/components/brand/focus-logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+const OAUTH_ERRORS: Record<string, string> = {
+  OAuthSignin:
+    "GitHub sign-in isn’t configured. Set GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, and NEXTAUTH_URL on the server.",
+  OAuthCallback: "GitHub sign-in failed during callback. Check the OAuth app callback URL.",
+  OAuthCreateAccount: "Couldn’t create an account from GitHub. Try again or use email.",
+  Callback: "Sign-in callback failed. Try again.",
+  OAuthAccountNotLinked:
+    "This GitHub email is already used with a password account. Sign in with email, then connect GitHub in Settings.",
+  Default: "GitHub sign-in failed. Try email login or reconnect later.",
+};
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -18,6 +29,15 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (!err) return;
+    const message = OAUTH_ERRORS[err] || OAUTH_ERRORS.Default;
+    setError(message);
+    toast.error(message);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

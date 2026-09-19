@@ -18,6 +18,8 @@ function serializeUser(user: {
   onboardingCompletedAt?: Date;
   preferences?: IUserPreferences;
   twoFactorEnabled?: boolean;
+  githubUsername?: string;
+  githubAccessToken?: string;
 }) {
   return {
     id: user._id.toString(),
@@ -27,6 +29,8 @@ function serializeUser(user: {
     onboardingCompletedAt: user.onboardingCompletedAt ?? null,
     preferences: user.preferences ?? {},
     twoFactorEnabled: Boolean(user.twoFactorEnabled),
+    githubUsername: user.githubUsername || null,
+    githubLinked: Boolean(user.githubAccessToken || user.githubUsername),
   };
 }
 
@@ -58,7 +62,9 @@ export async function GET(req: Request) {
     }
 
     await connectToDatabase();
-    const user = await UserModel.findById(userId).select("-password");
+    const user = await UserModel.findById(userId).select(
+      "-password +githubAccessToken"
+    );
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

@@ -18,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { notesService, type Note } from '../services/notes';
+import { FadeIn, Skeleton } from '../components/ui/Skeleton';
 
 export default function NotesScreen() {
   const navigation = useNavigation();
@@ -112,8 +113,13 @@ export default function NotesScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 40 }} color={colors.primary} />
+        <View style={{ paddingHorizontal: 24 }}>
+          <Skeleton height={72} style={{ marginBottom: 12 }} />
+          <Skeleton height={72} style={{ marginBottom: 12 }} />
+          <Skeleton height={72} />
+        </View>
       ) : (
+        <FadeIn>
         <ScrollView contentContainerStyle={styles.list}>
           {notes.length === 0 ? (
             <Text style={[styles.empty, { color: colors.onSurfaceVariant }]}>No notes yet. Tap + to add one.</Text>
@@ -140,6 +146,7 @@ export default function NotesScreen() {
             ))
           )}
         </ScrollView>
+        </FadeIn>
       )}
 
       <Modal visible={modalOpen} animationType="slide" transparent onRequestClose={() => setModalOpen(false)}>

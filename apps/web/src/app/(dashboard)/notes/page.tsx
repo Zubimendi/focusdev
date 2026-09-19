@@ -7,6 +7,8 @@ import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FadeIn, Stagger, StaggerItem } from "@/components/ui/motion";
 
 interface Note {
   id: string;
@@ -115,7 +117,7 @@ export default function NotesPage() {
   };
 
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10 max-w-3xl mx-auto w-full">
+    <FadeIn className="flex-1 px-6 py-8 lg:px-10 max-w-3xl mx-auto w-full">
       <PageHeader
         title="Notes"
         description="Quick captures tied to your focus work."
@@ -136,7 +138,11 @@ export default function NotesPage() {
       </div>
 
       {loading ? (
-        <Panel className="text-sm text-on-surface-variant">Loading…</Panel>
+        <div className="flex flex-col gap-2">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
       ) : notes.length === 0 ? (
         <Panel className="text-center py-10">
           <p className="text-sm text-on-surface-variant">
@@ -149,9 +155,9 @@ export default function NotesPage() {
           )}
         </Panel>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <Stagger className="flex flex-col gap-2">
           {notes.map((note) => (
-            <li key={note.id}>
+            <StaggerItem key={note.id}>
               <Panel className="p-4 flex flex-col sm:flex-row sm:items-start gap-3">
                 <button
                   type="button"
@@ -192,9 +198,9 @@ export default function NotesPage() {
                   </Button>
                 </div>
               </Panel>
-            </li>
+            </StaggerItem>
           ))}
-        </ul>
+        </Stagger>
       )}
 
       <Dialog
@@ -217,7 +223,6 @@ export default function NotesPage() {
             label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            autoFocus
           />
           <div className="space-y-1.5">
             <label className="block text-xs font-medium text-on-surface-variant">
@@ -253,6 +258,6 @@ export default function NotesPage() {
           Delete &ldquo;{deleteTarget?.title}&rdquo;? This cannot be undone.
         </p>
       </Dialog>
-    </main>
+    </FadeIn>
   );
 }

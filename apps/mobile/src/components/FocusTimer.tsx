@@ -1,50 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { focusService } from '../services/focus';
 import { useSettingsStore } from '../store/settings-store';
+import { useTimerStore } from '../store/timer-store';
 
 export default function FocusTimer() {
   const { theme, timerDuration } = useSettingsStore();
-  const initialSeconds = timerDuration * 60;
-  const [isActive, setIsActive] = useState(false);
-  const [seconds, setSeconds] = useState(initialSeconds);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const {
+    remainingSeconds,
+    isActive,
+    sessionId,
+    setDurationMinutes,
+    start,
+    stop,
+    tick,
+    syncFromClock,
+  } = useTimerStore();
+  const completingRef = useRef(false);
 
   useEffect(() => {
-    if (!isActive) {
-      setSeconds(initialSeconds);
-    }
-  }, [initialSeconds, isActive]);
+    setDurationMinutes(timerDuration);
+  }, [timerDuration, setDurationMinutes]);
 
   useEffect(() => {
-    let interval: any;
-    if (isActive && seconds > 0) {
-      interval = setInterval(() => {
-        setSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (seconds === 0) {
-      setIsActive(false);
-    }
-    return () => clearInterval(interval);
-  }, [isActive, seconds]);
+    syncFromClock();
+  }, [syncFromClock]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    const id = setInterval(() => tick(), 250);
+    return () => clearInterval(id);
+  }, [isActive, tick]);
+
+  useEffect(() => {
+    if (isActive || remainingSeconds > 0 || !sessionId || completingRef.current) return;
+    completingRef.current = true;
+    (async () => {
+      try {
+        await focusService.endSession(sessionId, 'Pomodoro complete');
+      } catch {
+        /* ignore */
+      } finally {
+        stop();
+        completingRef.current = false;
+      }
+    })();
+  }, [isActive, remainingSeconds, sessionId, stop]);
 
   const toggleTimer = async () => {
     if (!isActive) {
       try {
-        const res: any = await focusService.startSession({ startTime: new Date().toISOString() });
-        setSessionId(res.session._id);
-        setIsActive(true);
+        const res: any = await focusService.startSession({
+          startTime: new Date().toISOString(),
+        });
+        start(res.session?._id || res.session?.id || null);
       } catch (error) {
         console.error('Failed to start session', error);
       }
     } else {
       try {
-        await focusService.endSession(sessionId!, 'Focused session');
-        setIsActive(false);
-        setSeconds(initialSeconds);
-        setSessionId(null);
+        if (sessionId) {
+          await focusService.endSession(sessionId, 'Focused session');
+        }
+        stop();
       } catch (error) {
         console.error('Failed to end session', error);
+        stop();
       }
     }
   };
@@ -57,7 +78,9 @@ export default function FocusTimer() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme === 'dark' ? '#1c2421' : '#f8fafc' }]}>
-      <Text style={[styles.timer, { color: theme === 'dark' ? '#eef1f0' : '#0f1614' }]}>{formatTime(seconds)}</Text>
+      <Text style={[styles.timer, { color: theme === 'dark' ? '#eef1f0' : '#0f1614' }]}>
+        {formatTime(remainingSeconds)}
+      </Text>
       <TouchableOpacity
         style={[styles.button, isActive ? styles.stopButton : styles.startButton]}
         onPress={toggleTimer}
@@ -69,7 +92,17 @@ export default function FocusTimer() {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', padding: 30, borderRadius: 20, marginBottom: 30, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  container: {
+    alignItems: 'center',
+    padding: 30,
+    borderRadius: 20,
+    marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   timer: { fontSize: 60, fontWeight: 'bold', fontFamily: 'JetBrainsMono_700Bold', marginBottom: 20 },
   button: { paddingHorizontal: 40, paddingVertical: 15, borderRadius: 30 },
   startButton: { backgroundColor: '#34C759' },

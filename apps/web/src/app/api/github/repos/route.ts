@@ -11,11 +11,16 @@ export async function GET(req: Request) {
 
   try {
     await connectToDatabase();
-    const dbUser = await UserModel.findById(user.id).select("+githubAccessToken");
+    const dbUser = await UserModel.findById(user.id).select(
+      "+githubAccessToken githubUsername"
+    );
     if (!dbUser?.githubAccessToken) {
       return NextResponse.json(
-        { error: "GitHub not connected" },
-        { status: 401 }
+        {
+          error: "GitHub not connected",
+          code: "GITHUB_NOT_CONNECTED",
+        },
+        { status: 403 }
       );
     }
 
@@ -25,12 +30,26 @@ export async function GET(req: Request) {
         headers: {
           Authorization: `Bearer ${dbUser.githubAccessToken}`,
           Accept: "application/vnd.github.v3+json",
+          "User-Agent": "FocusDev",
         },
       }
     );
 
+    if (response.status === 401) {
+      return NextResponse.json(
+        {
+          error: "GitHub token expired. Reconnect GitHub in Settings.",
+          code: "GITHUB_TOKEN_EXPIRED",
+        },
+        { status: 403 }
+      );
+    }
+
     if (!response.ok) {
-      throw new Error("Failed to fetch GitHub repositories");
+      return NextResponse.json(
+        { error: "Failed to fetch GitHub repositories" },
+        { status: 502 }
+      );
     }
 
     const repos = await response.json();

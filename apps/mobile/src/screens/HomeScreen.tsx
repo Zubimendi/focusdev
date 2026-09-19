@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/auth-store';
@@ -15,31 +15,43 @@ import { useNavigation } from '@react-navigation/native';
 import { calculateStreak } from '../utils/streak';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useSettingsStore } from '../store/settings-store';
+import { useTimerStore } from '../store/timer-store';
+import { PageSkeleton, FadeIn } from '../components/ui/Skeleton';
 import { Audio } from 'expo-av';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const timerDuration = useSettingsStore(state => state.timerDuration);
+  const {
+    remainingSeconds,
+    durationSeconds,
+    isActive,
+    sessionId,
+    setDurationMinutes,
+    start,
+    stop,
+    reset,
+    tick,
+    syncFromClock,
+  } = useTimerStore();
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [allSessions, setAllSessions] = useState<any[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [timerSeconds, setTimerSeconds] = useState(timerDuration * 60);
-  const [isActive, setIsActive] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [loading, setLoading] = useState(true);
   const [habits, setHabits] = useState<Habit[]>([]);
   const user = useAuthStore((state: any) => state.user);
   const { colors, isDark } = useAppTheme();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const completingRef = useRef(false);
 
   const playSuccessSound = async () => {
     try {
-      const { sound } = await Audio.Sound.createAsync(
+      const { sound: s } = await Audio.Sound.createAsync(
         { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' }
       );
-      setSound(sound);
-      await sound.playAsync();
+      setSound(s);
+      await s.playAsync();
     } catch (error) {
       console.error('Failed to play sound', error);
     }
@@ -50,17 +62,19 @@ export default function HomeScreen() {
   }, [sound]);
 
   useEffect(() => {
-    if (!isActive) {
-      setTimerSeconds(timerDuration * 60);
-    }
-  }, [timerDuration, isActive]);
+    setDurationMinutes(timerDuration);
+  }, [timerDuration, setDurationMinutes]);
+
+  useEffect(() => {
+    syncFromClock();
+  }, [syncFromClock]);
 
   // Constants for the SVG ring
   const size = 260;
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const progress = timerSeconds / (timerDuration * 60);
+  const progress = remainingSeconds / Math.max(durationSeconds, 1);
   const strokeDashoffset = circumference - (1 - progress) * circumference;
 
   const fetchData = useCallback(async () => {
@@ -96,17 +110,27 @@ export default function HomeScreen() {
   }, [fetchData]);
 
   useEffect(() => {
-    let interval: any;
-    if (isActive && timerSeconds > 0) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (timerSeconds === 0 && isActive) {
-      playSuccessSound();
-      handleToggleTimer(); 
-    }
-    return () => clearInterval(interval);
-  }, [isActive, timerSeconds]);
+    if (!isActive) return;
+    const id = setInterval(() => tick(), 250);
+    return () => clearInterval(id);
+  }, [isActive, tick]);
+
+  useEffect(() => {
+    if (isActive || remainingSeconds > 0 || !sessionId || completingRef.current) return;
+    completingRef.current = true;
+    (async () => {
+      try {
+        await focusService.endSession(sessionId, 'Pomodoro complete');
+        await playSuccessSound();
+        fetchData();
+      } catch {
+        /* ignore */
+      } finally {
+        stop();
+        completingRef.current = false;
+      }
+    })();
+  }, [isActive, remainingSeconds, sessionId, stop, fetchData]);
 
   const handleToggleTimer = async () => {
     if (!isActive) {
@@ -115,8 +139,7 @@ export default function HomeScreen() {
           startTime: new Date().toISOString(),
           taskTitle: taskTitle || 'Focused session'
         });
-        setSessionId(res.session?._id || 'temp-id');
-        setIsActive(true);
+        start(res.session?._id || res.session?.id || 'temp-id');
         Keyboard.dismiss();
       } catch (error) {
         Alert.alert('Error', 'Failed to start focus session.');
@@ -126,9 +149,7 @@ export default function HomeScreen() {
         if (sessionId) {
           await focusService.endSession(sessionId, 'Completed focus block');
         }
-        setIsActive(false);
-        setTimerSeconds(timerDuration * 60);
-        setSessionId(null);
+        stop();
         fetchData();
       } catch (error) {
         Alert.alert('Error', 'Failed to end session properly.');
@@ -155,7 +176,7 @@ export default function HomeScreen() {
                 <Terminal color={colors.primary} size={24} />
                 <Text style={[styles.headerTitle, { color: colors.primary }]}>FocusDev</Text>
               </View>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={styles.headerActions}>
                 <TouchableOpacity
                   style={[styles.iconBtn, { backgroundColor: colors.surface }]}
                   onPress={() => navigation.navigate('Notifications')}
@@ -171,6 +192,10 @@ export default function HomeScreen() {
               </View>
             </View>
 
+            {loading ? (
+              <PageSkeleton />
+            ) : (
+            <FadeIn style={{ flex: 1 }}>
             <ScrollView 
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
@@ -222,7 +247,7 @@ export default function HomeScreen() {
                     />
                   </Svg>
                   <View style={styles.timeDisplay}>
-                    <Text style={[styles.timeText, { color: colors.onSurface }]}>{formatTime(timerSeconds)}</Text>
+                    <Text style={[styles.timeText, { color: colors.onSurface }]}>{formatTime(remainingSeconds)}</Text>
                     <Text style={[styles.sessionType, { color: colors.primary }]}>{isActive ? 'FOCUSED ON...' : 'DEEP WORK'}</Text>
                   </View>
                 </View>
@@ -262,11 +287,7 @@ export default function HomeScreen() {
                     </LinearGradient>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity style={[styles.skipBtn, { backgroundColor: isDark ? '#232a3d' : '#f1f5f9' }]} onPress={() => {
-                    setTimerSeconds(timerDuration * 60);
-                    setIsActive(false);
-                    setSessionId(null);
-                  }}>
+                  <TouchableOpacity style={[styles.skipBtn, { backgroundColor: isDark ? '#232a3d' : '#f1f5f9' }]} onPress={() => reset()}>
                     <FastForward size={20} color={colors.onSurfaceVariant} />
                     <Text style={[styles.skipBtnText, { color: colors.onSurfaceVariant }]}>RESET</Text>
                   </TouchableOpacity>
@@ -360,6 +381,8 @@ export default function HomeScreen() {
                 )}
               </View>
             </ScrollView>
+            </FadeIn>
+            )}
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -378,7 +401,8 @@ const styles = StyleSheet.create({
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontSize: 20, fontFamily: 'Inter_900Black', color: '#7eb8a8', letterSpacing: -1 },
-  iconBtn: { padding: 8, backgroundColor: '#1c2421', borderRadius: 10 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 40 },
+  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1c2421', borderRadius: 10 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 110 },
   welcomeSection: { 
     flexDirection: 'row', 

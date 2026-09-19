@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/page-header";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FadeIn } from "@/components/ui/motion";
+import { useSettingsStore } from "@/store/settings";
+import { useTimerStore } from "@/store/timer-store";
+import { calculateStreak } from "@/lib/streak";
 
 interface Task {
   _id: string;
@@ -15,47 +20,86 @@ interface Task {
 }
 
 export default function TimerPage() {
-  const [seconds, setSeconds] = useState(1500);
-  const [isActive, setIsActive] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const timerDuration = useSettingsStore((s) => s.timerDuration);
+  const {
+    remainingSeconds,
+    durationSeconds,
+    isActive,
+    sessionId,
+    setDurationMinutes,
+    start,
+    stop,
+    reset,
+    tick,
+    syncFromClock,
+  } = useTimerStore();
+
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
+  const completingRef = useRef(false);
 
   useEffect(() => {
-    async function fetchTasks() {
+    setDurationMinutes(timerDuration);
+  }, [timerDuration, setDurationMinutes]);
+
+  useEffect(() => {
+    syncFromClock();
+  }, [syncFromClock]);
+
+  useEffect(() => {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/tasks");
-        if (res.ok) {
-          const data = await res.json();
-          // Show in_progress and todo tasks
+        const [tasksRes, sessionsRes] = await Promise.all([
+          fetch("/api/tasks"),
+          fetch("/api/focus/sessions"),
+        ]);
+        if (tasksRes.ok) {
+          const data = await tasksRes.json();
           const activeTasks = (data.tasks || []).filter(
             (t: Task) => t.status !== "done"
           );
           setTasks(activeTasks.slice(0, 5));
         }
+        if (sessionsRes.ok) {
+          const data = await sessionsRes.json();
+          setStreak(calculateStreak(data.sessions || []));
+        }
       } catch (err) {
-        console.error("Failed to fetch tasks", err);
+        console.error("Failed to fetch timer data", err);
       } finally {
         setLoading(false);
       }
     }
-    fetchTasks();
+    fetchData();
   }, []);
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isActive && seconds > 0) {
-      interval = setInterval(() => {
-        setSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (seconds === 0) {
-      setIsActive(false);
-      if (sessionId) endSession();
-      toast.success("Pomodoro complete! Time for a break.");
-    }
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, seconds]);
+    if (!isActive) return;
+    const id = window.setInterval(() => tick(), 250);
+    return () => window.clearInterval(id);
+  }, [isActive, tick]);
+
+  useEffect(() => {
+    if (isActive || remainingSeconds > 0 || !sessionId || completingRef.current)
+      return;
+    completingRef.current = true;
+    (async () => {
+      try {
+        await fetch(`/api/focus/end/${sessionId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes: "Pomodoro session completed" }),
+        });
+        toast.success("Pomodoro complete! Time for a break.");
+      } catch {
+        /* ignore */
+      } finally {
+        stop();
+        completingRef.current = false;
+      }
+    })();
+  }, [isActive, remainingSeconds, sessionId, stop]);
 
   const startSession = async () => {
     try {
@@ -66,13 +110,15 @@ export default function TimerPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setSessionId(data.session._id);
-        setIsActive(true);
+        start(data.session._id || data.session.id);
         toast.success("Focus session started!");
+      } else {
+        start(null);
+        toast.error("Couldn't sync — running locally");
       }
     } catch {
-      toast.error("Failed to sync session, starting local timer.");
-      setIsActive(true);
+      start(null);
+      toast.error("Couldn't sync — running locally");
     }
   };
 
@@ -88,15 +134,13 @@ export default function TimerPage() {
     } catch {
       console.error("Failed to end session");
     }
-    setIsActive(false);
-    setSeconds(1500);
-    setSessionId(null);
+    stop();
   };
 
   const toggleTimer = async () => {
     if (!isActive) {
-      if (seconds === 0) {
-        setSeconds(1500);
+      if (remainingSeconds === 0) {
+        reset();
         return;
       }
       await startSession();
@@ -114,7 +158,7 @@ export default function TimerPage() {
         body: JSON.stringify({ status: "done" }),
       });
       if (res.ok) {
-        setTasks(prev => prev.filter(t => t._id !== task._id));
+        setTasks((prev) => prev.filter((t) => t._id !== task._id));
         toast.success(`Completed: ${task.title}`);
       }
     } catch {
@@ -128,15 +172,19 @@ export default function TimerPage() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progress = ((1500 - seconds) / 1500) * 880;
+  const circumference = 880;
+  const progress =
+    durationSeconds > 0
+      ? ((durationSeconds - remainingSeconds) / durationSeconds) * circumference
+      : 0;
   const currentTask = tasks[0];
   const remainingTasks = tasks.slice(1);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-8 lg:px-10 w-full flex flex-col gap-8">
+    <FadeIn className="max-w-4xl mx-auto px-6 py-8 lg:px-10 w-full flex flex-col gap-8">
       <PageHeader
         title="Timer"
-        description="25-minute Pomodoro with synced focus sessions."
+        description="Deep-work block that keeps counting even if you switch pages."
         actions={
           <div className="flex items-center gap-2 text-sm text-on-surface-variant border border-[var(--border)] rounded-md px-3 py-1.5 bg-surface-container-lowest">
             <span
@@ -168,18 +216,18 @@ export default function TimerPage() {
               stroke="currentColor"
               strokeLinecap="round"
               strokeWidth="4"
-              strokeDasharray="880"
-              strokeDashoffset={880 - progress}
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference - progress}
               style={{
                 transform: "rotate(-90deg)",
                 transformOrigin: "192px 192px",
-                transition: "stroke-dashoffset 1s linear",
+                transition: "stroke-dashoffset 0.25s linear",
               }}
             />
           </svg>
           <div className="z-10 flex flex-col items-center">
             <span className="text-5xl sm:text-6xl font-mono font-medium tracking-tight text-on-surface">
-              {formatTime(seconds)}
+              {formatTime(remainingSeconds)}
             </span>
             <span className="text-xs text-on-surface-variant mt-2">
               {new Date().toLocaleDateString("en-US", {
@@ -187,7 +235,7 @@ export default function TimerPage() {
                 day: "numeric",
                 year: "numeric",
               })}
-              · Pomodoro
+              · Focus
             </span>
           </div>
         </div>
@@ -197,11 +245,7 @@ export default function TimerPage() {
             type="button"
             variant="secondary"
             size="sm"
-            onClick={() => {
-              setSeconds(1500);
-              setIsActive(false);
-              setSessionId(null);
-            }}
+            onClick={() => reset()}
           >
             Reset
           </Button>
@@ -220,9 +264,6 @@ export default function TimerPage() {
             </span>
             {isActive ? "Stop" : "Start"}
           </Button>
-          <Button type="button" variant="ghost" size="sm">
-            Break
-          </Button>
         </div>
 
         <div className="w-full flex flex-col gap-4">
@@ -235,8 +276,8 @@ export default function TimerPage() {
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              <div className="col-span-12 md:col-span-7 h-20 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)] animate-pulse" />
-              <div className="col-span-12 md:col-span-5 h-20 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)] animate-pulse" />
+              <Skeleton className="col-span-12 md:col-span-7 h-20" />
+              <Skeleton className="col-span-12 md:col-span-5 h-20" />
             </div>
           ) : currentTask ? (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -288,7 +329,7 @@ export default function TimerPage() {
           ) : (
             <Panel className="text-center py-8">
               <p className="text-sm text-on-surface-variant">
-                All tasks completed. Create more from the dashboard.
+                No open tasks. Create some from the dashboard or checklists.
               </p>
             </Panel>
           )}
@@ -296,7 +337,7 @@ export default function TimerPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Panel className="!p-4 text-center">
               <span className="text-xl font-mono font-medium text-on-surface">
-                12
+                {streak}
               </span>
               <p className="text-xs text-on-surface-variant mt-1">Day streak</p>
             </Panel>
@@ -309,6 +350,6 @@ export default function TimerPage() {
           </div>
         </div>
       </section>
-    </main>
+    </FadeIn>
   );
 }

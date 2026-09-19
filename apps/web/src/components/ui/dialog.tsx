@@ -9,6 +9,8 @@ export interface DialogProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  /** Selector or "first-input" — defaults to first text field inside the panel */
+  initialFocus?: "first-input" | "none";
 }
 
 export function Dialog({
@@ -18,31 +20,42 @@ export function Dialog({
   children,
   footer,
   className = "",
+  initialFocus = "first-input",
 }: DialogProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
 
     document.addEventListener("keydown", onKeyDown);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    focusable?.[0]?.focus();
+    // Focus once on open — prefer first input/textarea, never the close button
+    const id = window.requestAnimationFrame(() => {
+      if (initialFocus === "none") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const preferred = panel.querySelector<HTMLElement>(
+        'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])'
+      );
+      preferred?.focus();
+    });
 
     return () => {
+      window.cancelAnimationFrame(id);
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prev;
     };
-  }, [open, onClose]);
+    // Only re-run when open flips — not when parent re-renders from typing
+  }, [open, initialFocus]);
 
   if (!open) return null;
 
@@ -53,9 +66,10 @@ export function Dialog({
     >
       <button
         type="button"
+        tabIndex={-1}
         className="absolute inset-0 bg-black/40"
         aria-label="Close dialog"
-        onClick={onClose}
+        onClick={() => onCloseRef.current()}
       />
       <div
         ref={panelRef}
@@ -67,13 +81,13 @@ export function Dialog({
         <div className="px-5 pt-5 pb-3 border-b border-[var(--border)]">
           <h2
             id={titleId}
-            className="text-sm font-medium text-on-surface pr-6"
+            className="text-sm font-medium text-on-surface pr-8"
           >
             {title}
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
             className="absolute top-4 right-4 p-1 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
             aria-label="Close"
           >

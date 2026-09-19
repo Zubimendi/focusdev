@@ -1,39 +1,66 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useSettingsStore } from "@/store/settings";
+import { useTimerStore } from "@/store/timer-store";
 import { Button } from "@/components/ui/button";
 
 export default function FocusTimer() {
-  const { timerDuration } = useSettingsStore();
-  const initialSeconds = useMemo(() => timerDuration * 60, [timerDuration]);
-  const [isActive, setIsActive] = useState(false);
-  const [seconds, setSeconds] = useState(initialSeconds);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const timerDuration = useSettingsStore((s) => s.timerDuration);
+  const {
+    remainingSeconds,
+    durationSeconds,
+    isActive,
+    sessionId,
+    setDurationMinutes,
+    start,
+    stop,
+    reset,
+    tick,
+    syncFromClock,
+  } = useTimerStore();
+  const completingRef = useRef(false);
 
   useEffect(() => {
-    if (!isActive) {
-      setSeconds(initialSeconds);
-    }
-  }, [initialSeconds, isActive]);
+    setDurationMinutes(timerDuration);
+  }, [timerDuration, setDurationMinutes]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isActive && seconds > 0) {
-      interval = setInterval(() => {
-        setSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (seconds === 0) {
-      setIsActive(false);
-    }
-    return () => clearInterval(interval);
-  }, [isActive, seconds]);
+    syncFromClock();
+  }, [syncFromClock]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    const id = window.setInterval(() => tick(), 250);
+    return () => window.clearInterval(id);
+  }, [isActive, tick]);
+
+  useEffect(() => {
+    if (isActive || remainingSeconds > 0 || !sessionId || completingRef.current)
+      return;
+    completingRef.current = true;
+    (async () => {
+      try {
+        await fetch(`/api/focus/end/${sessionId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes: "Pomodoro complete" }),
+        });
+        toast.success("Focus block complete");
+      } catch {
+        /* ignore */
+      } finally {
+        stop();
+        completingRef.current = false;
+      }
+    })();
+  }, [isActive, remainingSeconds, sessionId, stop]);
 
   const toggleTimer = async () => {
     if (!isActive) {
-      if (seconds === 0) {
-        setSeconds(initialSeconds);
+      if (remainingSeconds === 0) {
+        reset();
         return;
       }
       try {
@@ -44,33 +71,30 @@ export default function FocusTimer() {
         });
         const data = await res.json();
         if (res.ok) {
-          setSessionId(data.session._id);
-          setIsActive(true);
+          start(data.session._id || data.session.id);
           toast.success("Focus session started");
+        } else {
+          start(null);
+          toast.error("Couldn't sync — running locally");
         }
-      } catch (error) {
-        console.error("Failed to start session", error);
-        toast.error("Couldn't sync — starting locally");
-        setIsActive(true);
+      } catch {
+        start(null);
+        toast.error("Couldn't sync — running locally");
       }
     } else {
       try {
-        const res = await fetch(`/api/focus/end/${sessionId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ notes: "Focused session" }),
-        });
-        if (res.ok) {
-          setIsActive(false);
-          setSeconds(initialSeconds);
-          setSessionId(null);
-          toast.success("Session ended");
+        if (sessionId) {
+          await fetch(`/api/focus/end/${sessionId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ notes: "Focused session" }),
+          });
         }
-      } catch (error) {
-        console.error("Failed to end session", error);
+        stop();
+        toast.success("Session ended");
+      } catch {
+        stop();
         toast.error("Couldn't sync session end");
-        setIsActive(false);
-        setSeconds(initialSeconds);
       }
     }
   };
@@ -81,7 +105,10 @@ export default function FocusTimer() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progress = ((initialSeconds - seconds) / initialSeconds) * 1000;
+  const progress =
+    durationSeconds > 0
+      ? ((durationSeconds - remainingSeconds) / durationSeconds) * 1000
+      : 0;
 
   return (
     <section className="relative flex flex-col items-center justify-center py-10 px-6 bg-surface-container-lowest border border-[var(--border)] rounded-[var(--radius-md)]">
@@ -106,12 +133,12 @@ export default function FocusTimer() {
             strokeWidth="3"
             strokeDasharray="1000"
             strokeDashoffset={1000 - progress}
-            style={{ transition: "stroke-dashoffset 1s linear" }}
+            style={{ transition: "stroke-dashoffset 0.25s linear" }}
           />
         </svg>
         <div className="flex flex-col items-center gap-1 z-10">
           <span className="text-5xl md:text-6xl font-mono font-medium tracking-tighter text-on-surface">
-            {formatTime(seconds)}
+            {formatTime(remainingSeconds)}
           </span>
           <span className="text-xs text-on-surface-variant">
             {isActive ? "Focusing" : "Ready"}
@@ -125,13 +152,19 @@ export default function FocusTimer() {
             className="material-symbols-outlined text-[18px]"
             style={{ fontVariationSettings: "'FILL' 1" }}
           >
-            {isActive ? "pause" : "play_arrow"}
+            {isActive ? "stop" : "play_arrow"}
           </span>
-          {isActive ? "Pause" : "Start focus"}
+          {isActive ? "Stop" : "Start focus"}
         </Button>
-        <Button variant="secondary" className="flex-1" size="lg" type="button">
-          <span className="material-symbols-outlined text-[18px]">coffee</span>
-          Break
+        <Button
+          variant="secondary"
+          className="flex-1"
+          size="lg"
+          type="button"
+          onClick={() => reset()}
+        >
+          <span className="material-symbols-outlined text-[18px]">refresh</span>
+          Reset
         </Button>
       </div>
     </section>

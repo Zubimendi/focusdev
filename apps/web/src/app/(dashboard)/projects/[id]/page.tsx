@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FadeIn } from "@/components/ui/motion";
 import { formatCommitTemplate } from "@/lib/github-goal-tags";
 
 interface Task {
@@ -207,14 +209,29 @@ export default function ProjectDetailPage() {
     if (repos.length > 0) return;
     try {
       const res = await fetch("/api/github/repos");
-      if (res.status === 401) {
-        toast.error("Sign in with GitHub once to link repositories.");
+      if (res.status === 401 || res.status === 403) {
+        const data = await res.json().catch(() => ({}));
         setShowRepoPicker(false);
+        const msg =
+          data.code === "GITHUB_TOKEN_EXPIRED"
+            ? "GitHub token expired — reconnect in Settings → Integrations."
+            : "Connect GitHub in Settings → Integrations first, then link a repo.";
+        toast.error(msg, {
+          action: {
+            label: "Open Settings",
+            onClick: () => {
+              window.location.href = "/settings?tab=Integrations";
+            },
+          },
+        });
         return;
       }
       if (!res.ok) throw new Error("Failed");
       const data = await res.json();
       setRepos(Array.isArray(data) ? data : []);
+      if (!Array.isArray(data) || data.length === 0) {
+        toast.message("No repositories found on this GitHub account.");
+      }
     } catch {
       toast.error("Could not load GitHub repos");
       setShowRepoPicker(false);
@@ -321,10 +338,24 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <main className="max-w-5xl mx-auto px-6 py-8 lg:px-10 animate-pulse flex flex-col gap-8">
-        <div className="h-10 w-48 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
-        <div className="h-40 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
-        <div className="h-64 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]" />
+      <main className="max-w-5xl mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8">
+        <Skeleton className="h-4 w-40" />
+        <div className="flex gap-4">
+          <Skeleton className="h-12 w-12 rounded-md" />
+          <div className="flex-1 flex flex-col gap-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-72 max-w-full" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-20" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
       </main>
     );
   }
@@ -334,7 +365,7 @@ export default function ProjectDetailPage() {
   const goalTitleById = Object.fromEntries(goals.map((g) => [g.id, g.title]));
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8 w-full">
+    <FadeIn className="max-w-5xl mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8 w-full">
       <div className="flex items-center gap-2 text-sm text-on-surface-variant">
         <Link href="/projects" className="hover:text-primary transition-colors">
           Projects
@@ -427,6 +458,12 @@ export default function ProjectDetailPage() {
               Close
             </button>
           </div>
+          <p className="text-xs text-on-surface-variant">
+            Need to connect first?{" "}
+            <Link href="/settings" className="text-primary hover:underline">
+              Settings → Integrations
+            </Link>
+          </p>
           <div className="max-h-56 overflow-y-auto flex flex-col gap-1">
             {repos.length === 0 ? (
               <p className="text-sm text-on-surface-variant py-4 text-center">
@@ -709,6 +746,6 @@ export default function ProjectDetailPage() {
           </ul>
         )}
       </Panel>
-    </main>
+    </FadeIn>
   );
 }

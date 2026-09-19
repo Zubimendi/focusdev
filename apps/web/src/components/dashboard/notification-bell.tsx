@@ -98,7 +98,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-md"
+        className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-md"
         aria-label={
           unreadCount > 0
             ? `Notifications, ${unreadCount} unread`
@@ -106,11 +106,14 @@ export function NotificationBell() {
         }
         aria-expanded={open}
       >
-        <span className="material-symbols-outlined text-[20px]">
+        <span
+          className="material-symbols-outlined text-[20px] leading-none"
+          style={{ fontSize: 20, lineHeight: 1 }}
+        >
           notifications
         </span>
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-primary text-on-primary text-[9px] font-medium flex items-center justify-center leading-none">
+          <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-primary text-on-primary text-[9px] font-medium flex items-center justify-center leading-none">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

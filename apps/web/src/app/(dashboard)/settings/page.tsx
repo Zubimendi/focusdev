@@ -79,6 +79,9 @@ export default function SettingsPage() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [githubLinked, setGithubLinked] = useState(false);
+  const [githubUsername, setGithubUsername] = useState<string | null>(null);
+  const [connectingGithub, setConnectingGithub] = useState(false);
 
   const loadMe = useCallback(async () => {
     try {
@@ -89,6 +92,8 @@ export default function SettingsPage() {
       if (u?.name) setName(u.name);
       if (u?.email) setEmail(u.email);
       setTwoFactorEnabled(Boolean(u?.twoFactorEnabled));
+      setGithubLinked(Boolean(u?.githubLinked));
+      setGithubUsername(u?.githubUsername || null);
       const p = u?.preferences || {};
       if (p.theme === "light" || p.theme === "dark") setTheme(p.theme);
       if (typeof p.timerDuration === "number") setTimerDuration(p.timerDuration);
@@ -118,6 +123,23 @@ export default function SettingsPage() {
   useEffect(() => {
     setLocalTimer(timerDuration);
   }, [timerDuration]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    if (tab && (TABS as readonly string[]).includes(tab)) {
+      setActiveTab(tab);
+    }
+    if (params.get("github") === "linked") {
+      (async () => {
+        await updateSession({ githubLinked: true });
+        await loadMe();
+        toast.success("GitHub connected");
+        window.history.replaceState({}, "", "/settings?tab=Integrations");
+      })();
+    }
+  }, [updateSession, loadMe]);
 
   const avatarInitial = (name || email || "?").charAt(0).toUpperCase();
 
@@ -711,17 +733,57 @@ export default function SettingsPage() {
               <div>
                 <h3 className="text-sm font-medium text-on-surface">GitHub</h3>
                 <p className="text-xs text-on-surface-variant max-w-md">
-                  Connect once so FocusDev can attribute structured commits
-                  (<span className="font-mono">[fd:tag]</span>) to goals on
-                  linked project repos.
+                  {githubLinked ? (
+                    <>
+                      Connected
+                      {githubUsername ? (
+                        <>
+                          {" "}
+                          as{" "}
+                          <span className="font-mono text-on-surface">
+                            @{githubUsername}
+                          </span>
+                        </>
+                      ) : null}
+                      . Link repos from a project to attribute{" "}
+                      <span className="font-mono">[fd:tag]</span> commits.
+                    </>
+                  ) : (
+                    <>
+                      Connect once so FocusDev can attribute structured commits
+                      (<span className="font-mono">[fd:tag]</span>) to goals on
+                      linked project repos.
+                    </>
+                  )}
                 </p>
               </div>
             </div>
             <Button
               variant="secondary"
-              onClick={() => signIn("github", { callbackUrl: "/settings" })}
+              loading={connectingGithub}
+              onClick={async () => {
+                setConnectingGithub(true);
+                try {
+                  const providers = await fetch("/api/auth/providers").then(
+                    (r) => r.json()
+                  );
+                  if (!providers?.github) {
+                    toast.error(
+                      "GitHub OAuth isn’t configured. Set GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, and NEXTAUTH_URL."
+                    );
+                    return;
+                  }
+                  await signIn("github", {
+                    callbackUrl: "/settings?tab=Integrations&github=linked",
+                  });
+                } catch {
+                  toast.error("Couldn’t start GitHub connection");
+                } finally {
+                  setConnectingGithub(false);
+                }
+              }}
             >
-              Connect
+              {githubLinked ? "Reconnect" : "Connect"}
             </Button>
           </div>
         </Panel>

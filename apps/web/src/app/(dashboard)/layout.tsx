@@ -34,8 +34,15 @@ export default function DashboardLayout({
 
   if (status === "loading") {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-on-surface-variant text-sm">
-        Loading…
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="w-full max-w-md px-6 flex flex-col gap-4">
+          <div className="h-8 w-36 rounded-md bg-surface-container-high animate-pulse" />
+          <div className="h-40 rounded-md bg-surface-container-high animate-pulse" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-20 rounded-md bg-surface-container-high animate-pulse" />
+            <div className="h-20 rounded-md bg-surface-container-high animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -76,20 +83,23 @@ export default function DashboardLayout({
                 </span>
               </button>
               <div className="hidden md:block" />
-              <div className="flex items-center gap-2 ml-auto">
+              <div className="flex items-center gap-0.5 ml-auto h-8">
                 <NotificationBell />
                 <Link
                   href="/settings"
                   data-tour="nav-settings-header"
-                  className="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-md"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-md"
                   aria-label="Settings"
                 >
-                  <span className="material-symbols-outlined text-[20px]">
+                  <span
+                    className="material-symbols-outlined text-[20px] leading-none"
+                    style={{ fontSize: 20, lineHeight: 1 }}
+                  >
                     settings
                   </span>
                 </Link>
-                <div className="flex items-center gap-2 pl-1">
-                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center overflow-hidden relative">
+                <div className="flex items-center gap-2 pl-2 ml-1 border-l border-[var(--border)] h-8">
+                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center overflow-hidden relative shrink-0 self-center">
                     {user?.image ? (
                       <Image
                         src={user.image}
@@ -98,14 +108,14 @@ export default function DashboardLayout({
                         className="object-cover"
                       />
                     ) : (
-                      <span className="text-[11px] font-medium text-primary">
+                      <span className="text-[11px] font-medium text-primary leading-none">
                         {initial}
                       </span>
                     )}
                   </div>
                   <button
                     onClick={() => signOut()}
-                    className="text-xs font-medium text-on-surface-variant hover:text-error transition-colors"
+                    className="h-7 px-2 inline-flex items-center text-xs font-medium text-on-surface-variant hover:text-error transition-colors rounded-md hover:bg-surface-container"
                   >
                     Log out
                   </button>

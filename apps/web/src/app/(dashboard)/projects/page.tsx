@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/page-header";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FadeIn } from "@/components/ui/motion";
 
 interface ProjectSummary {
   id: string;
@@ -100,6 +102,7 @@ export default function ProjectsPage() {
       : 0;
 
   return (
+    <FadeIn>
     <main className="max-w-6xl mx-auto px-6 py-8 lg:px-10 w-full flex flex-col gap-8">
       <PageHeader
         title="Projects"
@@ -160,12 +163,9 @@ export default function ProjectsPage() {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-48 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]"
-            />
+            <Skeleton key={i} className="h-48 w-full" />
           ))}
         </div>
       ) : projects.length === 0 ? (
@@ -288,5 +288,6 @@ export default function ProjectsPage() {
         </Panel>
       )}
     </main>
+    </FadeIn>
   );
 }

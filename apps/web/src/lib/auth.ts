@@ -1,12 +1,17 @@
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import { connectToDatabase } from "@focus/db";
 import { UserModel } from "@focus/db/models";
+import type { IUserDocument } from "@focus/db/models/user";
 import {
   completeTwoFactor,
   findUserForLogin,
 } from "@/lib/find-user-for-login";
+
+const githubClientId = process.env.GITHUB_CLIENT_ID || "";
+const githubClientSecret = process.env.GITHUB_CLIENT_SECRET || "";
+const githubConfigured = Boolean(githubClientId && githubClientSecret);
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -56,11 +61,18 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
-    GithubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
-      authorization: { params: { scope: "repo read:user user:email" } },
-    }),
+    ...(githubConfigured
+      ? [
+          GithubProvider({
+            clientId: githubClientId,
+            clientSecret: githubClientSecret,
+            authorization: {
+              params: { scope: "repo read:user user:email" },
+            },
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
   ],
   session: {
     strategy: "jwt",
@@ -71,20 +83,64 @@ export const authOptions: NextAuthOptions = {
         await connectToDatabase();
         const githubLogin =
           (profile as { login?: string } | undefined)?.login || undefined;
-        let dbUser = await UserModel.findOne({ email: user.email });
+        const email =
+          user.email ||
+          (profile as { email?: string } | undefined)?.email ||
+          (githubLogin ? `${githubLogin}@users.noreply.github.com` : null);
+
+        if (!email && !githubLogin) {
+          console.error("[auth] GitHub sign-in missing email and login");
+          return false;
+        }
+
+        // Prefer linking to the already-signed-in FocusDev account (Connect GitHub).
+        let dbUser: IUserDocument | null = null;
+        try {
+          const existingSession = await getServerSession(authOptions);
+          const sessionUserId = (existingSession?.user as { id?: string } | undefined)
+            ?.id;
+          if (sessionUserId) {
+            dbUser = await UserModel.findById(sessionUserId).select(
+              "+githubAccessToken githubUsername email name"
+            );
+          }
+        } catch {
+          /* no existing session */
+        }
+
+        if (!dbUser && email) {
+          dbUser = await UserModel.findOne({ email: email.toLowerCase() }).select(
+            "+githubAccessToken githubUsername email name"
+          );
+        }
+        if (!dbUser && githubLogin) {
+          dbUser = await UserModel.findOne({
+            githubUsername: githubLogin.toLowerCase(),
+          }).select("+githubAccessToken githubUsername email name");
+        }
+
         if (!dbUser) {
+          if (!email) {
+            console.error("[auth] GitHub sign-in cannot create user without email");
+            return false;
+          }
           dbUser = await UserModel.create({
-            email: user.email,
-            name: user.name,
+            email: email.toLowerCase(),
+            name: user.name || githubLogin,
             githubAccessToken: account.access_token,
             githubUsername: githubLogin,
+            lastLoginAt: new Date(),
           });
         } else {
           dbUser.githubAccessToken = account.access_token;
           if (githubLogin) dbUser.githubUsername = githubLogin;
+          if (!dbUser.name && user.name) dbUser.name = user.name;
+          dbUser.lastLoginAt = new Date();
           await dbUser.save();
         }
+        if (!dbUser) return false;
         user.id = dbUser._id.toString();
+        user.email = dbUser.email;
         return true;
       }
       return true;
@@ -97,9 +153,26 @@ export const authOptions: NextAuthOptions = {
       }
       if (account?.provider === "github") {
         token.githubAccessToken = account.access_token;
+        token.githubChecked = true;
+        // Always refresh token from DB after GitHub link
+        if (token.id) {
+          try {
+            await connectToDatabase();
+            const dbUser = await UserModel.findById(token.id as string).select(
+              "+githubAccessToken githubUsername"
+            );
+            if (dbUser?.githubAccessToken) {
+              token.githubAccessToken = dbUser.githubAccessToken;
+            }
+            if (dbUser?.githubUsername) {
+              token.githubUsername = dbUser.githubUsername;
+            }
+          } catch {
+            /* ignore */
+          }
+        }
       }
-      // Credentials sessions: hydrate GitHub token from DB once
-      if (token.id && !token.githubAccessToken && !token.githubChecked) {
+      if (token.id && (!token.githubAccessToken || !token.githubChecked)) {
         try {
           await connectToDatabase();
           const dbUser = await UserModel.findById(token.id as string).select(
@@ -121,6 +194,9 @@ export const authOptions: NextAuthOptions = {
         if (session.onboardingCompletedAt !== undefined) {
           token.onboardingCompletedAt = session.onboardingCompletedAt;
         }
+        if (session.githubLinked) {
+          token.githubChecked = false;
+        }
       }
       return token;
     },
@@ -130,7 +206,9 @@ export const authOptions: NextAuthOptions = {
         session.user.name = (token.name as string) || session.user.name;
         session.user.email = (token.email as string) || session.user.email;
         session.user.githubAccessToken = token.githubAccessToken as string;
-        session.user.githubUsername = token.githubUsername as string | undefined;
+        session.user.githubUsername = token.githubUsername as
+          | string
+          | undefined;
       }
       return session;
     },
@@ -138,5 +216,6 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
+    error: "/login",
   },
 };

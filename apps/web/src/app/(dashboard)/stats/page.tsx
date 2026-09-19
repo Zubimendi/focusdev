@@ -11,6 +11,8 @@ import {
   FocusLineChart,
   ProjectDonut,
 } from "@/components/stats/charts";
+import { PageSkeleton } from "@/components/ui/skeleton";
+import { FadeIn } from "@/components/ui/motion";
 
 interface SummaryStat {
   label: string;
@@ -119,16 +121,8 @@ export default function StatsPage() {
 
   if (loading && !data) {
     return (
-      <main className="max-w-[1400px] mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8 animate-pulse">
-        <div className="h-14 bg-surface-container-low rounded-[var(--radius-md)] w-1/3 border border-[var(--border)]" />
-        <div className="grid grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-28 bg-surface-container-low rounded-[var(--radius-md)] border border-[var(--border)]"
-            />
-          ))}
-        </div>
+      <main className="max-w-[1400px] mx-auto px-6 py-8 lg:px-10">
+        <PageSkeleton cards={4} />
       </main>
     );
   }
@@ -556,5 +550,6 @@ export default function StatsPage() {
         </Panel>
       )}
     </main>
+    </FadeIn>
   );
 }

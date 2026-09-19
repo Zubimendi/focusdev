@@ -7,9 +7,10 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Moon, Sun, Clock, Bell, Shield, Lock, BarChart3 } from "lucide-react-native";
+import { ArrowLeft, Moon, Sun, Clock, Bell, Shield, Lock, BarChart3, Github } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useSettingsStore } from "../store/settings-store";
@@ -35,13 +36,22 @@ export default function SettingsScreen() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [githubLinked, setGithubLinked] = useState(false);
+  const [githubUsername, setGithubUsername] = useState<string | null>(null);
 
   useEffect(() => {
     authService
       .getMe()
       .then((res) => {
-        const p = (res.user as { preferences?: { showCharts?: boolean } })?.preferences;
+        const u = res.user as {
+          preferences?: { showCharts?: boolean };
+          githubLinked?: boolean;
+          githubUsername?: string | null;
+        };
+        const p = u?.preferences;
         if (typeof p?.showCharts === "boolean") setShowCharts(p.showCharts);
+        setGithubLinked(Boolean(u?.githubLinked));
+        setGithubUsername(u?.githubUsername || null);
       })
       .catch(() => undefined);
   }, [setShowCharts]);
@@ -214,6 +224,44 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.onSurfaceVariant }]}>Integrations</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => {
+                const webBase =
+                  process.env.EXPO_PUBLIC_WEB_URL ||
+                  "https://focusdev-web.vercel.app";
+                Linking.openURL(`${webBase}/settings?tab=Integrations`).catch(
+                  () =>
+                    Toast.show({
+                      type: "error",
+                      text1: "Couldn’t open Settings in browser",
+                    })
+                );
+              }}
+            >
+              <Github size={20} color={githubLinked ? colors.primary : colors.onSurfaceVariant} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowText, { color: colors.onSurface }]}>
+                  {githubLinked
+                    ? `GitHub connected${githubUsername ? ` (@${githubUsername})` : ""}`
+                    : "Connect GitHub"}
+                </Text>
+                <Text
+                  style={[
+                    styles.securityNote,
+                    { paddingHorizontal: 0, paddingBottom: 0, paddingTop: 4 },
+                  ]}
+                >
+                  Opens the web app to link your account, then you can attach repos to projects.
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 

@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
   Alert,
   Modal,
 } from 'react-native';
@@ -16,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAppTheme } from '../hooks/useAppTheme';
 import { projectService } from '../services/project';
+import { FadeIn, Skeleton } from '../components/ui/Skeleton';
 
 interface ProjectItem {
   id: string;
@@ -124,7 +124,11 @@ export default function ProjectsScreen() {
         </Text>
 
         {loading ? (
-          <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
+          <View style={{ gap: 12, marginTop: 24 }}>
+            <Skeleton height={120} />
+            <Skeleton height={120} />
+            <Skeleton height={120} />
+          </View>
         ) : projects.length === 0 ? (
           <View style={[styles.empty, { borderColor: colors.outlineVariant }]}>
             <Folder size={40} color={colors.onSurfaceVariant} />
@@ -139,6 +143,7 @@ export default function ProjectsScreen() {
             </TouchableOpacity>
           </View>
         ) : (
+          <FadeIn>
           <View style={styles.projectList}>
             {projects.map((project) => (
               <View
@@ -222,6 +227,7 @@ export default function ProjectsScreen() {
               <Text style={[styles.connectText, { color: colors.primary }]}>ADD PROJECT</Text>
             </TouchableOpacity>
           </View>
+          </FadeIn>
         )}
 
         {topProject && totalWeek > 0 && (
