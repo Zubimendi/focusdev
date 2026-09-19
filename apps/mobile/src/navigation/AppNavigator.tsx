@@ -22,6 +22,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import WeeklyReviewScreen from '../screens/WeeklyReviewScreen';
 import NotesScreen from '../screens/NotesScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import SupportScreen from '../screens/SupportScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -134,6 +135,7 @@ export default function AppNavigator() {
             <Stack.Screen name="PeriodReview" component={WeeklyReviewScreen} />
             <Stack.Screen name="Notes" component={NotesScreen} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
+            <Stack.Screen name="Support" component={SupportScreen} />
           </>
         ) : (
           <>

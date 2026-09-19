@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, LogOut, Settings } from 'lucide-react-native';
+import { User, LogOut, Settings, HelpCircle } from 'lucide-react-native';
 import { useAuthStore } from '../store/auth-store';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -36,6 +36,13 @@ export default function ProfileScreen() {
         >
           <Settings size={20} color={colors.onSurfaceVariant} />
           <Text style={[styles.menuText, { color: colors.onSurface }]}>Settings</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.menuItem, { backgroundColor: colors.surface }]}
+          onPress={() => navigation.navigate('Support')}
+        >
+          <HelpCircle size={20} color={colors.onSurfaceVariant} />
+          <Text style={[styles.menuText, { color: colors.onSurface }]}>Support</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.menuItem, { backgroundColor: colors.surface }]}
