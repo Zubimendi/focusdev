@@ -137,6 +137,7 @@ export default function StatsPage() {
   const rangeTabs = ["This week", "This month"];
 
   return (
+    <FadeIn>
     <main className="max-w-[1400px] mx-auto px-6 py-8 lg:px-10 flex flex-col gap-8">
       <PageHeader
         title="Stats"
